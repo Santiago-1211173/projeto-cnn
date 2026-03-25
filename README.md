@@ -24,7 +24,7 @@ The CNN bypasses high-level Keras abstractions. Core mathematical operations (Co
 
 ### 2. Mahalanobis Triage (The Arbitrator)
 
-Softmax probabilities are often overconfident on noisy data. Instead, this system calculates the Mahalanobis Distance (D = sqrt((x - mu)^T * Sigma^-1 * (x - mu))) of incoming 128D vectors against 10 learned multivariate Gaussian distributions representing the classes.
+Softmax probabilities are often overconfident on noisy data. Instead, this system calculates the Mahalanobis Distance: $$D = \sqrt{(x - \mu)^T \Sigma^{-1} (x - \mu)}$$ of incoming 128D vectors against 10 learned multivariate Gaussian distributions representing the classes.
 
 * If D < 15.0, the CNN's latent representation is trusted.
 * If D >= 15.0, the input is classified as an anomaly/OOD and routed.
