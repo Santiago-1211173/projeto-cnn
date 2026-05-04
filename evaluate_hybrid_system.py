@@ -1,7 +1,7 @@
 """
 Pipeline Final de Inferência Híbrida em Produção.
 Testa o sistema completo: 
-Imagem -> CNN (Espaço Latente) -> Árbitro (Mahalanobis) -> Decisão (CNN ou RL).
+Imagem -> CNN (10D Probabilidades) -> Árbitro (Mahalanobis) -> Decisão (CNN ou k-NN RL).
 """
 
 import os
@@ -11,14 +11,15 @@ import tensorflow as tf
 import matplotlib.pyplot as plt
 
 from src.models.custom_cnn import RawModel
-from src.models.rl_agent import QNetworkAgent
+from src.models.knn_bandit_agent import KNNBanditAgent
 from src.data.loader import load_mnist_raw
 
 logging.basicConfig(level=logging.INFO, format='%(message)s')
 logger = logging.getLogger(__name__)
 
 # Limiar de Incerteza (Threshold) descoberto nos nossos testes anteriores
-LIMIAR_MAHALANOBIS = 15.0  
+LIMIAR_MAHALANOBIS = 10.0  
+
 
 def calcular_mahalanobis(vetor_x: np.ndarray, mu: np.ndarray, inv_sigma: np.ndarray) -> float:
     """Fórmula matemática da distância de Mahalanobis."""
@@ -26,9 +27,11 @@ def calcular_mahalanobis(vetor_x: np.ndarray, mu: np.ndarray, inv_sigma: np.ndar
     dist_quadrada = np.dot(np.dot(diff, inv_sigma), diff.T)
     return float(np.sqrt(dist_quadrada))
 
+
 def adicionar_ruido(imagem: np.ndarray, intensidade: float = 0.6) -> np.ndarray:
     ruido = np.random.normal(loc=0.0, scale=intensidade, size=imagem.shape)
     return np.clip(imagem + ruido, 0., 1.)
+
 
 def main():
     # 1. Configurar Hardware
@@ -53,12 +56,11 @@ def main():
     mapa_ilhas = np.load(caminho_mapa, allow_pickle=True)
     logger.info("[OK] Árbitro de Triagem preparado.")
 
-    # 4. Carregar o Cérebro Especialista (Agente RL)
-    agent = QNetworkAgent()
-    ckpt_agent = tf.train.Checkpoint(model=agent)
-    # FIX APLICADO: Adicionado o sufixo "-1" ao nome do ficheiro de pesos
-    ckpt_agent.restore(os.path.join("outputs", "rl_agent_weights-1")).expect_partial()
-    logger.info("[OK] Especialista em RL ativado.")
+    # 4. Carregar o Cérebro Especialista (Agente k-NN)
+    agent = KNNBanditAgent(k=30, n_actions=10)
+    caminho_memoria = os.path.join("outputs", "knn_memory_bank.npz")
+    agent.load(caminho_memoria)
+    logger.info("[OK] Especialista k-NN ativado.")
 
     # 5. Preparar Dados de Teste
     x_test, y_test = load_mnist_raw(os.path.join("data", "MNIST", "raw"), kind='t10k')
@@ -98,9 +100,10 @@ def main():
         outputs = cnn(tensor_img)
         vetor_128d = outputs["latent_features"]
         prob_cnn = outputs["probabilities"][0]
+        estado_10d = prob_cnn.numpy()  # O estado para o k-NN
         predicao_cnn = int(tf.argmax(prob_cnn).numpy())
         
-        # C. Árbitro mede a distância
+        # C. Árbitro mede a distância (usa o espaço latente 128D)
         vetor_np = vetor_128d.numpy()[0]
         menor_distancia = float('inf')
         
@@ -116,9 +119,9 @@ def main():
             decisor = "CNN"
             decisao_final = predicao_cnn
         else:
-            decisor = "Agente RL"
-            # O Agente usa Explotação pura (Epsilon = 0.0) porque estamos em Produção
-            decisao_final = agent.get_action(vetor_128d, epsilon=0.0)
+            decisor = "k-NN RL"
+            # O Agente usa as probabilidades 10D para decidir
+            decisao_final = agent.get_action(estado_10d, epsilon=0.0)
 
         # E. Registar Resultados
         sucesso = "V" if decisao_final == label_real else "X"
@@ -138,6 +141,7 @@ def main():
     output_path = os.path.join("outputs", "resultado_hibrido.png")
     plt.savefig(output_path, dpi=300)
     logger.info(f"\n[OK] Gráfico final guardado em: {output_path}")
+
 
 if __name__ == "__main__":
     main()

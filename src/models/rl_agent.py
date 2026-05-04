@@ -1,6 +1,14 @@
 """
-Módulo do Agente de Reinforcement Learning (Contextual Bandit).
+[DEPRECADO] Módulo do Agente de Reinforcement Learning (Contextual Bandit).
 Este agente atua como o "Especialista" que resolve os casos ambíguos rejeitados pela CNN.
+
+AVISO: Este módulo está DEPRECADO. Foi substituído pelo KNNBanditAgent em:
+    src/models/knn_bandit_agent.py
+    
+O novo agente usa k-Nearest Neighbors (Memória Episódica) em vez de uma MLP,
+eliminando a necessidade de backpropagation e épocas de treino pesadas.
+
+Este ficheiro é mantido apenas para referência e compatibilidade retroativa.
 """
 
 import tensorflow as tf
