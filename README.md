@@ -189,9 +189,28 @@ python evaluate_hybrid_system.py
 
 ## Explainable AI (XAI) & Profiling
 
-Understanding the decision boundaries is a core tenet of this system:
+Understanding the decision boundaries is a core tenet of this system.
 
-* **Latent Space Collapse (t-SNE):** visualize_hybrid_tsne.py projects the 128D features into 2D, mathematically visualizing how OOD noise collapses standard class clusters.
-* **Saliency Maps:** visualize_saliency.py tracks gradients backward from the softmax predictions to the input pixels (dP_c / dX), highlighting the exact morphological features the CNN focuses on.
-* **k-NN Decision Profiles:** visualize_rl_decisions.py generates confidence profile comparisons (CNN probabilities vs k-NN expected rewards) and correction flow heatmaps showing how the k-NN re-routes CNN predictions.
-* **Hardware Profiling:** benchmark_l40s.py measures raw floating-point matrix multiplication throughput, isolating CPU vs. GPU overhead.
+### 128D Episodic Memory in Action
+
+This visualization demonstrates exactly how the **k-NN RL Agent** recovers from CNN failures on out-of-distribution (OOD) data. The process is broken down into three zones:
+
+#### Zone 1: The Crisis
+![Zone 1: The Crisis](outputs/episodic_memory_rescue_zone1.png)
+The input is heavily corrupted by noise. The CNN incorrectly predicts '8', but the Mahalanobis Arbitrator detects the anomaly (Distance > 15.0) and intercepts the prediction, routing it to the RL Agent.
+
+#### Zone 2: 128D Latent Space Retrieval
+![Zone 2: 128D Latent Space](outputs/episodic_memory_rescue_zone2.png)
+The agent extracts the 128D latent vector and retrieves the 15 nearest experiences from its memory bank. Even though the input pixel space is destroyed by noise, the CNN's 128D latent space correctly clusters it near other '7's.
+
+#### Zone 3: Vote & Action
+![Zone 3: Vote & Action](outputs/episodic_memory_rescue_zone3.png)
+The agent votes based on its retrieved memories. With the vast majority of memories correctly pointing to '7', it successfully overrides the CNN and restores the correct label.
+
+### XAI Modules
+
+* **Episodic Memory Rescue:** `visualize_rl_memory.py` generates the dashboard above, demonstrating the 128D latent retrieval process.
+* **Latent Space Collapse (t-SNE):** `visualize_hybrid_tsne.py` projects the 128D features into 2D, mathematically visualizing how OOD noise collapses standard class clusters.
+* **Saliency Maps:** `visualize_saliency.py` tracks gradients backward from the softmax predictions to the input pixels (dP_c / dX), highlighting the exact morphological features the CNN focuses on.
+* **k-NN Decision Profiles:** `visualize_rl_decisions.py` generates confidence profile comparisons (CNN probabilities vs k-NN expected rewards) and correction flow heatmaps showing how the k-NN re-routes CNN predictions.
+* **Hardware Profiling:** `benchmark_l40s.py` measures raw floating-point matrix multiplication throughput, isolating CPU vs. GPU overhead.

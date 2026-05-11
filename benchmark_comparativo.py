@@ -24,7 +24,7 @@ from src.data.loader import load_mnist_raw
 logging.basicConfig(level=logging.INFO, format='%(message)s')
 logger = logging.getLogger(__name__)
 
-LIMIAR_MAHALANOBIS = 5.0
+LIMIAR_MAHALANOBIS = 15.0
 
 
 def calcular_mahalanobis_batch(vetores, mu, inv_sigma):
