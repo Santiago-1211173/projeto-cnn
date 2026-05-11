@@ -295,7 +295,7 @@ def main():
         for gpu in gpus:
             tf.config.experimental.set_memory_growth(gpu, True)
             
-    os.makedirs("outputs", exist_ok=True)
+    os.makedirs("assets", exist_ok=True)
             
     cnn, mapa_ilhas = carregar_modelos()
     
@@ -309,7 +309,7 @@ def main():
     
     hero = procurar_caso_heroi(x_test, y_test, cnn, mapa_ilhas, kdtree, y_memoria)
     
-    gerar_dashboards(hero, imagens_memoria, "outputs")
+    gerar_dashboards(hero, imagens_memoria, "assets")
 
 if __name__ == "__main__":
     main()
