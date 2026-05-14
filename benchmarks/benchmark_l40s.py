@@ -3,6 +3,10 @@ Script de Benchmark para comparação de throughput entre CPU e NVIDIA L40S.
 Mede o tempo real de execução de multiplicações matriciais massivas,
 forçando a sincronização da GPU para evitar medições assíncronas falsas.
 """
+import sys
+import os
+sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
+
 
 import time
 import logging

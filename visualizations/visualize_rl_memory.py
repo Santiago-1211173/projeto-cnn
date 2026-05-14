@@ -4,6 +4,10 @@ Generates an English dashboard showing exactly how the k-NN agent corrects the C
 by retrieving the 15 nearest memories (images) in the 128D latent space.
 Also generates individual images for each zone for easier explanation.
 """
+import sys
+import os
+sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
+
 
 import os
 import logging

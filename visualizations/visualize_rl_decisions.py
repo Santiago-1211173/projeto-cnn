@@ -5,6 +5,10 @@ Gera dois tipos de visualização:
 1. Perfil de Confiança Comparativo — Barras lado a lado mostrando CNN vs k-NN
 2. Diagrama de Correção (Sankey) — Fluxo de reclassificações do k-NN sobre a CNN
 """
+import sys
+import os
+sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
+
 
 import os
 import logging

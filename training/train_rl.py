@@ -7,6 +7,10 @@ ESTRATÉGIA FINAL: Oracle no nível de ruído alvo.
   - Também armazena (estado_10D, previsão_errada_CNN, -1) para contrastel
   - Sem exploração aleatória, sem mistura de escalas
 """
+import sys
+import os
+sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
+
 
 import os
 import logging

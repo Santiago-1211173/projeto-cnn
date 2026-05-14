@@ -2,6 +2,10 @@
 Script principal de treino (Single-GPU).
 Treina a CNN dissecada ('Headless') forçando a execução na GPU 0.
 """
+import sys
+import os
+sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
+
 
 import os
 import time

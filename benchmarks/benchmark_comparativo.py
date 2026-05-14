@@ -5,6 +5,10 @@ e produz um relatório comparativo detalhado com métricas hard.
 
 Saída: outputs/comparacao_mlp_vs_knn.png (gráfico) + relatório no terminal.
 """
+import sys
+import os
+sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
+
 
 import os
 import time

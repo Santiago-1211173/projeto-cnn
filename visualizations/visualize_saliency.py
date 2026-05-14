@@ -3,6 +3,10 @@ Script de Visualização de Saliência (Fase 4 - XAI).
 Calcula os gradientes da previsão em relação aos píxeis da entrada para 
 descobrir exatamente onde a CNN está a focar a sua atenção.
 """
+import sys
+import os
+sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
+
 
 import os
 import logging

@@ -4,6 +4,10 @@ Compara visualmente como a CNN agrupa as imagens limpas (Mundo Ideal)
 vs. como a CNN espalha as imagens com ruído (Mundo Caótico).
 Isto prova visualmente a necessidade do Árbitro e do Agente RL.
 """
+import sys
+import os
+sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
+
 
 import os
 import logging

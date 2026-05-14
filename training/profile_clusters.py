@@ -3,6 +3,10 @@ Script de Perfilagem Espacial (Mahalanobis).
 Passa o dataset de treino pela CNN para calcular o centro geométrico (Média) 
 e a dispersão (Matriz de Covariância) das 10 "ilhas" no espaço latente de 128D.
 """
+import sys
+import os
+sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
+
 
 import os
 import logging

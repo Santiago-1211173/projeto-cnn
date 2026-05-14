@@ -130,14 +130,12 @@ The k-NN struggles most with digits 7, 8, and 5 under noise — these digits pro
 │   │   └── knn_bandit_agent.py    # k-NN Bandit Agent (10D episodic memory)
 │   ├── data/                      # Binary byte parsers & tf.data.Dataset loaders
 │   └── scratch/                   # Raw DL Math: layers, losses, optimizers, activations
+├── training/                      # CNN and RL Agent training engines
+├── benchmarks/                    # Performance and Accuracy benchmarks
+├── visualizations/                # Explainable AI (XAI) and Latent Space analysis
 ├── outputs/                       # Checkpoints, Latent Profiles, and XAI Visualizations
-├── train.py                       # CNN Training Engine (Multi-GPU/Single-GPU optimized)
-├── train_rl.py                    # k-NN Bandit Memory Population Engine
-├── profile_clusters.py            # Latent Space Profiler (Computes Covariance Matrices)
-├── evaluate_hybrid_system.py      # End-to-end Inference Pipeline (6-image demo)
-├── benchmark_hibrido.py           # k-NN Bandit Benchmark (10k images, clean + noisy)
-├── benchmark_comparativo.py       # Side-by-Side MLP vs k-NN Comparison
-└── visualize_*.py                 # Explainable AI (XAI) modules
+├── assets/                        # Documentation images and assets
+└── evaluate_hybrid_system.py      # End-to-end Inference Pipeline (6-image demo)
 ```
 
 ## Execution Pipeline
@@ -149,7 +147,7 @@ Follow this strict lifecycle to replicate the hybrid model training and evaluati
 Trains the custom from-scratch CNN to establish the 128D latent space.
 
 ```bash
-python train.py
+python training/train.py
 ```
 
 ### 2. Profile the Latent Space
@@ -157,31 +155,30 @@ python train.py
 Calculates the mu (centroid) and Sigma^-1 (inverse covariance matrix) for the 10 digit distributions.
 
 ```bash
-python profile_clusters.py
+python training/profile_clusters.py
 ```
 
-### 3. Train the Specialist RL Agent
+### 3. Populate Episodic Memory
 
-**Option A — k-NN Bandit (Non-Parametric, Current Default):**
-Populates the episodic memory by passing noisy images through the CNN and storing oracle labels.
+Runs the 128D k-NN Specialist over the training set to store high-confidence episodic experiences.
 
 ```bash
-python train_rl.py
+python training/train_rl_128d.py
 ```
 
 **Option B — MLP Q-Network (Gradient-Based, Original):**
-The original MLP training uses backpropagation over 10 epochs. The pre-trained weights are stored at `outputs/rl_agent_weights-1.*`. To retrain from the original script, restore it from git history (`git show 3eecf42:train_rl.py`).
+The original MLP training uses backpropagation over 10 epochs. The pre-trained weights are stored at `outputs/rl_agent_weights-1.*`. To retrain from the original script, restore it from git history (`git show 3eecf42:train_rl.py`) or use the version in `training/train_rl.py`.
 
-### 4. Evaluate the Full System
+### 4. Run Comparative Benchmarks
 
-Run the end-to-end pipeline on a batch of test data:
+Executes both RL agents side-by-side to generate the final comparative report.
 
 ```bash
 # k-NN Benchmark (10k images)
-python benchmark_hibrido.py
+python benchmarks/benchmark_hibrido.py
 
 # Side-by-side MLP vs k-NN comparison
-python benchmark_comparativo.py
+python benchmarks/benchmark_comparativo.py
 
 # 6-image visual demo
 python evaluate_hybrid_system.py
@@ -212,8 +209,8 @@ The agent votes based on its retrieved memories. With the vast majority of memor
 
 ### XAI Modules
 
-* **Episodic Memory Rescue:** `visualize_rl_memory.py` generates the dashboard above, demonstrating the 128D latent retrieval process.
-* **Latent Space Collapse (t-SNE):** `visualize_hybrid_tsne.py` projects the 128D features into 2D, mathematically visualizing how OOD noise collapses standard class clusters.
-* **Saliency Maps:** `visualize_saliency.py` tracks gradients backward from the softmax predictions to the input pixels (dP_c / dX), highlighting the exact morphological features the CNN focuses on.
-* **k-NN Decision Profiles:** `visualize_rl_decisions.py` generates confidence profile comparisons (CNN probabilities vs k-NN expected rewards) and correction flow heatmaps showing how the k-NN re-routes CNN predictions.
-* **Hardware Profiling:** `benchmark_l40s.py` measures raw floating-point matrix multiplication throughput, isolating CPU vs. GPU overhead.
+* **Episodic Memory Rescue:** `visualizations/visualize_rl_memory.py` generates the dashboard above, demonstrating the 128D latent retrieval process.
+* **Latent Space Collapse (t-SNE):** `visualizations/visualize_hybrid_tsne.py` projects the 128D features into 2D, mathematically visualizing how OOD noise collapses standard class clusters.
+* **Saliency Maps:** `visualizations/visualize_saliency.py` tracks gradients backward from the softmax predictions to the input pixels (dP_c / dX), highlighting the exact morphological features the CNN focuses on.
+* **k-NN Decision Profiles:** `visualizations/visualize_rl_decisions.py` generates confidence profile comparisons (CNN probabilities vs k-NN expected rewards) and correction flow heatmaps showing how the k-NN re-routes CNN predictions.
+* **Hardware Profiling:** `benchmarks/benchmark_l40s.py` measures raw floating-point matrix multiplication throughput, isolating CPU vs. GPU overhead.

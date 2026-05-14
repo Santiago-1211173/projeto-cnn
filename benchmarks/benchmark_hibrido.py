@@ -3,6 +3,10 @@ Script de Avaliação em Massa (Benchmark Final).
 Testa as 10.000 imagens do MNIST em Cenário Limpo e Cenário com Ruído.
 Usa o agente k-NN Bandit com estados 10D (probabilidades softmax da CNN).
 """
+import sys
+import os
+sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
+
 
 import os
 import time
