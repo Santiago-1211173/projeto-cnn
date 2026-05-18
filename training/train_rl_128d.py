@@ -5,11 +5,11 @@ import sys
 import os
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 
-
 import os
 import logging
 import numpy as np
 import tensorflow as tf
+from sklearn.model_selection import train_test_split
 
 from src.models.custom_cnn import RawModel
 from src.models.knn_bandit_agent_128d import KNNBanditAgent128D
@@ -53,11 +53,23 @@ def main():
     agent = KNNBanditAgent128D(k=30, n_actions=10, use_pca=False) 
 
     logger.info("A preparar o Ambiente de Treino...")
-    x_train, y_train = load_mnist_raw(os.path.join("data", "MNIST", "raw"), kind='train')
-    x_train = x_train.astype(np.float32) / 255.0
+    x_train_full, y_train_full = load_mnist_raw(os.path.join("data", "MNIST", "raw"), kind='train')
+    x_train_full = x_train_full.astype(np.float32) / 255.0
+
+    logger.info("A criar partição hermética: 90% Sementeira / 10% Avaliação (Unseen Data)...")
+    x_train, x_test, y_train, y_test = train_test_split(
+        x_train_full, y_train_full, 
+        test_size=0.10, 
+        random_state=42, 
+        shuffle=True, 
+        stratify=y_train_full
+    )
+    
+    logger.info(f"  Partição de Sementeira (Memória): {len(x_train)} amostras")
+    logger.info(f"  Partição de Avaliação (Teste): {len(x_test)} amostras")
 
     logger.info("\n==================================================")
-    logger.info("ORACLE SEEDING (Limpo × 1 + Ruído 0.6 × 3)")
+    logger.info("ORACLE SEEDING (Apenas na partição de 90%)")
     logger.info("==================================================")
 
     cenarios = [0.0, 0.6, 0.6, 0.6]
@@ -86,20 +98,18 @@ def main():
     agent.build_index()
 
     logger.info("\n==================================================")
-    logger.info("AVALIAÇÃO RÁPIDA")
+    logger.info("AVALIAÇÃO REAL (Apenas na partição de 10% Unseen)")
     logger.info("==================================================")
-
-    sample_idx = np.random.choice(len(x_train), size=3000, replace=False)
 
     for nivel in [0.0, 0.3, 0.6]:
         if nivel > 0:
-            sample_imgs = adicionar_ruido_batch(x_train[sample_idx], nivel)
+            sample_imgs = adicionar_ruido_batch(x_test, nivel)
         else:
-            sample_imgs = x_train[sample_idx]
+            sample_imgs = x_test
 
         sample_s, preds_cnn = extrair_features_128d_cnn(sample_imgs, cnn, batch_size=500)
-        acc_knn = np.mean(agent.get_action_batch(sample_s, epsilon=0.0) == y_train[sample_idx]) * 100
-        acc_cnn = np.mean(preds_cnn == y_train[sample_idx]) * 100
+        acc_knn = np.mean(agent.get_action_batch(sample_s, epsilon=0.0) == y_test) * 100
+        acc_cnn = np.mean(preds_cnn == y_test) * 100
         nome = f"Ruído {nivel:.1f}" if nivel > 0 else "Limpo"
         logger.info(f"  [{nome}] CNN: {acc_cnn:.1f}% | k-NN 128D: {acc_knn:.1f}%")
 

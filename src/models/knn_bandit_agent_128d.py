@@ -7,17 +7,6 @@ from sklearn.decomposition import PCA
 logger = logging.getLogger(__name__)
 
 class KNNBanditAgent128D:
-    """
-    Agente de Reinforcement Learning baseado em k-Nearest Neighbors para 128D.
-    
-    Arquitetura:
-        - Recebe latent_features (128D).
-        - Aplica PCA para reduzir a dimensionalidade (ex: 48D) para melhor performance do k-NN,
-          ou usa 128D diretamente se n_components=None.
-        - Memória Episódica: Base de dados de experiências passadas.
-        - Busca k-NN: Encontra k estados mais parecidos.
-        - Decisão: Score ponderado por distância (SUM).
-    """
 
     def __init__(self, k: int = 30, n_actions: int = 10, use_pca: bool = True, pca_components: int = 48):
         self.k = k
@@ -61,12 +50,11 @@ class KNNBanditAgent128D:
         
         k_efetivo = min(self.k, self.memory_size)
 
-        # Em dimensões moderadas (30-50), KDTree ou auto funciona bem.
         self._nn_index = NearestNeighbors(
             n_neighbors=k_efetivo,
             algorithm='auto',
             metric='euclidean',
-            n_jobs=-1  # usar múltiplos cores
+            n_jobs=-1  
         )
         self._nn_index.fit(self._states_array)
         
