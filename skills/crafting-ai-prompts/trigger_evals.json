@@ -1,0 +1,50 @@
+[
+  {
+    "query": "Write me a prompt to generate a React dashboard component.",
+    "should_trigger": true
+  },
+  {
+    "query": "I want an image of a cyberpunk city at night.",
+    "should_trigger": true
+  },
+  {
+    "query": "Fix this prompt so Claude understands it better: write code for website",
+    "should_trigger": true
+  },
+  {
+    "query": "Can you give me a Midjourney prompt for a photorealistic cat?",
+    "should_trigger": true
+  },
+  {
+    "query": "Adapt this ChatGPT prompt for Claude Opus.",
+    "should_trigger": true
+  },
+  {
+    "query": "Help me write a system prompt for my new AI app.",
+    "should_trigger": true
+  },
+  {
+    "query": "Refactor my Python backend to improve modularity.",
+    "should_trigger": false
+  },
+  {
+    "query": "Generate an image of a cyberpunk city for me.",
+    "should_trigger": false
+  },
+  {
+    "query": "Explain how React hooks work.",
+    "should_trigger": false
+  },
+  {
+    "query": "Write a python script to scrape a website.",
+    "should_trigger": false
+  },
+  {
+    "query": "What is the difference between Claude and ChatGPT?",
+    "should_trigger": false
+  },
+  {
+    "query": "Review this PR for me and suggest improvements.",
+    "should_trigger": false
+  }
+]

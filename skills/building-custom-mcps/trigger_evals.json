@@ -1,0 +1,50 @@
+[
+  {
+    "query": "Build an MCP server to interact with the Stripe API in TypeScript.",
+    "should_trigger": true
+  },
+  {
+    "query": "I want an MCP tool that connects to my local postgres database, write it in python using FastMCP.",
+    "should_trigger": true
+  },
+  {
+    "query": "Can you create a Model Context Protocol server for Linear?",
+    "should_trigger": true
+  },
+  {
+    "query": "Write a FastMCP python script to integrate the GitHub API so my agent can read PRs.",
+    "should_trigger": true
+  },
+  {
+    "query": "Make an MCP that reads files from my disk using the node SDK.",
+    "should_trigger": true
+  },
+  {
+    "query": "Help me build an mcp server that connects to the weather API.",
+    "should_trigger": true
+  },
+  {
+    "query": "Refactor this python script to use async instead of sync functions.",
+    "should_trigger": false
+  },
+  {
+    "query": "How do I use the Stripe API in my React app?",
+    "should_trigger": false
+  },
+  {
+    "query": "Write a system prompt for a fitness coach agent.",
+    "should_trigger": false
+  },
+  {
+    "query": "Can you explain what the Model Context Protocol is theoretically?",
+    "should_trigger": false
+  },
+  {
+    "query": "Help me set up a Node.js Express server.",
+    "should_trigger": false
+  },
+  {
+    "query": "Write a Python script to scrape a website.",
+    "should_trigger": false
+  }
+]

@@ -1,0 +1,35 @@
+{
+  "skill_name": "building-custom-mcps",
+  "evals": [
+    {
+      "eval_id": 1,
+      "eval_name": "typescript-stripe-mcp",
+      "prompt": "Build a TypeScript MCP server for retrieving Stripe Customers and Subscriptions.",
+      "assertions": [
+        "Checks that the generated code uses Zod for defining tool input schemas.",
+        "Ensures the tool is registered using the official MCP TypeScript SDK methodology.",
+        "Verifies that the code includes explicit error handling with actionable error messages for Stripe API failures."
+      ]
+    },
+    {
+      "eval_id": 2,
+      "eval_name": "python-fastmcp-postgres",
+      "prompt": "Build a Python FastMCP server to query a local PostgreSQL database.",
+      "assertions": [
+        "Checks that the code imports and uses the `FastMCP` class from `mcp.server.fastmcp`.",
+        "Ensures tools are registered using the `@mcp.tool()` decorator.",
+        "Verifies that tool parameters are strictly typed using Pydantic or native Python type hints."
+      ]
+    },
+    {
+      "eval_id": 3,
+      "eval_name": "linear-api-best-practices",
+      "prompt": "Create an MCP server for creating and listing Linear issues.",
+      "assertions": [
+        "Checks that tool names use consistent, action-oriented prefixes (e.g., `linear_create_issue`).",
+        "Ensures the tool descriptions provide concise summaries of functionality and parameter requirements.",
+        "Verifies that the code handles or explicitly acknowledges pagination logic for listing endpoints."
+      ]
+    }
+  ]
+}

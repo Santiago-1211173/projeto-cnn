@@ -1,0 +1,55 @@
+{
+  "skill_name": "crafting-ai-prompts",
+  "evals": [
+    {
+      "eval_id": 1,
+      "eval_name": "midjourney-cyberpunk-car",
+      "prompt": "I need a prompt for Midjourney to generate a photorealistic neon cyberpunk car.",
+      "assertions": [
+        "Checks that the output includes specific parameter flags like --v 6.0, --v 6.1, or --ar.",
+        "Ensures the prompt avoids conversational filler (e.g., no 'please generate an image of').",
+        "Checks that the prompt structure is a comma-separated list of keywords, subjects, and stylistic terms."
+      ]
+    },
+    {
+      "eval_id": 2,
+      "eval_name": "claude-agent-refactoring",
+      "prompt": "Write a system prompt for Claude to act as a rigorous Python refactoring agent.",
+      "assertions": [
+        "Checks that the prompt is structured using XML tags (e.g., <role>, <instructions>).",
+        "Ensures the prompt defines 'outcomes' or 'end states' rather than micromanaging step-by-step sequential operations, following the agentic routing rule.",
+        "Checks that the prompt uses the RISEN or CO-STAR framework."
+      ]
+    },
+    {
+      "eval_id": 3,
+      "eval_name": "prompt-decompiler-adaptation",
+      "prompt": "Can you break down this ChatGPT prompt and adapt it for Claude: 'Act as a fitness coach. Tell me what to eat today. Give me a table.'",
+      "assertions": [
+        "Checks that the response explicitly identifies the request as an adaptation or decompilation task.",
+        "Ensures the new Claude prompt uses XML tags to structure the input and instructions.",
+        "Checks that the prompt explicitly asks for a structured table output."
+      ]
+    },
+    {
+      "eval_id": 4,
+      "eval_name": "risen-email-draft",
+      "prompt": "Write a prompt for an AI to draft a polite email declining a job offer.",
+      "assertions": [
+        "Checks that the prompt clearly defines a Role (e.g., 'You are a professional candidate').",
+        "Checks that the prompt includes specific Instructions and an End Goal.",
+        "Checks that the prompt uses Narrowing (constraints like tone, length, or format)."
+      ]
+    },
+    {
+      "eval_id": 5,
+      "eval_name": "chatgpt-json-planets",
+      "prompt": "Write a ChatGPT prompt to generate a JSON list of 10 fictional planets.",
+      "assertions": [
+        "Checks that the prompt explicitly mandates the output format to be valid JSON.",
+        "Ensures the prompt provides an example or schema of what the JSON should look like.",
+        "Checks that the prompt instructs the AI to output ONLY JSON with no markdown wrapping or conversational text."
+      ]
+    }
+  ]
+}
