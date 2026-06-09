@@ -72,7 +72,7 @@ def main():
     logger.info("ORACLE SEEDING (Apenas na partição de 90%)")
     logger.info("==================================================")
 
-    cenarios = [0.0, 0.6, 0.6, 0.6]
+    cenarios = [0.0, 0.2, 0.4, 0.6, 0.8]
 
     for r, intensidade in enumerate(cenarios):
         logger.info(f"\n  Realização {r+1}/{len(cenarios)} (Ruído {intensidade})...")

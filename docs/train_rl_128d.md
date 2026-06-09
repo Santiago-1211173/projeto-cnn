@@ -23,7 +23,7 @@ O fluxo de execução do script pode ser visualizado na seguinte tabela, que res
 | :--- | :--- | :--- |
 | **1. Inicialização** | Carrega a CNN e o `KNNBanditAgent128D`. | A memória gráfica (VRAM) é alocada limitadamente para evitar estrangulamentos. O Agente k-NN é instanciado com a sua memória episódica vazia. |
 | **2. Partição Hermética** | Divisão Estratificada 90/10. | Usa `train_test_split` para separar rigorosamente 90% para a memória episódica e 10% intactos para avaliar a precisão real (*Unseen Data*). |
-| **3. Oracle Seeding** | Loop de 4 realizações apenas na partição de 90%. | As imagens ruidosas da partição de 90% são injetadas em lotes na CNN, que devolve os vetores latentes 128D e a sua previsão. |
+| **3. Oracle Seeding** | Loop de 5 realizações apenas na partição de 90%. | As imagens ruidosas da partição de 90% são injetadas em lotes na CNN, que devolve os vetores latentes 128D e a sua previsão. |
 | **4. Função de Recompensa** | Atribuição de Recompensas (+1 / -1). | O agente arquiva a "verdade absoluta" da partição de 90% e penaliza os erros cometidos pela CNN. |
 | **5. Compilação Espacial** | Chamada do método `build_index()`. | A memória é compilada numa estrutura algorítmica veloz (*BallTree*/*KDTree*) em C/Numpy antes da avaliação nos 10% *unseen*. |
 | **6. Persistência** | Exportação para disco via `save()`. | A memória consolidada é agrupada num único ficheiro `.npz`, preparando o agente para inferência real. |
@@ -51,10 +51,10 @@ x_train, x_test, y_train, y_test = train_test_split(
 ```
 
 **2. Aumento de Dados (*Data Augmentation*) por Cenários:**
-Para que o agente k-NN se torne robusto face a imagens degradadas que confundam a CNN, o código itera **exclusivamente sobre os 90% de treino** (`x_train`) aplicando manipulações globais. Percorrem-se 4 realizações: o bloco limpo (`0.0`), seguido do bloco com forte ruído Gaussiano (`0.6`) aplicado em três *runs* distintas.
+Para que o agente k-NN se torne robusto face a imagens degradadas que confundam a CNN, o código itera **exclusivamente sobre os 90% de treino** (`x_train`) aplicando manipulações globais. Percorrem-se 5 realizações, começando pelo bloco limpo (`0.0`) e aumentando gradualmente a intensidade do ruído Gaussiano (`0.2`, `0.4`, `0.6` e `0.8`).
 
 ```python
-cenarios = [0.0, 0.6, 0.6, 0.6]
+cenarios = [0.0, 0.2, 0.4, 0.6, 0.8]
 
 for r, intensidade in enumerate(cenarios):
     # A manipulação: Adiciona ruído apenas à partição de Sementeira (90%)
@@ -178,17 +178,20 @@ A criar partição hermética: 90% Sementeira / 10% Avaliação (Unseen Data)...
 ==================================================
 ORACLE SEEDING (Apenas na partição de 90%)
 ==================================================
-  Realização 1/4 (Ruído 0.0)...
+  Realização 1/5 (Ruído 0.0)...
     +54,000 positivas, +1,308 negativas | CNN acc: 97.6%
 
-  Realização 2/4 (Ruído 0.6)...
+  Realização 2/5 (Ruído 0.2)...
+    +54,000 positivas, +9,021 negativas | CNN acc: 83.3%
+
+  Realização 3/5 (Ruído 0.4)...
+    +54,000 positivas, +21,105 negativas | CNN acc: 60.9%
+
+  Realização 4/5 (Ruído 0.6)...
     +54,000 positivas, +36,711 negativas | CNN acc: 32.0%
 
-  Realização 3/4 (Ruído 0.6)...
-    +54,000 positivas, +36,742 negativas | CNN acc: 32.0%
-
-  Realização 4/4 (Ruído 0.6)...
-    +54,000 positivas, +36,720 negativas | CNN acc: 32.0%
+  Realização 5/5 (Ruído 0.8)...
+    +54,000 positivas, +45,903 negativas | CNN acc: 15.0%
 
 A construir o índice k-NN...
 Índice k-NN (128D) construído com 327481 experiências (k=30). PCA=False
