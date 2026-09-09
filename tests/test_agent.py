@@ -1,107 +1,115 @@
 """
-Script de Teste Unitário do Agente k-NN Bandit.
-Valida a memória episódica, a busca k-NN, e a política de decisão.
+Unit Test Script for the k-NN Bandit Agent.
+Validates episodic memory, k-NN search, and decision policy for both 10D and 128D (PCA) configurations.
 """
 
-import numpy as np
+import sys
+import os
 import logging
-from src.models.knn_bandit_agent import KNNBanditAgent
+import numpy as np
 
+# Add project root to path
+PROJECT_ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), '..'))
+sys.path.insert(0, PROJECT_ROOT)
+
+from src.models.knn_bandit_agent import KNNBanditAgent
+from src.config import OUTPUT_DIR
+
+# Logging Setup
 logging.basicConfig(level=logging.INFO, format='%(message)s')
 logger = logging.getLogger(__name__)
 
+def test_agent_dimension(latent_dim, use_pca, pca_components=None):
+    logger.info(f"\n==================================================")
+    logger.info(f"Testing Agent: dim={latent_dim}, use_pca={use_pca}, pca_components={pca_components}")
+    logger.info(f"==================================================")
 
-def main():
-    logger.info("A inicializar o Agente k-NN Bandit (Memória vazia)...")
-    agent = KNNBanditAgent(k=5, n_actions=10)
+    agent = KNNBanditAgent(k=5, n_actions=10, latent_dim=latent_dim, use_pca=use_pca, pca_components=pca_components or 48)
 
-    # --- Teste 1: Popular a Memória ---
-    logger.info("\n--- Teste 1: Popular a Memória Episódica ---")
-    
-    # Simular 100 experiências onde o dígito "3" tem um padrão reconhecível
+    # --- Test 1: Populate Memory ---
+    logger.info("--- Test 1: Populate Episodic Memory ---")
     np.random.seed(42)
     for _ in range(100):
-        # Criar um estado 10D que parece com o dígito 3 (prob alta na posição 3)
-        state = np.random.dirichlet(np.ones(10))
-        true_digit = np.argmax(state)
-        action = true_digit  # Ação correta
+        # Create a state vector
+        state = np.random.dirichlet(np.ones(latent_dim))
+        true_digit = np.argmax(state) % 10
+        action = true_digit
         reward = 1.0
         agent.add_experience(state, action, reward)
         
-        # Também adicionar experiências erradas
+        # Add a negative experience
         wrong_action = (true_digit + np.random.randint(1, 10)) % 10
         agent.add_experience(state, wrong_action, -1.0)
     
-    logger.info(f"Memória populada com {agent.memory_size} experiências")
-    assert agent.memory_size == 200, f"Esperado 200, obtido {agent.memory_size}"
-    logger.info("   [OK] Tamanho da memória correto!")
+    logger.info(f"Memory populated with {agent.memory_size} experiences")
+    assert agent.memory_size == 200, f"Expected 200, got {agent.memory_size}"
+    logger.info("   [OK] Memory size is correct!")
 
-    # --- Teste 2: Construir o Índice ---
-    logger.info("\n--- Teste 2: Construir o Índice k-NN ---")
+    # --- Test 2: Build Index ---
+    logger.info("--- Test 2: Build k-NN Index ---")
     agent.build_index()
-    logger.info("   [OK] Índice construído com sucesso!")
+    logger.info("   [OK] Index built successfully!")
 
-    # --- Teste 3: Recompensas Esperadas ---
-    logger.info("\n--- Teste 3: Consultar Recompensas Esperadas ---")
-    
-    # Criar um estado que se parece com o dígito 7 (prob alta na posição 7)
-    test_state = np.zeros(10, dtype=np.float32)
-    test_state[7] = 0.8
-    test_state[1] = 0.1
-    test_state[9] = 0.1
+    # --- Test 3: Expected Rewards ---
+    logger.info("--- Test 3: Query Expected Rewards ---")
+    test_state = np.zeros(latent_dim, dtype=np.float32)
+    test_state[7 % latent_dim] = 0.8
+    test_state[1 % latent_dim] = 0.1
     
     expected_rewards = agent.get_expected_rewards(test_state)
-    logger.info(f"Recompensas esperadas para cada ação:")
-    for i, r in enumerate(expected_rewards):
-        marker = " <-- MELHOR" if i == np.argmax(expected_rewards) else ""
-        logger.info(f"  Ação {i}: {r:+.3f}{marker}")
-    
-    logger.info(f"-> O agente escolheria a ação: {np.argmax(expected_rewards)}")
-    logger.info("   [OK] Recompensas esperadas calculadas!")
+    logger.info(f"Expected rewards: {expected_rewards}")
+    logger.info(f"-> Selected action: {np.argmax(expected_rewards)}")
+    logger.info("   [OK] Expected rewards successfully calculated!")
 
-    # --- Teste 4: Explotação Pura ---
-    logger.info("\n--- Teste 4: Explotação Pura (Epsilon = 0.0) ---")
+    # --- Test 4: Pure Exploitation ---
+    logger.info("--- Test 4: Pure Exploitation (Epsilon = 0.0) ---")
     action = agent.get_action(test_state, epsilon=0.0)
-    logger.info(f"Ação escolhida (Ganância): {action}")
-    assert action == np.argmax(expected_rewards), "A ação deveria ser o argmax!"
-    logger.info("   [OK] A política gananciosa seguiu a maior recompensa esperada!")
+    logger.info(f"Exploitation action: {action}")
+    assert action == np.argmax(expected_rewards), "Action must be the argmax!"
+    logger.info("   [OK] Greedy policy followed the highest expected reward!")
 
-    # --- Teste 5: Exploração Pura ---
-    logger.info("\n--- Teste 5: Exploração Pura (Epsilon = 1.0) ---")
-    acoes = [agent.get_action(test_state, epsilon=1.0) for _ in range(20)]
-    logger.info(f"20 Ações aleatórias: {acoes}")
-    assert len(set(acoes)) > 1, "Com exploração pura deveria haver diversidade!"
-    logger.info("   [OK] O agente explora de forma aleatória!")
+    # --- Test 5: Pure Exploration ---
+    logger.info("--- Test 5: Pure Exploration (Epsilon = 1.0) ---")
+    actions = [agent.get_action(test_state, epsilon=1.0) for _ in range(20)]
+    logger.info(f"20 Random actions: {actions}")
+    assert len(set(actions)) > 1, "Pure exploration must show diversity!"
+    logger.info("   [OK] Agent explores randomly when epsilon=1.0!")
 
-    # --- Teste 6: Guardar e Carregar ---
-    logger.info("\n--- Teste 6: Persistência (Save/Load) ---")
-    import os
-    test_path = os.path.join("outputs", "test_knn_memory.npz")
+    # --- Test 6: Persistence (Save/Load) ---
+    logger.info("--- Test 6: Persistence (Save/Load) ---")
+    test_path = os.path.join(OUTPUT_DIR, f"test_knn_memory_{latent_dim}d.npz")
+    os.makedirs(os.path.dirname(test_path), exist_ok=True)
     agent.save(test_path)
     
     agent2 = KNNBanditAgent(k=5, n_actions=10)
     agent2.load(test_path)
     
-    assert agent2.memory_size == agent.memory_size, "Memórias deveriam ter o mesmo tamanho!"
+    assert agent2.memory_size == agent.memory_size, "Loaded memory bank must match original size!"
     action2 = agent2.get_action(test_state, epsilon=0.0)
-    assert action2 == action, "Ações deveriam ser iguais após carregar!"
-    logger.info(f"   [OK] Memória guardada e restaurada ({agent2.memory_size} experiências)")
+    assert action2 == action, "Predictions must match after loading!"
+    logger.info("   [OK] Memory saved and successfully restored!")
     
-    # Limpar ficheiro de teste
+    # Cleanup
     os.remove(test_path)
 
-    # --- Teste 7: Estatísticas ---
-    logger.info("\n--- Teste 7: Estatísticas da Memória ---")
+    # --- Test 7: Statistics ---
+    logger.info("--- Test 7: Memory Stats ---")
     stats = agent.get_memory_stats()
-    logger.info(f"  Tamanho: {stats['size']}")
-    logger.info(f"  Recomp. Média: {stats['reward_mean']:.3f}")
-    logger.info(f"  % Positivas: {stats['reward_positive_pct']:.1f}%")
-    logger.info("   [OK] Estatísticas calculadas!")
+    logger.info(f"  Size: {stats['size']}")
+    logger.info(f"  Mean Reward: {stats['reward_mean']:.3f}")
+    logger.info(f"  Positive %: {stats['reward_positive_pct']:.1f}%")
+    logger.info("   [OK] Memory statistics calculated!")
+
+def main():
+    # Test 10D mode (no PCA)
+    test_agent_dimension(latent_dim=10, use_pca=False)
+    
+    # Test 128D mode with PCA enabled
+    test_agent_dimension(latent_dim=128, use_pca=True, pca_components=8)
 
     logger.info("\n==================================================")
-    logger.info("TODOS OS TESTES PASSARAM COM SUCESSO!")
+    logger.info("ALL k-NN AGENT TESTS COMPLETED SUCCESSFULLY!")
     logger.info("==================================================")
-
 
 if __name__ == "__main__":
     main()

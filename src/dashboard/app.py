@@ -11,13 +11,21 @@ import tensorflow as tf
 from PIL import Image
 from flask import Flask, render_template, request, jsonify
 from sklearn.model_selection import train_test_split
-from sklearn.decomposition import PCA
 
 # Add project root to sys.path
-sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '../..')))
+PROJECT_ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), '../..'))
+sys.path.append(PROJECT_ROOT)
 
+from src.config import (
+    DATA_DIR,
+    CHECKPOINT_DIR,
+    MAHALANOBIS_PROFILES_PATH,
+    MEMORY_BANK_128D_PATH,
+    MEMORY_MAPPING_PATH,
+    RANDOM_SEED
+)
 from src.models.custom_cnn import RawModel
-from src.models.knn_bandit_agent_128d import KNNBanditAgent128D
+from src.models.knn_bandit_agent import KNNBanditAgent
 from src.data.loader import load_mnist_raw
 
 # Setup Logging
@@ -78,14 +86,14 @@ def reconstruct_memory_mapping(model, x_train_data, y_train_data):
     global MEMORY_MAPPING
     MEMORY_MAPPING = []
     cenarios = [0.0, 0.2, 0.4, 0.6, 0.8]
-    logger.info("A reconstruir mapeamento da Memória Episódica (aguarde alguns segundos)...")
+    logger.info("Reconstructing Episodic Memory mapping (please wait a few seconds)...")
     
     for r, intensidade in enumerate(cenarios):
-        logger.info(f"  Mapeando cenário {r+1}/{len(cenarios)} (Ruído {intensidade})...")
+        logger.info(f"  Mapping scenario {r+1}/{len(cenarios)} (Noise {intensidade})...")
         x_ruido = adicionar_ruido_batch(x_train_data, intensidade) if intensidade > 0 else x_train_data
         _, preds_cnn = extrair_features_128d_cnn(x_ruido, model, batch_size=500)
         
-        # Positivas
+        # Positive
         for idx in range(len(y_train_data)):
             MEMORY_MAPPING.append({
                 'x_train_idx': int(idx),
@@ -93,7 +101,7 @@ def reconstruct_memory_mapping(model, x_train_data, y_train_data):
                 'is_positive': True
             })
             
-        # Negativas
+        # Negative
         erros = preds_cnn != y_train_data
         error_indices = np.where(erros)[0]
         for idx in error_indices:
@@ -103,16 +111,16 @@ def reconstruct_memory_mapping(model, x_train_data, y_train_data):
                 'is_positive': False
             })
             
-    logger.info(f"Mapeamento concluído! {len(MEMORY_MAPPING)} entradas mapeadas.")
+    logger.info(f"Mapping completed! {len(MEMORY_MAPPING)} entries mapped.")
     
     # Save the reconstructed mapping so we don't have to guess next time
-    mapping_path = os.path.join("outputs", "knn_memory_mapping.json")
     try:
-        with open(mapping_path, "w") as f:
+        os.makedirs(os.path.dirname(MEMORY_MAPPING_PATH), exist_ok=True)
+        with open(MEMORY_MAPPING_PATH, "w") as f:
             json.dump(MEMORY_MAPPING, f)
-        logger.info("Mapeamento guardado em disco.")
+        logger.info(f"Mapping saved to disk: {MEMORY_MAPPING_PATH}")
     except Exception as e:
-        logger.error(f"Erro ao guardar mapeamento JSON: {e}")
+        logger.error(f"Error saving mapping JSON: {e}")
 
 def img_to_base64(img_array):
     # img_array is shape (28, 28, 1) in [0, 1]
@@ -133,51 +141,54 @@ def startup():
         for gpu in gpus:
             tf.config.experimental.set_memory_growth(gpu, True)
 
-    logger.info("A carregar modelo CNN...")
+    logger.info("Loading CNN model...")
     cnn = RawModel()
     ckpt = tf.train.Checkpoint(model=cnn)
-    latest_ckpt = tf.train.latest_checkpoint(os.path.join("outputs", "checkpoints"))
+    latest_ckpt = tf.train.latest_checkpoint(CHECKPOINT_DIR)
     if latest_ckpt:
         ckpt.restore(latest_ckpt).expect_partial()
     
     try:
-        mahalanobis_profiles = dict(np.load("outputs/mahalanobis_profiles.npz", allow_pickle=True))
-        logger.info("Perfis Mahalanobis carregados.")
+        if os.path.exists(MAHALANOBIS_PROFILES_PATH):
+            mahalanobis_profiles = dict(np.load(MAHALANOBIS_PROFILES_PATH, allow_pickle=True))
+            logger.info("Mahalanobis profiles loaded.")
+        else:
+            logger.warning("Mahalanobis profiles not found.")
+            mahalanobis_profiles = {}
     except Exception as e:
-        logger.error(f"Erro ao carregar mahalanobis_profiles: {e}")
+        logger.error(f"Error loading mahalanobis_profiles: {e}")
         mahalanobis_profiles = {}
 
-    logger.info("A carregar Agente k-NN...")
-    agent = KNNBanditAgent128D(k=30, n_actions=10, use_pca=False)
-    agent_path = os.path.join("outputs", "knn_memory_bank_128d.npz")
-    if os.path.exists(agent_path):
-        agent.load(agent_path)
+    logger.info("Loading k-NN Agent...")
+    # Initialize unified KNNBanditAgent in 128D mode
+    agent = KNNBanditAgent(k=30, n_actions=10, latent_dim=128, use_pca=False)
+    if os.path.exists(MEMORY_BANK_128D_PATH):
+        agent.load(MEMORY_BANK_128D_PATH)
     
-    logger.info("A carregar dados MNIST e efetuar split...")
-    x_train_full, y_train_full = load_mnist_raw(os.path.join("data", "MNIST", "raw"), kind='train')
+    logger.info("Loading MNIST dataset and splitting partitions...")
+    x_train_full, y_train_full = load_mnist_raw(DATA_DIR, kind='train')
     x_train_full = x_train_full.astype(np.float32) / 255.0
 
     x_train, x_test, y_train, y_test = train_test_split(
         x_train_full, y_train_full, 
         test_size=0.10, 
-        random_state=42, 
+        random_state=RANDOM_SEED, 
         shuffle=True, 
         stratify=y_train_full
     )
     
-    mapping_path = os.path.join("outputs", "knn_memory_mapping.json")
-    if os.path.exists(mapping_path):
+    if os.path.exists(MEMORY_MAPPING_PATH):
         try:
-            with open(mapping_path, "r") as f:
+            with open(MEMORY_MAPPING_PATH, "r") as f:
                 global MEMORY_MAPPING
                 MEMORY_MAPPING = json.load(f)
-            logger.info(f"Mapeamento de memória carregado do disco ({len(MEMORY_MAPPING)} entradas).")
+            logger.info(f"Memory mapping loaded from disk ({len(MEMORY_MAPPING)} entries).")
             # Basic validation
             if len(MEMORY_MAPPING) != agent.memory_size:
-                logger.warning("Aviso: Tamanho do JSON não corresponde ao tamanho do agente. A reconstruir...")
+                logger.warning("Warning: Mapping JSON size does not match agent memory size. Reconstructing...")
                 reconstruct_memory_mapping(cnn, x_train, y_train)
         except Exception as e:
-            logger.error(f"Erro ao carregar mapeamento JSON: {e}")
+            logger.error(f"Error loading mapping JSON: {e}")
             reconstruct_memory_mapping(cnn, x_train, y_train)
     else:
         reconstruct_memory_mapping(cnn, x_train, y_train)
@@ -265,7 +276,7 @@ def predict():
                 'base64': img_to_base64(original_img)
             })
     else:
-        # We still fetch expected rewards to show in the UI for context
+        # Fetch expected rewards to show in the UI for context
         expected_rewards_arr = agent.get_expected_rewards(latent)
         expected_rewards = expected_rewards_arr.tolist()
         
@@ -324,8 +335,8 @@ def train_status():
 def calcular_mahalanobis_por_pred(vetores: np.ndarray, preds_cnn: np.ndarray,
                                    perfis: dict) -> np.ndarray:
     """
-    Calcula a distância de Mahalanobis de cada vetor 128D ao perfil
-    da classe PREDITA pela CNN (replica a lógica do endpoint /api/predict).
+    Calculates the Mahalanobis distance of each 128D vector to the profile of the class
+    PREDICTED by the CNN.
     """
     n = len(vetores)
     dists = np.zeros(n, dtype=np.float64)
@@ -342,43 +353,46 @@ def calcular_mahalanobis_por_pred(vetores: np.ndarray, preds_cnn: np.ndarray,
         dists[mask] = np.sqrt(np.maximum(dist_sq, 0.0))
     return dists
 
-
 def avaliar_rl_batch(agent_ref, features: np.ndarray, labels: np.ndarray,
                      batch_size: int = 2048) -> float:
-    """Avalia o agente RL em batches otimizados. Retorna accuracy [0, 1]."""
-    acertos = 0
+    """Evaluates the RL agent in optimized batches. Returns accuracy [0, 1]."""
+    correct = 0
     total = len(labels)
     for i in range(0, total, batch_size):
         feats_batch = features[i : i + batch_size]
         labels_batch = labels[i : i + batch_size]
         preds_rl = agent_ref.get_action_batch(feats_batch, epsilon=0.0)
-        acertos += int(np.sum(preds_rl == labels_batch))
-    return acertos / total
-
+        correct += int(np.sum(preds_rl == labels_batch))
+    return correct / total
 
 def construir_dataset_ruido_misto(x: np.ndarray, y: np.ndarray,
                                    niveis: list, seed: int = 42) -> tuple:
     """
-    Divide x/y em N partições balanceadas (uma por nível de ruído) e
-    aplica a intensidade respectiva. Retorna (x_misto, y_misto).
+    Splits x/y into balanced partitions, applies respective noise intensity, and concatenates.
     """
     n = len(x)
-    n_niveis = len(niveis)
-    tamanho_fatia = n // n_niveis
+    n_levels = len(niveis)
+    slice_size = n // n_levels
 
     rng = np.random.RandomState(seed)
     indices = rng.permutation(n)
 
-    x_partes, y_partes = [], []
-    for i, nivel in enumerate(niveis):
-        inicio = i * tamanho_fatia
-        fim = inicio + tamanho_fatia if i < n_niveis - 1 else n
-        idx = indices[inicio:fim]
-        x_partes.append(adicionar_ruido_batch(x[idx], nivel))
-        y_partes.append(y[idx])
+    x_slices, y_slices = [], []
+    for i, level in enumerate(niveis):
+        start = i * slice_size
+        end = start + slice_size if i < n_levels - 1 else n
+        idx = indices[start:end]
+        x_slices.append(add_noise_batch(x[idx], level))
+        y_slices.append(y[idx])
 
-    return np.concatenate(x_partes, axis=0), np.concatenate(y_partes, axis=0)
+    return np.concatenate(x_slices, axis=0), np.concatenate(y_slices, axis=0)
 
+def add_noise_batch(images: np.ndarray, intensity: float) -> np.ndarray:
+    """Adds Gaussian noise to a batch of images."""
+    if intensity <= 0.0:
+        return images.copy()
+    noise = np.random.normal(loc=0.0, scale=intensity, size=images.shape)
+    return np.clip(images + noise, 0.0, 1.0).astype(np.float32)
 
 def live_training_worker():
     global agent, MEMORY_MAPPING
@@ -387,18 +401,16 @@ def live_training_worker():
     TRAINING_STATUS["logs"] = []
     
     NUM_LOTES = 10
-    NOISE_EVAL = 0.6
     THRESHOLD_HYBRID = 12.5
     CENARIOS_RUIDO = [0.0, 0.2, 0.4, 0.6, 0.8]
     EVAL_SUBSET_SIZE = 2000
-    RANDOM_SEED = 42
     
-    log_to_training("Iniciando Sementeira Progressiva com Avaliação em Tempo Real...")
+    log_to_training("Starting progressive seeding with real-time evaluation...")
     
-    # ── 1. Carregar e Particionar o Dataset (10% Seed / 90% Eval) ─────────
-    log_to_training("A carregar dataset MNIST completo para partição hermética...")
-    TRAINING_STATUS["current_stage"] = "Carregando dados"
-    x_full, y_full = load_mnist_raw(os.path.join("data", "MNIST", "raw"), kind='train')
+    # ── 1. Load and Partition Dataset (10% Seed / 90% Eval) ─────────
+    log_to_training("Loading full MNIST dataset for hermetic partition split...")
+    TRAINING_STATUS["current_stage"] = "Loading data"
+    x_full, y_full = load_mnist_raw(DATA_DIR, kind='train')
     x_full = x_full.astype(np.float32) / 255.0
     
     x_seed, x_eval, y_seed, y_eval = train_test_split(
@@ -408,19 +420,19 @@ def live_training_worker():
         shuffle=True,
         stratify=y_full
     )
-    log_to_training(f"  Partição de Sementeira (10%): {len(x_seed):,} amostras")
-    log_to_training(f"  Partição de Avaliação  (90%): {len(x_eval):,} amostras")
+    log_to_training(f"  Seeding Partition (10%): {len(x_seed):,} samples")
+    log_to_training(f"  Evaluation Partition (90%): {len(x_eval):,} samples")
     
-    # ── 2. Pré-calcular Features de Avaliação (GPU, uma única vez) ────────
-    TRAINING_STATUS["current_stage"] = "Pré-cálculo GPU"
-    log_to_training(f"A isolar {EVAL_SUBSET_SIZE} amostras de avaliação (ruído misto)...")
+    # ── 2. Precalculate Evaluation Features (GPU, once) ────────
+    TRAINING_STATUS["current_stage"] = "Precalculating GPU features"
+    log_to_training(f"Isolating {EVAL_SUBSET_SIZE} evaluation samples (mixed noise)...")
     
     rng = np.random.RandomState(RANDOM_SEED)
     eval_indices = rng.choice(len(x_eval), EVAL_SUBSET_SIZE, replace=False)
     x_eval_sub = x_eval[eval_indices]
     y_eval_sub = y_eval[eval_indices]
     
-    # Criar dataset de teste misturado balanceado
+    # Create balanced mixed noise dataset
     x_eval_noisy, y_eval_sub = construir_dataset_ruido_misto(x_eval_sub, y_eval_sub, CENARIOS_RUIDO, seed=RANDOM_SEED)
     eval_features, eval_preds_cnn = extrair_features_128d_cnn(x_eval_noisy, cnn, batch_size=500)
     
@@ -429,57 +441,57 @@ def live_training_worker():
     
     # CNN-only baseline accuracy (constant across all steps)
     cnn_acc_baseline = float(np.mean(eval_preds_cnn == y_eval_sub) * 100)
-    log_to_training(f"  Features de avaliação pré-calculadas: {eval_features.shape}")
-    log_to_training(f"  CNN-only baseline (ruído misto): {cnn_acc_baseline:.2f}%")
+    log_to_training(f"  Pre-calculated evaluation features shape: {eval_features.shape}")
+    log_to_training(f"  CNN-only baseline (mixed noise): {cnn_acc_baseline:.2f}%")
     
-    # ── 3. Preparar Lotes Incrementais ────────────────────────────────────
-    TRAINING_STATUS["current_stage"] = "Sementeira progressiva"
+    # ── 3. Prepare Incremental Batches ────────────────────────────────────
+    TRAINING_STATUS["current_stage"] = "Progressive seeding"
     indices_seed = np.arange(len(x_seed))
     rng.shuffle(indices_seed)
-    lotes = np.array_split(indices_seed, NUM_LOTES)
+    batches = np.array_split(indices_seed, NUM_LOTES)
     
-    log_to_training(f"Divididos em {NUM_LOTES} lotes (~{len(lotes[0])} amostras/lote)")
+    log_to_training(f"Split into {NUM_LOTES} batches (~{len(batches[0])} samples/batch)")
     log_to_training("--------------------------------------------------")
     
     # ── 4. Fresh Agent + Mapping ──────────────────────────────────────────
-    new_agent = KNNBanditAgent128D(k=30, n_actions=10, use_pca=False)
+    new_agent = KNNBanditAgent(k=30, n_actions=10, latent_dim=128, use_pca=False)
     new_mapping = []
     
-    # ── 5. Loop de Treino Progressivo (10 chunks) ─────────────────────────
-    for lote_idx, indices_lote in enumerate(lotes):
-        lote_num = lote_idx + 1
-        x_lote = x_seed[indices_lote]
-        y_lote = y_seed[indices_lote]
+    # ── 5. Progressive Seeding Loop (10 chunks) ─────────────────────────
+    for batch_idx, batch_indices in enumerate(batches):
+        batch_num = batch_idx + 1
+        x_batch = x_seed[batch_indices]
+        y_batch = y_seed[batch_indices]
         
-        log_to_training(f"── Lote {lote_num}/{NUM_LOTES} ({len(indices_lote)} amostras) ──")
-        TRAINING_STATUS["current_stage"] = f"Lote {lote_num}/{NUM_LOTES}"
+        log_to_training(f"── Batch {batch_num}/{NUM_LOTES} ({len(batch_indices)} samples) ──")
+        TRAINING_STATUS["current_stage"] = f"Batch {batch_num}/{NUM_LOTES}"
         
-        # 5a. Oracle Seeding: 5 cenários de ruído por lote
-        for intensidade in CENARIOS_RUIDO:
-            x_ruido = adicionar_ruido_batch(x_lote, intensidade) if intensidade > 0 else x_lote
-            estados, preds_cnn_lote = extrair_features_128d_cnn(x_ruido, cnn, batch_size=500)
+        # 5a. Oracle Seeding: generate noise scenarios for current batch
+        for intensity in CENARIOS_RUIDO:
+            x_noisy = adicionar_ruido_batch(x_batch, intensity) if intensity > 0 else x_batch
+            states, preds_cnn_batch = extrair_features_128d_cnn(x_noisy, cnn, batch_size=500)
             
-            # Experiências positivas (label oracle, reward +1.0)
-            new_agent.add_experience_batch(estados, y_lote, np.ones(len(y_lote)))
-            for idx in indices_lote:
-                new_mapping.append({'x_train_idx': int(idx), 'noise_level': float(intensidade), 'is_positive': True})
+            # Positive experiences (oracle label, reward +1.0)
+            new_agent.add_experience_batch(states, y_batch, np.ones(len(y_batch)))
+            for idx in batch_indices:
+                new_mapping.append({'x_train_idx': int(idx), 'noise_level': float(intensity), 'is_positive': True})
             
-            # Experiências negativas (CNN errou, reward -1.0)
-            erros = preds_cnn_lote != y_lote
-            n_erros = int(np.sum(erros))
-            if n_erros > 0:
-                new_agent.add_experience_batch(estados[erros], preds_cnn_lote[erros], np.full(n_erros, -1.0))
-                for idx in indices_lote[erros]:
-                    new_mapping.append({'x_train_idx': int(idx), 'noise_level': float(intensidade), 'is_positive': False})
+            # Negative experiences (CNN error, reward -1.0)
+            errors = preds_cnn_batch != y_batch
+            num_errors = int(np.sum(errors))
+            if num_errors > 0:
+                new_agent.add_experience_batch(states[errors], preds_cnn_batch[errors], np.full(num_errors, -1.0))
+                for idx in batch_indices[errors]:
+                    new_mapping.append({'x_train_idx': int(idx), 'noise_level': float(intensity), 'is_positive': False})
         
-        # 5b. Reconstruir índice k-NN
-        log_to_training(f"  A reconstruir índice k-NN (memória: {new_agent.memory_size:,})...")
+        # 5b. Rebuild k-NN index
+        log_to_training(f"  Rebuilding k-NN index (memory: {new_agent.memory_size:,})...")
         new_agent.build_index()
         
-        # 5c. Avaliação instantânea sobre os 2,000 pré-calculados
+        # 5c. Instant evaluation on the 2,000 pre-calculated samples
         rl_acc = avaliar_rl_batch(new_agent, eval_features, y_eval_sub) * 100
         
-        # Hybrid routing: dist < threshold → CNN, else → RL
+        # Hybrid routing: dist < threshold -> CNN, else -> RL
         preds_rl_eval = new_agent.get_action_batch(eval_features, epsilon=0.0)
         mask_cnn = eval_m_dists < THRESHOLD_HYBRID
         preds_hybrid = np.where(mask_cnn, eval_preds_cnn, preds_rl_eval)
@@ -489,35 +501,32 @@ def live_training_worker():
                         f"Hybrid: {hybrid_acc:.2f}% | RL: {rl_acc:.2f}% | CNN: {cnn_acc_baseline:.2f}%")
         
         TRAINING_STATUS["knn_acc"] = float(rl_acc)
-        
-        TRAINING_STATUS["progress"] = (lote_num / NUM_LOTES) * 100
+        TRAINING_STATUS["progress"] = (batch_num / NUM_LOTES) * 100
         TRAINING_STATUS["cnn_acc"] = cnn_acc_baseline
         TRAINING_STATUS["memory_size"] = new_agent.memory_size
         time.sleep(0.3)  # Small delay for UI poll sync
     
-    # ── 6. Finalizar: Hot-reload + Persistência ──────────────────────────
-    TRAINING_STATUS["current_stage"] = "Finalizando"
+    # ── 6. Finalize: Hot-reload + Persistence ──────────────────────────
+    TRAINING_STATUS["current_stage"] = "Finalizing"
     log_to_training("--------------------------------------------------")
     
     agent = new_agent
     MEMORY_MAPPING = new_mapping
     
-    caminho = os.path.join("outputs", "knn_memory_bank_128d.npz")
-    agent.save(caminho)
+    agent.save(MEMORY_BANK_128D_PATH)
     
-    mapping_path = os.path.join("outputs", "knn_memory_mapping.json")
     try:
-        with open(mapping_path, "w") as f:
+        with open(MEMORY_MAPPING_PATH, "w") as f:
             json.dump(MEMORY_MAPPING, f)
     except Exception as e:
-        log_to_training(f"Erro ao guardar JSON: {e}")
+        log_to_training(f"Error saving mapping JSON: {e}")
     
-    log_to_training(f"Sementeira concluída! Memória guardada em {caminho}.")
-    log_to_training(f"  Resultado final: Hybrid {hybrid_acc:.2f}% | RL {rl_acc:.2f}% | CNN {cnn_acc_baseline:.2f}%")
+    log_to_training(f"Seeding completed! Memory saved to {MEMORY_BANK_128D_PATH}.")
+    log_to_training(f"  Final Results: Hybrid {hybrid_acc:.2f}% | RL {rl_acc:.2f}% | CNN {cnn_acc_baseline:.2f}%")
     
     TRAINING_STATUS["is_running"] = False
     TRAINING_STATUS["progress"] = 100.0
-    TRAINING_STATUS["current_stage"] = "Finalizado"
+    TRAINING_STATUS["current_stage"] = "Completed"
 
 @app.route('/api/train/start', methods=['POST'])
 def train_start():
@@ -543,7 +552,7 @@ def evaluate_global():
 
     # ── 1. Load dataset according to selection ────────────────────────────
     if dataset_choice == 'split_90':
-        x_full, y_full = load_mnist_raw(os.path.join("data", "MNIST", "raw"), kind='train')
+        x_full, y_full = load_mnist_raw(DATA_DIR, kind='train')
         x_full = x_full.astype(np.float32) / 255.0
         _, x_eval, _, y_eval = train_test_split(
             x_full, y_full,
@@ -554,10 +563,10 @@ def evaluate_global():
         )
     else:
         # Default: t10k (native MNIST test set)
-        x_eval, y_eval = load_mnist_raw(os.path.join("data", "MNIST", "raw"), kind='t10k')
+        x_eval, y_eval = load_mnist_raw(DATA_DIR, kind='t10k')
         x_eval = x_eval.astype(np.float32) / 255.0
 
-    logger.info(f"[EVAL GLOBAL] Dataset '{dataset_choice}' carregado: {len(x_eval)} amostras")
+    logger.info(f"[EVAL GLOBAL] Dataset '{dataset_choice}' loaded: {len(x_eval)} samples")
 
     # ── 2. Build balanced mixed-noise dataset ─────────────────────────────
     x_noisy, y_noisy = construir_dataset_ruido_misto(x_eval, y_eval, NOISE_LEVELS, seed=42)
@@ -602,8 +611,7 @@ def evaluate_global():
     global_rl = round(float(np.mean(preds_rl == y_noisy) * 100), 2)
     global_rl_rate = round(float(np.mean(~mask_cnn) * 100), 2)
 
-    logger.info(f"[EVAL GLOBAL] Hybrid={global_hybrid}% | CNN={global_cnn}% | "
-                f"RL={global_rl}% | RL Rate={global_rl_rate}%")
+    logger.info(f"[EVAL GLOBAL] Hybrid={global_hybrid}% | CNN={global_cnn}% | RL={global_rl}% | RL Rate={global_rl_rate}%")
 
     # ── 9. Select up to 12 OOD-routed samples ─────────────────────────────
     ood_indices = np.where(m_dists >= THRESHOLD)[0]
