@@ -1,0 +1,17 @@
+cff-version: 1.2.0
+title: "Trustworthy Edge AI: RL-Driven Active Episodic Memory Management for Robust Out-of-Distribution Routing"
+message: "If you use this software, please cite it as below."
+type: software
+authors:
+  - name: "[Author Name]"
+repository-code: "https://github.com/[username]/projeto-cnn"
+license: GPL-3.0
+keywords:
+  - edge-ai
+  - reinforcement-learning
+  - out-of-distribution
+  - episodic-memory
+  - trustworthy-ai
+  - convolutional-neural-network
+  - double-dqn
+  - mahalanobis-distance
