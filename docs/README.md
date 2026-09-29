@@ -21,11 +21,13 @@ The table below outlines all sections of the technical documentation hierarchy, 
 |:--------|:---------------|:------------|:-------|
 | [Root Overview](../README.md) | `.` | Top-level project introduction, abstract, key results, repository structure, and reproduction pipeline. | `[COMPLETED]` |
 | [System Architecture](architecture/README.md) | `docs/architecture/` | Deep-dive architectural specifications for the CNN feature extractor, Mahalanobis++ OOD detector, k-NN episodic memory, Double DQN agent, reward system, and data flow. | `[COMPLETED]` |
-| [Getting Started](getting-started/README.md) | `docs/getting-started/` | System prerequisites, dependency installation, raw MNIST dataset layout, quickstart verification, and configuration parameter reference. | `[PENDING]` |
-| [Usage Guides](guides/README.md) | `docs/guides/` | Procedural workflows for the end-to-end training pipeline, online drift simulation, 5-baseline evaluation, and publication figure generation. | `[PENDING]` |
-| [API Reference](api/README.md) | `docs/api/` | Comprehensive technical reference documenting classes, methods, data structures, tensor shapes, and type annotations for all core modules. | `[PENDING]` |
-| [Experimental Results](results/README.md) | `docs/results/` | In-depth analysis of the 5-baseline benchmark across noise levels, latency/memory profiles, drift restoration, and metric definitions. | `[PENDING]` |
+| [Getting Started](getting-started/README.md) | `docs/getting-started/` | System prerequisites, dependency installation, raw MNIST dataset layout, quickstart verification, and configuration parameter reference. | `[COMPLETED]` |
+| [Usage Guides](guides/README.md) | `docs/guides/` | Procedural workflows for the end-to-end training pipeline, online drift simulation, 5-baseline evaluation, and publication figure generation. | `[COMPLETED]` |
+| [API Reference](api/README.md) | `docs/api/` | Comprehensive technical reference documenting classes, methods, data structures, tensor shapes, and type annotations for all core modules. | `[COMPLETED]` |
+| [Experimental Results](results/README.md) | `docs/results/` | In-depth analysis of the 5-baseline benchmark across noise levels, latency/memory profiles, drift restoration, and metric definitions. | `[COMPLETED]` |
 | [Scientific Literature](Literatura/README.md) | `docs/Literatura/` | Curated literature taxonomy, foundational research guidelines, and unified scientific glossary covering 12 domain pillars. | `[COMPLETED]` |
+| [Historical Archive](_archive/README.md) | `docs/_archive/` | Historical pre-refactoring technical notes and architectural records preserved for developmental traceability. | `[ARCHIVED]` |
+| [Master Action Plan](Plano_de_Acao_EAAI.md) | `docs/` | Historical master execution and scientific plan for EAAI journal benchmark evaluation. | `[HISTORICAL]` |
 
 ---
 

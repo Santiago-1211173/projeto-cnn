@@ -602,25 +602,29 @@ The agent MUST also read the existing Portuguese documentation files in `docs/` 
 
 ---
 
-# PHASE 3: Getting Started Documentation `[PENDING]`
+# PHASE 3: Getting Started Documentation `[COMPLETED]`
 
 > [!NOTE]
-> **Status:** Pending.
+> **Status:** Completed.
+> **Resolution Note:** Created all 3 getting-started documents in `docs/getting-started/`: Getting Started Index (`README.md`), Installation and Quick Start (`quickstart.md`), and Configuration Reference (`configuration.md`). Included prerequisites, environment verification commands, automated MNIST raw binary setup script, copy-pasteable 5-step reproduction pipeline, exhaustive table covering all 35 parameters from `src/config.py`, Edge AI memory sizing analysis, zero emojis, and GNU GPL-3.0 license references.
 > **Depends on:** Phase 1 (docs index for navigation).
 > **Unblocks:** Phase 4 (guides reference getting-started for prerequisites).
 
 **Objective:** Create the `docs/getting-started/` directory with installation, quickstart, and configuration reference.
 
 **Files to CREATE:**
+- [x] 3.1 [`docs/getting-started/README.md`](getting-started/README.md) -- Getting Started Index `[COMPLETED]`
+- [x] 3.2 [`docs/getting-started/quickstart.md`](getting-started/quickstart.md) -- Installation and Quick Start `[COMPLETED]`
+- [x] 3.3 [`docs/getting-started/configuration.md`](getting-started/configuration.md) -- Configuration Reference `[COMPLETED]`
 
-### 3.1 -- Getting Started Index: `docs/getting-started/README.md`
+### 3.1 -- Getting Started Index: `docs/getting-started/README.md` `[COMPLETED]`
 
 **Required Content:**
 1. Title: "Getting Started"
 2. Reading order for the 3 documents in this section.
 3. Navigation footer.
 
-### 3.2 -- Installation and Prerequisites: `docs/getting-started/quickstart.md`
+### 3.2 -- Installation and Prerequisites: `docs/getting-started/quickstart.md` `[COMPLETED]`
 
 **Before writing, the agent MUST read:**
 - `requirements.txt`
@@ -644,7 +648,7 @@ The agent MUST also read the existing Portuguese documentation files in `docs/` 
 6. Quick start: The minimal 5-command pipeline to reproduce results.
 7. Navigation footer.
 
-### 3.3 -- Configuration Reference: `docs/getting-started/configuration.md`
+### 3.3 -- Configuration Reference: `docs/getting-started/configuration.md` `[COMPLETED]`
 
 **Before writing, the agent MUST read:**
 - `src/config.py` (entire file)
@@ -668,33 +672,38 @@ The agent MUST also read the existing Portuguese documentation files in `docs/` 
 5. Navigation footer.
 
 **Acceptance Criteria:**
-- Directory `docs/getting-started/` exists with 3 files.
-- Installation commands are copy-pasteable and correct.
-- Configuration table covers ALL 30+ parameters in `src/config.py`.
-- No emojis.
-- GPL-3.0 reference.
+- [x] Directory `docs/getting-started/` exists with 3 files.
+- [x] Installation commands are copy-pasteable and correct.
+- [x] Configuration table covers ALL 30+ parameters in `src/config.py`.
+- [x] No emojis.
+- [x] GPL-3.0 reference.
 
 ---
 
-# PHASE 4: Usage Guides `[PENDING]`
+# PHASE 4: Usage Guides `[COMPLETED]`
 
 > [!NOTE]
-> **Status:** Pending.
+> **Status:** Completed.
+> **Resolution Note:** Created all 4 workflow guides in `docs/guides/`: Guides Index (`README.md`), Full Training Pipeline (`training-pipeline.md`), EAAI Evaluation Benchmark (`evaluation.md`), and Explainable AI / Visualization Diagnostics (`visualization.md`). Fully documented the 5-stage sequential training workflow with exact commands and duration estimates, detailed the 5-baseline evaluation methodology under prequential drift simulation with all 7 scientific metrics, and provided operational documentation for all 4 XAI diagnostic tools (t-SNE latent collapse, gradient saliency maps, decision confidence profiles, and 128D episodic memory rescue visualizer). Verified zero emojis and GNU GPL-3.0 license references throughout.
 > **Depends on:** Phases 1-3 (architecture and getting-started for cross-references).
 > **Unblocks:** Phases 5-6.
 
 **Objective:** Create the `docs/guides/` directory with step-by-step workflow guides.
 
 **Files to CREATE:**
+- [x] 4.1 [`docs/guides/README.md`](guides/README.md) -- Guides Index `[COMPLETED]`
+- [x] 4.2 [`docs/guides/training-pipeline.md`](guides/training-pipeline.md) -- Full Training Pipeline `[COMPLETED]`
+- [x] 4.3 [`docs/guides/evaluation.md`](guides/evaluation.md) -- Running the EAAI Evaluation `[COMPLETED]`
+- [x] 4.4 [`docs/guides/visualization.md`](guides/visualization.md) -- Explainable AI and Visualization Tools `[COMPLETED]`
 
-### 4.1 -- Guides Index: `docs/guides/README.md`
+### 4.1 -- Guides Index: `docs/guides/README.md` `[COMPLETED]`
 
 **Required Content:**
 1. Title: "Usage Guides"
 2. Table of available guides with descriptions.
 3. Navigation footer.
 
-### 4.2 -- Training Pipeline: `docs/guides/training-pipeline.md`
+### 4.2 -- Training Pipeline: `docs/guides/training-pipeline.md` `[COMPLETED]`
 
 **Before writing, the agent MUST read:**
 - `scripts/train_cnn.py`
@@ -724,7 +733,7 @@ The agent MUST also read the existing Portuguese documentation files in `docs/` 
 8. Expected outputs summary table.
 9. Navigation footer.
 
-### 4.3 -- Evaluation Guide: `docs/guides/evaluation.md`
+### 4.3 -- Evaluation Guide: `docs/guides/evaluation.md` `[COMPLETED]`
 
 **Before writing, the agent MUST read:**
 - `evaluate_hybrid_global.py`
@@ -743,7 +752,7 @@ The agent MUST also read the existing Portuguese documentation files in `docs/` 
 5. How to interpret results.
 6. Navigation footer.
 
-### 4.4 -- Visualization Guide: `docs/guides/visualization.md`
+### 4.4 -- Visualization Guide: `docs/guides/visualization.md` `[COMPLETED]`
 
 **Before writing, the agent MUST read:**
 - `visualizations/make_decision_profiles.py`
@@ -761,26 +770,34 @@ The agent MUST also read the existing Portuguese documentation files in `docs/` 
 3. Navigation footer.
 
 **Acceptance Criteria:**
-- Directory `docs/guides/` exists with 4 files.
-- Training pipeline covers all 5 steps with exact commands.
-- All commands are verified against actual script filenames and paths.
-- No emojis.
-- GPL-3.0 reference.
+- [x] Directory `docs/guides/` exists with 4 files.
+- [x] Training pipeline covers all 5 steps with exact commands.
+- [x] All commands are verified against actual script filenames and paths.
+- [x] No emojis.
+- [x] GPL-3.0 reference.
 
 ---
 
-# PHASE 5: API Reference `[PENDING]`
+# PHASE 5: API Reference `[COMPLETED]`
 
 > [!NOTE]
-> **Status:** Pending.
+> **Status:** Completed.
+> **Resolution Note:** Created all 7 API reference documents in `docs/api/`: API Reference Index (`README.md`), Configuration Reference (`config.md`), Custom CNN Model (`custom-cnn.md`), Episodic Memory Agent (`knn-bandit-agent.md`), Double DQN RL Agent (`rl-agent.md`), Curriculum Reward Manager (`reward-manager.md`), and Online Streaming Simulation Engine (`train-rl-online-simulation.md`). Documented every public class, method, property, function, and configuration constant with exact signatures matching the source code, comprehensive parameter tables, Edge AI computational complexity notes, syntactically valid code examples, zero emojis, and GNU GPL-3.0 license references throughout.
 > **Depends on:** Phase 2 (architecture docs for cross-references).
 > **Unblocks:** Phase 6.
 
 **Objective:** Create the `docs/api/` directory with detailed API reference for every public module.
 
 **Files to CREATE:**
+- [x] 5.1 [`docs/api/README.md`](api/README.md) -- API Reference Index `[COMPLETED]`
+- [x] 5.2 [`docs/api/config.md`](api/config.md) -- `src/config.py` Reference `[COMPLETED]`
+- [x] 5.3 [`docs/api/custom-cnn.md`](api/custom-cnn.md) -- `src/models/custom_cnn.py` Reference `[COMPLETED]`
+- [x] 5.4 [`docs/api/knn-bandit-agent.md`](api/knn-bandit-agent.md) -- `src/models/knn_bandit_agent.py` Reference `[COMPLETED]`
+- [x] 5.5 [`docs/api/rl-agent.md`](api/rl-agent.md) -- `src/models/rl_agent.py` Reference `[COMPLETED]`
+- [x] 5.6 [`docs/api/reward-manager.md`](api/reward-manager.md) -- `src/models/reward_manager.py` Reference `[COMPLETED]`
+- [x] 5.7 [`docs/api/train-rl-online-simulation.md`](api/train-rl-online-simulation.md) -- `training/train_rl_online_simulation.py` Reference `[COMPLETED]`
 
-### 5.1 -- API Reference Index: `docs/api/README.md`
+### 5.1 -- API Reference Index: `docs/api/README.md` `[COMPLETED]`
 
 **Required Content:**
 1. Title: "API Reference"
@@ -788,7 +805,7 @@ The agent MUST also read the existing Portuguese documentation files in `docs/` 
 3. Convention: All signatures extracted directly from source code.
 4. Navigation footer.
 
-### 5.2 through 5.7 -- Module References
+### 5.2 through 5.7 -- Module References `[COMPLETED]`
 
 For EACH of the following modules, create a separate markdown file:
 
@@ -835,27 +852,31 @@ Description of what the method does.
 ```
 
 **Acceptance Criteria:**
-- Directory `docs/api/` exists with 7 files.
-- EVERY public class, method, function, and property is documented.
-- ALL signatures match the actual source code exactly (types, defaults, names).
-- Usage examples are syntactically correct.
-- No emojis.
-- GPL-3.0 reference.
+- [x] Directory `docs/api/` exists with 7 files.
+- [x] EVERY public class, method, function, and property is documented.
+- [x] ALL signatures match the actual source code exactly (types, defaults, names).
+- [x] Usage examples are syntactically correct.
+- [x] No emojis.
+- [x] GPL-3.0 reference.
 
 ---
 
-# PHASE 6: Experimental Results Documentation `[PENDING]`
+# PHASE 6: Experimental Results Documentation `[COMPLETED]`
 
 > [!NOTE]
-> **Status:** Pending.
+> **Status:** Completed.
+> **Resolution Note:** Created all 3 experimental results documents in `docs/results/`: Results Overview (`README.md`), Baseline Comparison Analysis (`baseline-comparison.md`), and Engineering Metrics Reference (`metrics-reference.md`). Fully documented the experimental protocol, hardware constraints, 5-baseline evaluation matrix using exact values from `outputs/eaai_metrics.json`, detailed comparative analysis across 4 scientific dimensions (severe noise robustness, cache pollution mitigation via Action 0, 177x distribution matching gain, and LMOS sustainability), and formalized all 7 engineering metrics with rigorous LaTeX formulas, physical units, literature sources, and exact codebase mappings. Verified zero emojis and GNU GPL-3.0 license references throughout.
 > **Depends on:** Phases 2, 4 (architecture and evaluation guide for cross-references).
-> **Unblocks:** Nothing (terminal phase).
+> **Unblocks:** Phase 7 (Final Verification and Cleanup).
 
 **Objective:** Create the `docs/results/` directory with a comprehensive presentation of experimental results.
 
 **Files to CREATE:**
+- [x] 6.1 [`docs/results/README.md`](results/README.md) -- Results Overview `[COMPLETED]`
+- [x] 6.2 [`docs/results/baseline-comparison.md`](results/baseline-comparison.md) -- Baseline Comparison Analysis `[COMPLETED]`
+- [x] 6.3 [`docs/results/metrics-reference.md`](results/metrics-reference.md) -- Engineering Metrics Reference `[COMPLETED]`
 
-### 6.1 -- Results Overview: `docs/results/README.md`
+### 6.1 -- Results Overview: `docs/results/README.md` `[COMPLETED]`
 
 **Before writing, the agent MUST read:**
 - `outputs/eaai_metrics.json`
@@ -873,7 +894,7 @@ Description of what the method does.
 3. Link to detailed baseline comparison and metrics reference.
 4. Navigation footer.
 
-### 6.2 -- Baseline Comparison: `docs/results/baseline-comparison.md`
+### 6.2 -- Baseline Comparison: `docs/results/baseline-comparison.md` `[COMPLETED]`
 
 **Before writing, the agent MUST read:**
 - `outputs/eaai_metrics.json` (extract exact numerical values)
@@ -899,7 +920,7 @@ Description of what the method does.
 5. Statistical significance discussion.
 6. Navigation footer.
 
-### 6.3 -- Metrics Reference: `docs/results/metrics-reference.md`
+### 6.3 -- Metrics Reference: `docs/results/metrics-reference.md` `[COMPLETED]`
 
 **Required Content:**
 1. Title: "Engineering Metrics Reference"
@@ -925,19 +946,20 @@ Description of what the method does.
 4. Navigation footer.
 
 **Acceptance Criteria:**
-- Directory `docs/results/` exists with 3 files.
-- All numerical values match `outputs/eaai_metrics.json` exactly.
-- All 7 engineering metrics are formally defined.
-- Analysis section is translated accurately from the Portuguese Phase 4 report.
-- No emojis.
-- GPL-3.0 reference.
+- [x] Directory `docs/results/` exists with 3 files.
+- [x] All numerical values match `outputs/eaai_metrics.json` exactly.
+- [x] All 7 engineering metrics are formally defined.
+- [x] Analysis section is translated accurately from the Portuguese Phase 4 report.
+- [x] No emojis.
+- [x] GPL-3.0 reference.
 
 ---
 
-# PHASE 7: Final Verification and Cleanup `[PENDING]`
+# PHASE 7: Final Verification and Cleanup `[COMPLETED]`
 
 > [!NOTE]
-> **Status:** Pending.
+> **Status:** Completed.
+> **Resolution Note:** Verified link integrity across all 27 documentation files (0 broken links). Confirmed 100% concordance of API signatures against source code via AST analysis, exact numerical parity of all benchmark values against `outputs/eaai_metrics.json`, and exact correspondence of configuration constants against `src/config.py`. Verified complete bidirectional navigation footers across all documents. Verified zero emoji characters, uniform academic English language, and ubiquitous GNU GPL-3.0 licensing notices. Relocated 7 historical Portuguese documentation files to `docs/_archive/` with a comprehensive index (`docs/_archive/README.md`), while preserving `docs/Plano_de_Acao_EAAI.md` and `docs/Literatura/`. Updated `docs/README.md` to reflect the completed documentation tree.
 > **Depends on:** All previous phases (0-6).
 > **Unblocks:** Nothing (terminal phase).
 
@@ -945,27 +967,27 @@ Description of what the method does.
 
 **Tasks:**
 
-### 7.1 -- Link Verification
-- The agent MUST traverse every documentation file and verify that all internal links (relative paths) point to existing files.
-- Report any broken links.
+### 7.1 -- Link Verification `[COMPLETED]`
+- [x] The agent MUST traverse every documentation file and verify that all internal links (relative paths) point to existing files.
+- [x] Report any broken links (0 broken links detected).
 
-### 7.2 -- Content Verification
-- Verify that all code signatures in the API reference match the actual source code.
-- Verify that all numerical values in the results documentation match `outputs/eaai_metrics.json`.
-- Verify that all configuration parameters in the configuration reference match `src/config.py`.
+### 7.2 -- Content Verification `[COMPLETED]`
+- [x] Verify that all code signatures in the API reference match the actual source code.
+- [x] Verify that all numerical values in the results documentation match `outputs/eaai_metrics.json`.
+- [x] Verify that all configuration parameters in the configuration reference match `src/config.py`.
 
-### 7.3 -- Navigation Consistency
-- Verify that every document has a navigation footer.
-- Verify that the "Previous/Up/Next" links form a consistent traversal.
+### 7.3 -- Navigation Consistency `[COMPLETED]`
+- [x] Verify that every document has a navigation footer.
+- [x] Verify that the "Previous/Up/Next" links form a consistent traversal.
 
-### 7.4 -- Style Verification
-- Verify zero emoji characters across all documentation files.
-- Verify English language throughout (no Portuguese remnants except in `docs/Literatura/` which is preserved).
-- Verify GPL-3.0 reference in every document.
+### 7.4 -- Style Verification `[COMPLETED]`
+- [x] Verify zero emoji characters across all documentation files.
+- [x] Verify English language throughout (no Portuguese remnants except in `docs/Literatura/` which is preserved).
+- [x] Verify GPL-3.0 reference in every document.
 
-### 7.5 -- Old Documentation Disposition
-- The existing Portuguese documentation files in `docs/` (outside `docs/Literatura/`) contain valuable technical content that has been incorporated into the new English documentation.
-- Move these files to `docs/_archive/` to preserve them without cluttering the documentation tree:
+### 7.5 -- Old Documentation Disposition `[COMPLETED]`
+- [x] The existing Portuguese documentation files in `docs/` (outside `docs/Literatura/`) contain valuable technical content that has been incorporated into the new English documentation.
+- [x] Move these files to `docs/_archive/` to preserve them without cluttering the documentation tree:
   - `docs/arquitetura_e_fluxo_cnn.md`
   - `docs/caso_de_estudo_eaai.md`
   - `docs/evaluate_hybrid_global.md`
@@ -973,19 +995,19 @@ Description of what the method does.
   - `docs/knn_bandit_agent_128d.md`
   - `docs/train_rl_128d.md`
   - `docs/train_rl_online_simulation.md`
-- Keep `docs/Plano_de_Acao_EAAI.md` in place (it is the master implementation plan and should be preserved as a historical record).
+- [x] Keep `docs/Plano_de_Acao_EAAI.md` in place (it is the master implementation plan and should be preserved as a historical record).
 
-### 7.6 -- Update `docs/README.md`
-- Update the documentation index to reflect the final state of all documentation.
-- Mark all phases as `[COMPLETED]` in THIS plan document.
+### 7.6 -- Update `docs/README.md` `[COMPLETED]`
+- [x] Update the documentation index to reflect the final state of all documentation.
+- [x] Mark all phases as `[COMPLETED]` in THIS plan document.
 
 **Acceptance Criteria:**
-- Zero broken links across all documentation files.
-- Zero emoji characters.
-- All signatures, values, and parameters are accurate.
-- Old Portuguese docs moved to `docs/_archive/`.
-- `docs/README.md` reflects the final documentation tree.
-- This plan document has all phases marked `[COMPLETED]`.
+- [x] Zero broken links across all documentation files.
+- [x] Zero emoji characters.
+- [x] All signatures, values, and parameters are accurate.
+- [x] Old Portuguese docs moved to `docs/_archive/`.
+- [x] `docs/README.md` reflects the final documentation tree.
+- [x] This plan document has all phases marked `[COMPLETED]`.
 
 ---
 
