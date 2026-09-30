@@ -1,6 +1,6 @@
 # Reward System: Curriculum Learning Reward Manager
 
-> Part of the [Trustworthy Edge AI: RL-Driven Active Memory Management](../../README.md) documentation.
+> Part of the [Active Episodic Memory Management via Reinforcement Learning for Robust CNN Inference on Out-of-Distribution Data](../../README.md) documentation.
 > Parent: [System Architecture](README.md) | Up: [System Architecture](README.md)
 
 ---

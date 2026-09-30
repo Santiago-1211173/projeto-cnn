@@ -1,5 +1,5 @@
 # Implementation Plan: Professional Technical Documentation
-### RL-Driven Active Episodic Memory Management for Trustworthy Edge AI
+### Active Episodic Memory Management via Reinforcement Learning for Robust CNN Inference on Out-of-Distribution Data
 
 > [!NOTE]
 > **Plan for LLM Agent execution in Antigravity IDE.**
@@ -174,7 +174,7 @@ Every `README.md` and markdown document MUST follow these conventions:
 ```markdown
 # [Document Title]
 
-> Part of the [Trustworthy Edge AI: RL-Driven Active Memory Management] documentation.
+> Part of the [Active Episodic Memory Management via Reinforcement Learning for Robust CNN Inference on Out-of-Distribution Data] documentation.
 > Parent: [link to parent README] | Up: [link to docs/README.md]
 ```
 
@@ -282,7 +282,7 @@ The agent MUST also read the existing Portuguese documentation files in `docs/` 
 - Content: Machine-readable citation metadata following the [Citation File Format](https://citation-file-format.github.io/) standard.
 - Fields to include:
   - `cff-version: 1.2.0`
-  - `title:` "Trustworthy Edge AI: RL-Driven Active Episodic Memory Management for Robust Out-of-Distribution Routing"
+  - `title:` "Active Episodic Memory Management via Reinforcement Learning for Robust CNN Inference on Out-of-Distribution Data"
   - `message:` "If you use this software, please cite it as below."
   - `type: software`
   - `authors:` (leave as placeholder `- name: "[Author Name]"` for the user to fill)
@@ -319,7 +319,7 @@ The agent MUST also read the existing Portuguese documentation files in `docs/` 
 **Required Sections (in order):**
 
 1. **Title and Badges**
-   - Title: "Trustworthy Edge AI: RL-Driven Active Episodic Memory Management"
+   - Title: "Active Episodic Memory Management via Reinforcement Learning for Robust CNN Inference on Out-of-Distribution Data"
    - Subtitle: "Robust Out-of-Distribution Routing for Resource-Constrained Semiparametric Vision Systems"
    - Badges (shields.io, text-only): Python 3.10+, PyTorch 2.0+, TensorFlow 2.10.1, License GPL-3.0, NumPy, scikit-learn
    - No emoji in badges or title.

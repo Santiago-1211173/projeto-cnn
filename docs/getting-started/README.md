@@ -1,13 +1,13 @@
 # Getting Started
 
-> Part of the [Trustworthy Edge AI: RL-Driven Active Memory Management](../../README.md) documentation.
+> Part of the [Active Episodic Memory Management via Reinforcement Learning for Robust CNN Inference on Out-of-Distribution Data](../../README.md) documentation.
 > Parent: [Documentation Index](../README.md) | Up: [Root README](../../README.md)
 
 ---
 
 ## 1. Overview
 
-This directory provides the onboarding, installation, verification, and configuration resources necessary to reproduce the experimental findings reported in our paper, *"Trustworthy Edge AI: RL-Driven Active Episodic Memory Management for Robust Out-of-Distribution Routing"* (submitted to Elsevier *Engineering Applications of Artificial Intelligence* - EAAI).
+This directory provides the onboarding, installation, verification, and configuration resources necessary to reproduce the experimental findings reported in our paper, *"Active Episodic Memory Management via Reinforcement Learning for Robust CNN Inference on Out-of-Distribution Data"* (submitted to Elsevier *Engineering Applications of Artificial Intelligence* - EAAI).
 
 The codebase couples a custom, from-scratch TensorFlow Convolutional Neural Network (CNN) with a non-parametric NumPy episodic memory bank ($k$-NN) and a PyTorch Double Deep Q-Network (Double DQN) with Prioritized Experience Replay (PER). Together, these components implement an active memory curation architecture engineered specifically for resource-constrained Edge AI environments experiencing sensor degradation, adversarial anomalies, and non-stationary concept drift.
 

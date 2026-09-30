@@ -1,4 +1,4 @@
-# Trustworthy Edge AI: RL-Driven Active Episodic Memory Management
+# Active Episodic Memory Management via Reinforcement Learning for Robust CNN Inference on Out-of-Distribution Data
 
 **Robust Out-of-Distribution Routing for Resource-Constrained Semiparametric Vision Systems**
 
@@ -9,7 +9,7 @@
 ![NumPy](https://img.shields.io/badge/NumPy-1.24+-013243?style=flat-square)
 ![scikit-learn](https://img.shields.io/badge/scikit--learn-1.3+-F7931E?style=flat-square)
 
-> Part of the [Trustworthy Edge AI: RL-Driven Active Memory Management] documentation.
+> Part of the [Active Episodic Memory Management via Reinforcement Learning for Robust CNN Inference on Out-of-Distribution Data] documentation.
 
 ---
 
@@ -245,9 +245,9 @@ See the [Documentation Index](docs/README.md) for a recommended reading order an
 If you use this software in your research, please cite it as follows:
 
 ```bibtex
-@software{trustworthy_edge_ai_2026,
-  title     = {Trustworthy Edge AI: RL-Driven Active Episodic Memory Management
-               for Robust Out-of-Distribution Routing},
+@software{active_episodic_memory_rl_2026,
+  title     = {Active Episodic Memory Management via Reinforcement Learning
+               for Robust CNN Inference on Out-of-Distribution Data},
   author    = {[Author Name]},
   year      = {2026},
   license   = {GPL-3.0},

@@ -1,5 +1,5 @@
 cff-version: 1.2.0
-title: "Trustworthy Edge AI: RL-Driven Active Episodic Memory Management for Robust Out-of-Distribution Routing"
+title: "Active Episodic Memory Management via Reinforcement Learning for Robust CNN Inference on Out-of-Distribution Data"
 message: "If you use this software, please cite it as below."
 type: software
 authors:

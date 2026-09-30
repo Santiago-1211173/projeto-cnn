@@ -1,13 +1,13 @@
 # Running the EAAI Evaluation
 
-> Part of the [Trustworthy Edge AI: RL-Driven Active Memory Management](../../README.md) documentation.
+> Part of the [Active Episodic Memory Management via Reinforcement Learning for Robust CNN Inference on Out-of-Distribution Data](../../README.md) documentation.
 > Parent: [Usage Guides](README.md) | Up: [Documentation Index](../README.md)
 
 ---
 
 ## 1. Context and Objective
 
-This guide documents the experimental evaluation methodology developed for our submission to Elsevier *Engineering Applications of Artificial Intelligence* (EAAI), titled *"Trustworthy Edge AI: RL-Driven Active Episodic Memory Management for Robust Out-of-Distribution Routing"*.
+This guide documents the experimental evaluation methodology developed for our submission to Elsevier *Engineering Applications of Artificial Intelligence* (EAAI), titled *"Active Episodic Memory Management via Reinforcement Learning for Robust CNN Inference on Out-of-Distribution Data"*.
 
 The benchmark systematically compares the proposed RL-driven active episodic memory curation architecture against four alternative system baselines under progressive non-stationary sensor noise and concept drift. The evaluation follows a rigorous prequential (test-then-train) protocol to measure both predictive robustness and operational sustainability on resource-constrained Edge AI devices.
 

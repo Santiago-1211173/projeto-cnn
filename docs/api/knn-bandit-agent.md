@@ -1,6 +1,6 @@
 # Episodic Memory Agent API Reference
 
-> Part of the [Trustworthy Edge AI: RL-Driven Active Memory Management](../../README.md) documentation.  
+> Part of the [Active Episodic Memory Management via Reinforcement Learning for Robust CNN Inference on Out-of-Distribution Data](../../README.md) documentation.  
 > Parent: [API Reference Index](README.md) | Up: [Documentation Index](../README.md)
 
 ---
