@@ -25,6 +25,7 @@ The table below outlines all sections of the technical documentation hierarchy, 
 | [Usage Guides](guides/README.md) | `docs/guides/` | Procedural workflows for the end-to-end training pipeline, online drift simulation, 5-baseline evaluation, and publication figure generation. | `[COMPLETED]` |
 | [API Reference](api/README.md) | `docs/api/` | Comprehensive technical reference documenting classes, methods, data structures, tensor shapes, and type annotations for all core modules. | `[COMPLETED]` |
 | [Experimental Results](results/README.md) | `docs/results/` | In-depth analysis of the 5-baseline benchmark across noise levels, latency/memory profiles, drift restoration, and metric definitions. | `[COMPLETED]` |
+| [Comparative Literature Validation](results/literature-validation.md) | `docs/results/` | Systematic confrontation of empirical results against published scientific literature, root cause analysis, statistical rigor, and EAAI submission guidelines. | `[COMPLETED]` |
 | [Scientific Literature](Literatura/README.md) | `docs/Literatura/` | Curated literature taxonomy, foundational research guidelines, and unified scientific glossary covering 12 domain pillars. | `[COMPLETED]` |
 | [Historical Archive](_archive/README.md) | `docs/_archive/` | Historical pre-refactoring technical notes and architectural records preserved for developmental traceability. | `[ARCHIVED]` |
 | [Master Action Plan](Plano_de_Acao_EAAI.md) | `docs/` | Historical master execution and scientific plan for EAAI journal benchmark evaluation. | `[HISTORICAL]` |

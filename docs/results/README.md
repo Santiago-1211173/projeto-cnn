@@ -126,6 +126,7 @@ This documentation section is organized into the following specialized documents
 |:---|:---|:---|
 | [Baseline Comparison Analysis](baseline-comparison.md) | Quantitative comparison | Complete 5-baseline metrics table, per-regime breakdown, comparative analysis, and statistical significance discussion. |
 | [Engineering Metrics Reference](metrics-reference.md) | Metric definitions | Mathematical formulations, physical units, algorithmic implementation mappings, and literature citations for all 7 metrics. |
+| [Comparative Literature Validation](literature-validation.md) | Literature confrontation | Systematic mapping of empirical findings against seminal publications, root cause analysis, statistical rigor validation, and EAAI submission guidelines. |
 
 ### Artifact Cross-References
 
@@ -155,6 +156,7 @@ For detailed options, parameter configurations, and hardware sizing instructions
 - Previous: [Online Simulation Reference](../api/train-rl-online-simulation.md)
 - Up: [Documentation Index](../README.md)
 - Next: [Baseline Comparison Analysis](baseline-comparison.md)
+- Also: [Comparative Literature Validation](literature-validation.md)
 
 ---
 Licensed under the GNU General Public License v3.0. See [LICENSE](../../LICENSE) for details.
