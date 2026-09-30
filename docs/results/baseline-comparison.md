@@ -17,19 +17,15 @@ All data reported in this document are extracted directly from the standardized 
 
 To isolate the contribution of each architectural component, five distinct system configurations were evaluated under identical sensory streams:
 
-```
-+---------------------------------------------------------------------------------------------------+
-|                                 ARCHITECTURAL CONFIGURATIONS                                      |
-+---------------------------------------------------------------------------------------------------+
-| Baseline | Model Type    | Memory Capacity | Routing Mechanism  | Admission / Eviction Policy     |
-|:---------|:--------------|:----------------|:-------------------|:--------------------------------|
-| B0       | Parametric    | 0 (No Memory)   | All to CNN         | None                            |
-| B1       | Hybrid        | 50,000 (Unbound)| Mahalanobis++      | Unbounded Insertion (.append)   |
-| B2       | Hybrid        | 5,000 (Bounded) | Mahalanobis++      | Strict FIFO (evict_oldest)      |
-| B3       | Hybrid        | 5,000 (Bounded) | Mahalanobis++      | Strict LFU (evict_lfu)          |
-| B4       | Hybrid        | 5,000 (Bounded) | Mahalanobis++      | Active RL (Double DQN + PER)     |
-+---------------------------------------------------------------------------------------------------+
-```
+### Architectural Configurations
+
+| Baseline | Model Type | Memory Capacity | Routing Mechanism | Admission / Eviction Policy |
+|:---|:---|:---|:---|:---|
+| **B0** | Parametric | 0 (No Memory) | All to CNN | None |
+| **B1** | Hybrid | 50,000 (Unbound) | Mahalanobis++ | Unbounded Insertion (`.append`) |
+| **B2** | Hybrid | 5,000 (Bounded) | Mahalanobis++ | Strict FIFO (`evict_oldest`) |
+| **B3** | Hybrid | 5,000 (Bounded) | Mahalanobis++ | Strict LFU (`evict_least_frequently_used`) |
+| **B4** | Hybrid | 5,000 (Bounded) | Mahalanobis++ | Active RL (Double DQN + PER) |
 
 ### 2.1. Baseline 0 (B0): Pure CNN (No Episodic Memory)
 The parametric convolutional neural network operates as a standalone classifier without secondary uncertainty arbitration or memory fallback. For an input image $x_t \in \mathbb{R}^{28 \times 28}$, classification is computed via:
@@ -135,19 +131,15 @@ In non-stationary data streams, concept drift frequently induces localized class
 
 In edge computing environments (robotics, IoT gateways, automotive cameras), algorithms must satisfy strict Latency and Memory Operational Sustainability (LMOS; Jain et al., 2022).
 
-```
-+---------------------------------------------------------------------------------------------------+
-|                                     LMOS PARETO ANALYSIS                                          |
-+---------------------------------------------------------------------------------------------------+
-| Baseline | Peak RAM (MB) | Mean Latency (ms) | Accuracy Gain vs B0 | Hardware Feasibility         |
-|:---------|:--------------|:------------------|:--------------------|:-----------------------------|
-| B0       | 0.0008 MB     | 0.0039 ms         | Baseline (0.00%)    | High (Monolithic)           |
-| B1       | 35.1970 MB    | 4.6932 ms         | -0.90% (Degraded)   | Infeasible (OOM Risk)        |
-| B2       | 7.4735 MB     | 3.2717 ms         | -0.92% (Degraded)   | Medium (Heuristic)          |
-| B3       | 7.4741 MB     | 3.3025 ms         | -0.92% (Degraded)   | Medium (Heuristic)          |
-| B4       | 9.9241 MB     | 6.6707 ms         | +3.56% (Enhanced)   | Optimal (Bounded & Reliable)|
-+---------------------------------------------------------------------------------------------------+
-```
+### LMOS Pareto Analysis
+
+| Baseline | Peak RAM (MB) | Mean Latency (ms) | Accuracy Gain vs B0 | Hardware Feasibility |
+|:---|:---:|:---:|:---:|:---|
+| **B0** | 0.0008 MB | 0.0039 ms | Baseline (0.00%) | High (Monolithic) |
+| **B1** | 35.1970 MB | 4.6932 ms | -0.90% (Degraded) | Infeasible (OOM Risk) |
+| **B2** | 7.4735 MB | 3.2717 ms | -0.92% (Degraded) | Medium (Heuristic) |
+| **B3** | 7.4741 MB | 3.3025 ms | -0.92% (Degraded) | Medium (Heuristic) |
+| **B4** | 9.9241 MB | 6.6707 ms | +3.56% (Enhanced) | Optimal (Bounded & Reliable) |
 
 - **Memory Bounding:** Unbounded B1 consumes **$35.20\text{ MB}$** of RAM during the 5,000-sample stream and scales linearly ($O(N)$), guaranteeing eventual Out-of-Memory (OOM) faults on embedded hardware. In contrast, B4 caps peak memory at **$9.92\text{ MB}$**, maintaining strict $O(1)$ RAM occupancy across indefinite operational horizons.
 - **Inference Latency:** B4 incurs an average processing time of **$6.67\text{ ms}$** per query (encompassing CNN feature extraction, Mahalanobis++ distance computation, PyTorch RL action selection, and NumPy vector eviction). This corresponds to an operational throughput of **$\approx 150\text{ frames per second}$**, satisfying real-time robotic requirements ($>30\text{ fps}$) with substantial timing margin.

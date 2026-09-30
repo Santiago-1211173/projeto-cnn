@@ -11,24 +11,20 @@ This section presents the empirical validation and comparative benchmark of the 
 
 Traditional deep neural networks exhibit catastrophic precision collapse and unwarranted overconfidence when deployed on edge devices subjected to sensor noise, lens occlusion, or environmental drift. The experimental findings documented herein demonstrate that combining a parametric feature extractor (custom convolutional neural network) with an active, capacity-bounded non-parametric episodic memory ($k$-NN bandit governed by Double DQN with Prioritized Experience Replay) mitigates performance collapse, maintaining operational efficacy under noise conditions that degrade standalone deep models by over 77%.
 
-```
-========================================================================================================
-                           EAAI BENCHMARK: KEY METRIC HIGHLIGHTS
-========================================================================================================
-Metric                            B0 (Pure CNN)   B2 (FIFO)       B3 (LFU)        B4 (Proposed RL)
---------------------------------------------------------------------------------------------------------
-Accuracy under Noise (sigma=0.4)   51.40%          51.50%          51.50%          55.70% (+4.20%)
-Accuracy under Noise (sigma=0.6)   30.00%          29.30%          29.30%          38.90% (+9.60%)
-Accuracy under Noise (sigma=0.8)   20.30%          17.60%          17.60%          27.30% (+9.70%)
-Overall Stream Accuracy            58.10%          57.18%          57.18%          61.66% (+4.48%)
-Cache Hit Rate (k-NN rescue)        0.00%          56.98%          56.98%          61.48% (+4.50%)
-Eviction KL Divergence (nats)      0.0000          0.5003          0.5003          0.0028 (177x lower)
-Forgetting Rate (%/transition)     19.42%          19.60%          19.60%          17.10% (-2.50%)
-Drift Restoration Time (steps)     419.0           428.2           428.2           383.4  (-44.8 steps)
-RAM Peak Allocation (MB)            0.0008 MB       7.47 MB         7.47 MB         9.92 MB (Bounded)
-Mean Processing Latency (ms)        0.004 ms        3.272 ms        3.302 ms        6.671 ms (Real-time)
-========================================================================================================
-```
+### EAAI Benchmark: Key Metric Highlights
+
+| Metric | B0 (Pure CNN) | B2 (FIFO) | B3 (LFU) | B4 (Proposed RL) |
+|:---|:---:|:---:|:---:|:---:|
+| Accuracy under Noise ($\sigma = 0.4$) | 51.40% | 51.50% | 51.50% | **55.70%** (+4.20%) |
+| Accuracy under Noise ($\sigma = 0.6$) | 30.00% | 29.30% | 29.30% | **38.90%** (+9.60%) |
+| Accuracy under Noise ($\sigma = 0.8$) | 20.30% | 17.60% | 17.60% | **27.30%** (+9.70%) |
+| Overall Stream Accuracy | 58.10% | 57.18% | 57.18% | **61.66%** (+4.48%) |
+| Cache Hit Rate ($k$-NN rescue) | 0.00% | 56.98% | 56.98% | **61.48%** (+4.50%) |
+| Eviction KL Divergence (nats) | 0.0000 | 0.5003 | 0.5003 | **0.0028** ($177\times$ lower) |
+| Forgetting Rate (%/transition) | 19.42% | 19.60% | 19.60% | **17.10%** (-2.50%) |
+| Drift Restoration Time (steps) | 419.0 | 428.2 | 428.2 | **383.4** (-44.8 steps) |
+| RAM Peak Allocation (MB) | 0.0008 MB | 7.47 MB | 7.47 MB | 9.92 MB (Bounded) |
+| Mean Processing Latency (ms) | 0.004 ms | 3.272 ms | 3.302 ms | 6.671 ms (Real-time) |
 
 ---
 
