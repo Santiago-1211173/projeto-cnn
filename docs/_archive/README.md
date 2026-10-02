@@ -21,7 +21,7 @@ These files are retained as historical records for full development traceability
 | [`fluxo_dados_sistema_hibrido.md`](fluxo_dados_sistema_hibrido.md) | Hybrid inference data flow and state machine | [`docs/architecture/data-flow.md`](../architecture/data-flow.md) |
 | [`knn_bandit_agent_128d.md`](knn_bandit_agent_128d.md) | 128D k-NN episodic memory and eviction heuristics | [`docs/architecture/episodic-memory.md`](../architecture/episodic-memory.md) & [`docs/api/knn-bandit-agent.md`](../api/knn-bandit-agent.md) |
 | [`train_rl_128d.md`](train_rl_128d.md) | Phase 2 RL Double DQN training notes | [`docs/architecture/rl-agent.md`](../architecture/rl-agent.md) & [`docs/api/rl-agent.md`](../api/rl-agent.md) |
-| [`train_rl_online_simulation.md`](train_rl_online_simulation.md) | Phase 3 online simulation and chaos injection | [`docs/guides/online-simulation.md`](../guides/online-simulation.md) & [`docs/api/train-rl-online-simulation.md`](../api/train-rl-online-simulation.md) |
+| [`train_rl_online_simulation.md`](train_rl_online_simulation.md) | Phase 3 online simulation and chaos injection | [`docs/guides/training-pipeline.md`](../guides/training-pipeline.md) & [`docs/api/train-rl-online-simulation.md`](../api/train-rl-online-simulation.md) |
 | [`evaluate_hybrid_global.md`](evaluate_hybrid_global.md) | Hybrid system global evaluation protocol | [`docs/guides/evaluation.md`](../guides/evaluation.md) & [`docs/results/baseline-comparison.md`](../results/baseline-comparison.md) |
 | [`caso_de_estudo_eaai.md`](caso_de_estudo_eaai.md) | Case study notes for EAAI submission | [`docs/results/baseline-comparison.md`](../results/baseline-comparison.md) & [`docs/results/metrics-reference.md`](../results/metrics-reference.md) |
 

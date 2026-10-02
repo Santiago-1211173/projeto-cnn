@@ -1,19 +1,19 @@
 # Installation and Quick Start
 
-> Part of the [Active Episodic Memory Management via Reinforcement Learning for Robust CNN Inference on Out-of-Distribution Data](../../README.md) documentation.
-> Parent: [Getting Started Index](README.md) | Up: [Documentation Index](../README.md)
+> Part of the [Active Episodic Memory Management via Reinforcement Learning for Robust CNN Inference on Out-of-Distribution Data](file:///c:/Users/sanfr/Desktop/projetos-gecad/projeto-cnn/README.md) documentation.  
+> Parent: [Getting Started Index](file:///c:/Users/sanfr/Desktop/projetos-gecad/projeto-cnn/docs/getting-started/README.md) | Up: [Documentation Index](file:///c:/Users/sanfr/Desktop/projetos-gecad/projeto-cnn/docs/README.md)
 
 ---
 
 ## 1. Prerequisites
 
-Before installing the project dependencies, ensure your host environment satisfies the following hardware and software requirements:
+Before installing project dependencies, verify that your host environment meets the following requirements:
 
 ### Hardware Requirements
 - **CPU:** x86_64 or ARM64 processor with at least 4 physical cores (Intel Core i5/i7/Xeon, AMD Ryzen, or Apple Silicon).
-- **RAM:** Minimum 8 GB (16 GB strongly recommended to execute the 50,000-step streaming simulation without swapping).
-- **Disk Space:** Minimum 2.5 GB free space (accommodates repository code, MNIST binary datasets, model checkpoints, `.npz` memory arrays, and visualization figures).
-- **GPU (Optional):** NVIDIA GPU with CUDA Compute Capability >= 7.0 and CUDA 12.x / 11.8 drivers (tested on NVIDIA RTX 4090 and NVIDIA L40S). GPU acceleration speeds up CNN training and PyTorch Double DQN tensor operations, though the entire pipeline executes deterministically on CPU.
+- **RAM:** Minimum 8 GB (16 GB recommended for running the 50,000-step prequential simulation without swapping).
+- **Disk Space:** Minimum 3.5 GB free space (accommodates repository code, MNIST and CIFAR-10 raw datasets, model checkpoints, `.npz` memory arrays, and visualization figures).
+- **GPU (Optional):** NVIDIA GPU with CUDA Compute Capability >= 7.0 and CUDA 11.8 / 12.x drivers (tested on NVIDIA RTX 4090 and NVIDIA L40S). GPU acceleration speeds up CNN training and PyTorch Double DQN tensor operations, though the entire pipeline executes deterministically on CPU.
 
 ### Operating System Support
 - **Linux:** Ubuntu 20.04 LTS / 22.04 LTS or equivalent Debian/RHEL distributions.
@@ -21,7 +21,7 @@ Before installing the project dependencies, ensure your host environment satisfi
 - **macOS:** macOS Monterey (12.0) or later.
 
 ### Python Environment
-- **Python Version:** Python >= 3.10 and < 3.12 (Python 3.10.x is recommended).
+- **Python Version:** Python >= 3.10 and < 3.12 (Python 3.10.x recommended).
 - **Package Manager:** `pip` version 22.0 or later.
 
 ---
@@ -29,18 +29,12 @@ Before installing the project dependencies, ensure your host environment satisfi
 ## 2. Installation Steps
 
 ### Step 2.1: Clone the Repository
-
-Clone the project repository to your local workspace and navigate into the project directory:
-
 ```bash
 git clone https://github.com/[your-organization]/projeto-cnn.git
 cd projeto-cnn
 ```
 
 ### Step 2.2: Create and Activate an Isolated Virtual Environment
-
-Always use an isolated virtual environment to avoid dependency conflicts across system packages:
-
 **On Linux / macOS:**
 ```bash
 python3 -m venv venv
@@ -53,14 +47,7 @@ python -m venv venv
 .\venv\Scripts\Activate.ps1
 ```
 
-> [!NOTE]
-> If PowerShell blocks script execution due to execution policy restrictions, run:
-> `Set-ExecutionPolicy -ExecutionPolicy RemoteSigned -Scope CurrentUser`
-
 ### Step 2.3: Install Pinned Dependencies
-
-Install all core dependencies specified in `requirements.txt`:
-
 ```bash
 pip install --upgrade pip
 pip install -r requirements.txt
@@ -68,11 +55,9 @@ pip install -r requirements.txt
 
 ### Dependency Stack Overview
 
-The project relies on a carefully selected, minimal set of foundational libraries:
-
-| Package | Version Pinned | Purpose in Architecture |
-|:--------|:---------------|:------------------------|
-| `tensorflow` | `==2.10.1` | Base computational runtime for custom CNN layer primitives (`src/scratch/`), SGD optimizer, and weight checkpointing. |
+| Package | Pinned Version | Purpose in Architecture |
+|:---|:---|:---|
+| `tensorflow` | `==2.10.1` | Base computational runtime for custom CNN layer primitives, SGD optimizer, and weight checkpointing. |
 | `torch` | `>=2.0` | Tensor backend for the Double DQN Q-network, target network, MSE loss optimization, and device-agnostic execution. |
 | `numpy` | `>=1.24` | Foundation for pre-allocated contiguous memory arrays, vectorized Euclidean distance computations, and SumTree binary trees. |
 | `scikit-learn` | `>=1.3` | Analytic covariance shrinkage (`LedoitWolf`) for Mahalanobis++ OOD detection and evaluation metrics. |
@@ -83,71 +68,20 @@ The project relies on a carefully selected, minimal set of foundational librarie
 
 ---
 
-## 3. Dataset Setup (Raw Binary MNIST)
+## 3. Dataset Setup
 
-The architecture operates directly on the original binary format of the MNIST dataset to ensure maximum data loading speed and zero framework overhead. The data loader (`src/data/loader.py`) parses raw bytes using the big-endian `struct` format without intermediary conversions.
+The architecture operates directly on raw datasets to guarantee deterministic preprocessing, reproducible splits, and zero high-level framework overhead.
 
-### Required Directory Structure
+### 3.1. MNIST Dataset Setup (Raw Binary)
+The data loader ([`src/data/loader.py`](file:///c:/Users/sanfr/Desktop/projetos-gecad/projeto-cnn/src/data/loader.py)) parses raw bytes using the big-endian `struct` format without intermediate conversions.
 
-Place the four uncompressed binary files into `data/MNIST/raw/`:
+Directory target: `data/MNIST/raw/`
+- `train-images-idx3-ubyte` (47,040,016 bytes, 60,000 images, 28x28)
+- `train-labels-idx1-ubyte` (60,008 bytes, 60,000 labels)
+- `t10k-images-idx3-ubyte` (7,840,016 bytes, 10,000 test images)
+- `t10k-labels-idx1-ubyte` (10,008 bytes, 10,000 test labels)
 
-```text
-projeto-cnn/
-└── data/
-    └── MNIST/
-        └── raw/
-            ├── train-images-idx3-ubyte    # 47,040,016 bytes (60,000 images, 28x28)
-            ├── train-labels-idx1-ubyte    # 60,008 bytes (60,000 labels)
-            ├── t10k-images-idx3-ubyte     # 7,840,016 bytes (10,000 test images)
-            └── t10k-labels-idx1-ubyte     # 10,008 bytes (10,000 test labels)
-```
-
-### Automated Dataset Download Script
-
-If the dataset is not yet present, run this automated Python snippet to fetch, decompress, and verify the binary files directly into `data/MNIST/raw/`:
-
-```python
-# scripts/download_mnist.py
-import os
-import gzip
-import urllib.request
-
-DATA_DIR = os.path.join(os.getcwd(), "data", "MNIST", "raw")
-os.makedirs(DATA_DIR, exist_ok=True)
-
-BASE_URL = "https://storage.googleapis.com/cvdf-datasets/mnist/"
-FILES = [
-    "train-images-idx3-ubyte.gz",
-    "train-labels-idx1-ubyte.gz",
-    "t10k-images-idx3-ubyte.gz",
-    "t10k-labels-idx1-ubyte.gz"
-]
-
-print(f"Downloading MNIST raw binary files to: {DATA_DIR}")
-for filename in FILES:
-    raw_name = filename.replace(".gz", "")
-    target_path = os.path.join(DATA_DIR, raw_name)
-    
-    if os.path.exists(target_path):
-        print(f"  [OK] Found existing: {raw_name}")
-        continue
-        
-    gz_path = os.path.join(DATA_DIR, filename)
-    url = BASE_URL + filename
-    print(f"  Fetching {url}...")
-    urllib.request.urlretrieve(url, gz_path)
-    
-    # Decompress gunzip
-    with gzip.open(gz_path, 'rb') as f_in:
-        with open(target_path, 'wb') as f_out:
-            f_out.write(f_in.read())
-    os.remove(gz_path)
-    print(f"  Extracted: {raw_name} ({os.path.getsize(target_path):,} bytes)")
-
-print("Dataset setup completed successfully.")
-```
-
-You can execute this directly via:
+Automated download command:
 ```bash
 python -c "
 import os, gzip, urllib.request
@@ -166,11 +100,18 @@ print('MNIST raw verification complete.')
 "
 ```
 
+### 3.2. CIFAR-10 Dataset Setup (Python Pickle Distribution)
+To download and extract the official CIFAR-10 dataset into `data/CIFAR10/raw/cifar-10-batches-py/`, execute the dedicated utility script:
+```bash
+python scripts/download_cifar10.py
+```
+This fetches the archive (`cifar-10-python.tar.gz`), extracts all batch files (`data_batch_1` through `data_batch_5`, `test_batch`, and `batches.meta`), and verifies integrity.
+
 ---
 
-## 4. Environment and Hardware Verification
+## 4. Environment and Dataset Verification
 
-Verify that your installed environment can import all submodules, locate hardware accelerators, and parse the raw dataset:
+Run the following unified check to verify runtime dependencies, hardware acceleration, and dataset accessibility across both MNIST and CIFAR-10:
 
 ```bash
 python -c "
@@ -188,33 +129,30 @@ print(f'PyTorch Version     : {torch.__version__} (CUDA Available: {torch.cuda.i
 print(f'NumPy Version       : {np.__version__}')
 print(f'scikit-learn Version: {sklearn.__version__}')
 
+# Verify MNIST
 try:
     imgs, lbls = load_mnist_raw(DATA_DIR, kind='train')
     print(f'MNIST Train Images  : {imgs.shape}, dtype={imgs.dtype}')
-    print(f'MNIST Train Labels  : {lbls.shape}, dtype={lbls.dtype}')
-    print('SUCCESS: Environment and dataset verified.')
+    print('  [OK] MNIST raw verified.')
 except Exception as e:
-    print(f'FAILURE: Could not load MNIST: {e}')
-"
-```
+    print(f'  [INFO] MNIST raw not ready: {e}')
 
-**Expected Output:**
-```text
-Python Version      : 3.10.x
-TensorFlow Version  : 2.10.1 (GPUs: 1 or 0)
-PyTorch Version     : 2.x.x (CUDA Available: True or False)
-NumPy Version       : 1.24.x
-scikit-learn Version: 1.3.x
-MNIST Train Images  : (60000, 28, 28, 1), dtype=uint8
-MNIST Train Labels  : (60000,), dtype=uint8
-SUCCESS: Environment and dataset verified.
+# Verify CIFAR-10
+cifar_path = os.path.join(PROJECT_ROOT, 'data', 'CIFAR10', 'raw', 'cifar-10-batches-py')
+if os.path.exists(cifar_path):
+    print(f'  [OK] CIFAR-10 batches verified at {cifar_path}')
+else:
+    print(f'  [INFO] CIFAR-10 not found. Run: python scripts/download_cifar10.py')
+"
 ```
 
 ---
 
-## 5. Minimal Reproduction Pipeline (5 Commands)
+## 5. Minimal Reproduction Pipelines
 
-To reproduce the experimental results presented in the EAAI paper from a clean repository state, execute the following 5 commands sequentially:
+The repository provides modular, segregated execution pipelines for both MNIST and CIFAR-10:
+
+### 5.1. MNIST Reproduction Pipeline (5 Steps)
 
 ```mermaid
 sequenceDiagram
@@ -227,91 +165,108 @@ sequenceDiagram
     participant EVAL as evaluate_hybrid_global.py
 
     User->>CNN: python scripts/train_cnn.py
-    Note over CNN: Trains 128D latent CNN (10 Epochs)<br>Saves outputs/checkpoints/
+    Note over CNN: Trains 128D latent CNN (10 Epochs)<br>Saves outputs/mnist/checkpoints/
     CNN-->>User: Validation Accuracy: 98.7%
 
     User->>OOD: python scripts/profile_latent.py
-    Note over OOD: Computes Centroids & Ledoit-Wolf Covariance<br>Saves outputs/mahalanobis_pp_profiles.npz
+    Note over OOD: Computes Centroids & Ledoit-Wolf Covariance<br>Saves outputs/mnist/mahalanobis_pp_profiles.npz
     OOD-->>User: Calibrated tau = 12.5
 
     User->>MEM: python scripts/train_rl.py --latent-dim 128
-    Note over MEM: Seeds memory bank with clean & noisy exemplars<br>Saves outputs/knn_memory_bank_128d.npz
+    Note over MEM: Seeds memory bank with clean & noisy exemplars<br>Saves outputs/mnist/knn_memory_bank_128d.npz
     MEM-->>User: Memory initialized (5,000 slots)
 
     User->>RL: python -m training.train_rl_online_simulation --steps 50000
-    Note over RL: 50,000 Streaming steps under concept drift<br>Trains Double DQN + PER agent<br>Saves outputs/checkpoints/rl_agent_phase3.pt
+    Note over RL: 50,000 Streaming steps under concept drift<br>Trains Double DQN + PER agent<br>Saves outputs/mnist/checkpoints/rl_agent_phase3.pt
     RL-->>User: Active Eviction Policy Converged
 
-    User->>EVAL: python evaluate_hybrid_global.py
+    User->>EVAL: python evaluate_hybrid_global.py --dataset mnist
     Note over EVAL: Evaluates B0, B1, B2, B3, B4 baselines<br>Generates metrics JSON & PNG Dashboard
-    EVAL-->>User: Outputs outputs/eaai_metrics.json
+    EVAL-->>User: Outputs outputs/mnist/eaai_metrics.json
 ```
 
-### Step 1: Train the Parametric Feature Extractor (CNN)
-Trains the custom from-scratch Convolutional Neural Network with He Normal initialization and SGD optimizer on clean nominal training data:
+1. **Train Parametric CNN:** `python scripts/train_cnn.py`
+2. **Profile Latent Space:** `python scripts/profile_latent.py`
+3. **Seed Episodic Memory:** `python scripts/train_rl.py --latent-dim 128`
+4. **Train RL Agent (Simulation):** `python -m training.train_rl_online_simulation --steps 50000`
+5. **Evaluate 5 Baselines:** `python evaluate_hybrid_global.py --dataset mnist`
 
-```bash
-python scripts/train_cnn.py
+---
+
+### 5.2. CIFAR-10 Reproduction Pipeline (5 Steps)
+
+```mermaid
+sequenceDiagram
+    autonumber
+    actor User as Researcher
+    participant CNN as scripts/cifar10/train_cnn.py
+    participant OOD as scripts/cifar10/profile_latent.py
+    participant MEM as scripts/cifar10/seed_memory.py
+    participant RL as scripts/cifar10/train_simulation.py
+    participant EVAL as scripts/cifar10/evaluate_baselines.py
+
+    User->>CNN: python scripts/cifar10/train_cnn.py --epochs 25
+    Note over CNN: Trains ResNet-9 backbone with BatchNorm<br>Achieves 91.18% accuracy<br>Saves outputs/cifar10/checkpoints/modelo_dissecado-24
+    CNN-->>User: Nominal Test Accuracy: 91.18%
+
+    User->>OOD: python scripts/cifar10/profile_latent.py --percentile 95.0
+    Note over OOD: Computes Unnormalized Mahalanobis + Shannon Entropy<br>Saves outputs/cifar10/mahalanobis_pp_profiles.npz
+    OOD-->>User: Calibrated tau_M = 16.04, tau_H = 0.74
+
+    User->>MEM: python scripts/cifar10/seed_memory.py --samples 5000 --k 10
+    Note over MEM: Seeds memory buffer with 5,000 clean prototypes (k=10)<br>Saves outputs/cifar10/knn_memory_bank_128d.npz
+    MEM-->>User: k-NN Baseline Accuracy: 91.90%
+
+    User->>RL: python scripts/cifar10/train_simulation.py --steps 50000
+    Note over RL: 50,000 Prequential steps under drift<br>Double DQN + PER learns Action 0 & Action 3<br>Saves outputs/cifar10/checkpoints/rl_agent_phase3.pt
+    RL-->>User: RL Policy Converged
+
+    User->>EVAL: python scripts/cifar10/evaluate_baselines.py
+    Note over EVAL: Evaluates B0 through B4 baselines (5,000 samples)<br>Generates metrics JSON, CSV, and Publication Dashboard
+    EVAL-->>User: Outputs outputs/cifar10/eaai_metrics.json
 ```
-- **Execution Time:** ~2-3 minutes on modern GPU (RTX 4090 / L40S) or ~8-12 minutes on 8-core CPU.
-- **Artifact Produced:** `outputs/checkpoints/ckpt-*.index` and `ckpt-*.data-*` (TensorFlow checkpoint).
-- **Target Metric:** Validation accuracy $\ge 98.5\%$ on clean MNIST test set.
 
-### Step 2: Profile Latent Space for Mahalanobis++ OOD Arbiter
-Feeds clean training samples through the trained CNN, extracts 128D bottleneck features, and calculates class-conditional centroids $\mu_c$ and Ledoit-Wolf regularized covariance matrices $\Sigma_c$:
-
-```bash
-python scripts/profile_latent.py
-```
-- **Execution Time:** ~45 seconds on GPU, ~1.5 minutes on CPU.
-- **Artifact Produced:** `outputs/mahalanobis_pp_profiles.npz` and `outputs/mahalanobis_profiles.npz`.
-- **Target Metric:** Calibrated distance threshold $\tau = 12.5$ corresponding to the 95th percentile of nominal in-distribution features.
-
-### Step 3: Seed Initial Episodic Memory Bank
-Instantiates the capacity-bounded episodic memory buffer ($N = 5,000$) and seeds it with balanced nominal representations and hard misclassification exemplars:
-
-```bash
-python scripts/train_rl.py --latent-dim 128
-```
-- **Execution Time:** ~1-2 minutes.
-- **Artifact Produced:** `outputs/knn_memory_bank_128d.npz`.
-- **Target Metric:** Pre-allocated 5,000 exemplar slots populated with initial support vectors.
-
-### Step 4: Train Active Memory RL Agent via Online Streaming Simulation
-Launches 50,000 steps of online prequential simulation under non-stationary concept drift ($p_{\text{noise}} = 0.1, \sigma = 0.6$). The Double DQN agent learns optimal eviction actions (FIFO, LFU, or Redundancy) guided by the Curriculum Learning Reward Manager:
-
-```bash
-python -m training.train_rl_online_simulation --steps 50000
-```
-- **Execution Time:** ~10-15 minutes (streaming step processing, vectorized $k$-NN search, Double DQN training).
-- **Artifact Produced:** `outputs/checkpoints/rl_agent_phase3.pt` (PyTorch model weights) and `outputs/train_rl_simulation_log.csv` (step-by-step telemetry).
-- **Target Metric:** Curriculum transition from density exploration to empirical accuracy reward ($\alpha \le 0.01$).
-
-### Step 5: Execute 5-Baseline Comparative Evaluation
-Executes the comprehensive EAAI benchmark comparing the proposed RL Active Memory architecture against four baselines across 10,000 test queries under clean and noise stress testing:
-
-```bash
-python evaluate_hybrid_global.py
-```
-- **Execution Time:** ~2-4 minutes.
-- **Artifact Produced:** `outputs/eaai_metrics.json` and `outputs/figures/eaai_benchmark_dashboard.png`.
-- **Target Metric:** B4 (Proposed RL Agent) achieving $\sim 68.85\%$ noisy accuracy and $80.25\%$ rescue rate, outperforming blind FIFO (B2) and LFU (B3) by $+4.5\%$ absolute accuracy with $170\times$ lower distribution divergence ($D_{KL}$).
+1. **Train ResNet-9 Backbone:**
+   ```bash
+   python scripts/cifar10/train_cnn.py --epochs 25 --batch-size 128 --lr 0.001
+   ```
+2. **Profile Dual Uncertainty Arbiter:**
+   ```bash
+   python scripts/cifar10/profile_latent.py --percentile 95.0
+   ```
+3. **Seed Episodic Memory Buffer:**
+   ```bash
+   python scripts/cifar10/seed_memory.py --samples 5000 --k 10
+   ```
+4. **Train Double DQN Active Memory Agent:**
+   ```bash
+   python scripts/cifar10/train_simulation.py --steps 50000 --noise-rate 0.1 --noise-level 0.6
+   ```
+5. **Run Standardized 5-Baseline Evaluation:**
+   ```bash
+   python scripts/cifar10/evaluate_baselines.py --samples-per-level 1000 --noise-levels 0.0 0.2 0.4 0.6 0.8
+   ```
 
 ---
 
 ## 6. Expected Output Artifacts
 
-Following completion of the 5-step reproduction pipeline, the `outputs/` directory will contain the following artifacts:
+Following completion of the reproduction pipelines, output artifacts are organized in dedicated dataset directories:
 
-| Path | Format | Approximate Size | Description |
-|:-----|:-------|:-----------------|:------------|
-| `outputs/checkpoints/ckpt-*` | Binary / Index | $\sim 2.8$ MB | Trained TensorFlow custom CNN weights. |
-| `outputs/mahalanobis_pp_profiles.npz` | NumPy Archive | $\sim 660$ KB | 10 class centroids (128D) and regularized precision matrices $(10 \times 128 \times 128)$. |
-| `outputs/knn_memory_bank_128d.npz` | NumPy Archive | $\sim 2.7$ MB | Pre-allocated episodic memory array storing states, actions, rewards, ticks, and usage counts. |
-| `outputs/checkpoints/rl_agent_phase3.pt` | PyTorch State Dict | $\sim 45$ KB | Double DQN MLP policy network weights (5D input $\to$ 64 $\to$ 64 $\to$ 4D output). |
-| `outputs/train_rl_simulation_log.csv` | Text CSV | $\sim 150$ KB | Telemetry logged every 500 steps (step, reward, loss, epsilon, buffer size, class counts). |
-| `outputs/eaai_metrics.json` | JSON | $\sim 15$ KB | Complete quantitative results across all 5 baselines for clean and noisy distributions. |
-| `outputs/figures/eaai_benchmark_dashboard.png` | PNG Image | $\sim 350$ KB | 6-panel publication-grade evaluation dashboard. |
+| Directory | Key Artifact | Format | Description |
+|:---|:---|:---|:---|
+| `outputs/mnist/checkpoints/` | `modelo_dissecado-*` | TF Checkpoint | Trained 4-layer custom CNN weights (98.7% acc). |
+| `outputs/mnist/` | `mahalanobis_pp_profiles.npz` | NumPy Archive | 10 centroids (128D) and Ledoit-Wolf precision matrices ($\tau=12.5$). |
+| `outputs/mnist/` | `knn_memory_bank_128d.npz` | NumPy Archive | Pre-allocated 5,000-slot episodic memory array. |
+| `outputs/mnist/checkpoints/` | `rl_agent_phase3.pt` | PyTorch State | Trained Double DQN agent weights (5D state $\to$ 4 actions). |
+| `outputs/mnist/` | `eaai_metrics.json` | JSON | Formal 5-baseline evaluation metrics on MNIST. |
+| `outputs/mnist/` | `eaai_evaluation_dashboard.png` | PNG Image | 4-panel publication-grade evaluation dashboard. |
+| `outputs/cifar10/checkpoints/` | `modelo_dissecado-24` | TF Checkpoint | Trained ResNet-9 weights (91.18% test acc). |
+| `outputs/cifar10/` | `mahalanobis_pp_profiles.npz` | NumPy Archive | Dual Uncertainty profiles ($\tau_M=16.0380, \tau_H=0.7382$). |
+| `outputs/cifar10/` | `knn_memory_bank_128d.npz` | NumPy Archive | Pre-allocated 5,000-slot episodic memory array ($k=10$). |
+| `outputs/cifar10/checkpoints/` | `rl_agent_phase3.pt` | PyTorch State | Trained Double DQN agent weights for CIFAR-10. |
+| `outputs/cifar10/` | `eaai_metrics.json` | JSON | Formal 5-baseline evaluation metrics on CIFAR-10. |
+| `outputs/cifar10/` | `eaai_evaluation_dashboard.png` | PNG Image | 4-panel publication-grade evaluation dashboard for CIFAR-10. |
 
 ---
 
@@ -319,30 +274,25 @@ Following completion of the 5-step reproduction pipeline, the `outputs/` directo
 
 ### Issue 1: TensorFlow GPU DLL Not Found on Windows
 - **Symptom:** `Could not load dynamic library 'cudart64_110.dll'` or TensorFlow falls back to CPU.
-- **Cause:** TensorFlow 2.10.1 was the final official release supporting native Windows GPU execution, requiring CUDA 11.2 and cuDNN 8.1.
+- **Cause:** TensorFlow 2.10.1 was the final official release supporting native Windows GPU execution.
 - **Resolution:** No action is strictly necessary; the entire pipeline functions completely on CPU. If native GPU execution on Windows is required, ensure CUDA 11.2 runtime libraries are present in system `PATH`. Alternatively, execute inside WSL2 (Ubuntu 22.04).
 
-### Issue 2: FileNotFoundError: `[Errno 2] No such file or directory: '...train-images-idx3-ubyte'`
-- **Symptom:** `src/data/loader.py` fails on binary file open.
-- **Cause:** Raw MNIST binary files have not been extracted into `data/MNIST/raw/` or have trailing `.gz` extensions.
-- **Resolution:** Run the automated dataset setup script provided in [Section 3](#automated-dataset-download-script). Ensure files are named exactly `train-images-idx3-ubyte` without `.gz` or `.txt`.
+### Issue 2: CIFAR-10 Download Connection Reset
+- **Symptom:** `urllib.error.URLError` when downloading CIFAR-10 archive.
+- **Resolution:** Re-run `python scripts/download_cifar10.py` or manually place `cifar-10-python.tar.gz` into `data/CIFAR10/raw/` and run the script again to complete extraction.
 
 ### Issue 3: Memory Thrashing / Out of Memory (OOM)
-- **Symptom:** Operating system terminates Python process with SIGKILL or MemoryError during the 50,000-step simulation.
+- **Symptom:** Operating system terminates Python process during the 50,000-step simulation.
 - **Cause:** Host system has less than 8 GB RAM or swap space is disabled.
-- **Resolution:** The episodic memory buffer is strictly pre-allocated ($5,000 \times 128 \times 4\text{ bytes} \approx 2.56\text{ MB}$). However, if your system has restricted memory, reduce `SIMULATION_STEPS` from `50000` to `25000` in `src/config.py` or via command-line `--steps 25000`.
-
-### Issue 4: Determinism and Random Seeds
-- **Symptom:** Slight variance in accuracy decimals across different architectures.
-- **Cause:** GPU floating-point non-determinism during atomic additions in CUDA convolution kernels.
-- **Resolution:** `src/config.py` fixes `RANDOM_SEED = 42` across NumPy, TensorFlow, and PyTorch. For bitwise reproducible CPU execution, export `PYTHONHASHSEED=42`.
+- **Resolution:** The episodic memory buffer is strictly pre-allocated ($5,000 \times 128 \times 4\text{ bytes} \approx 2.56\text{ MB}$). However, if your system has restricted memory, reduce `--steps 50000` to `--steps 25000` via command-line flags.
 
 ---
 
 **Navigation:**
-- Previous: [Getting Started Index](README.md)
-- Up: [Getting Started Index](README.md)
-- Next: [Configuration Reference](configuration.md)
+- Previous: [Getting Started Index](file:///c:/Users/sanfr/Desktop/projetos-gecad/projeto-cnn/docs/getting-started/README.md)
+- Up: [Getting Started Index](file:///c:/Users/sanfr/Desktop/projetos-gecad/projeto-cnn/docs/getting-started/README.md)
+- Next: [Configuration Reference](file:///c:/Users/sanfr/Desktop/projetos-gecad/projeto-cnn/docs/getting-started/configuration.md)
 
 ---
-Licensed under the GNU General Public License v3.0. See [LICENSE](../../LICENSE) for details.
+
+Licensed under the GNU General Public License v3.0. See [LICENSE](file:///c:/Users/sanfr/Desktop/projetos-gecad/projeto-cnn/LICENSE) for details.

@@ -238,7 +238,7 @@ A divergence near zero indicates optimal class preservation, ensuring that rare 
 
 ## 4. Verification and Reproducibility
 
-All seven metrics are computed systematically during the execution of [evaluate_hybrid_global.py](../../evaluate_hybrid_global.py) and exported synchronously to both [`outputs/eaai_metrics.json`](../../outputs/eaai_metrics.json) and [`outputs/eaai_metrics.csv`](../../outputs/eaai_metrics.csv).
+All seven metrics are computed systematically during the execution of [evaluate_hybrid_global.py](../../evaluate_hybrid_global.py) (for MNIST) and [`scripts/cifar10/evaluate_baselines.py`](../../scripts/cifar10/evaluate_baselines.py) (for CIFAR-10), and exported synchronously to [`outputs/mnist/eaai_metrics.json`](../../outputs/mnist/eaai_metrics.json) and [`outputs/cifar10/eaai_metrics.json`](../../outputs/cifar10/eaai_metrics.json).
 
 To run the automated verification test verifying metric mathematical invariants and schema compliance:
 

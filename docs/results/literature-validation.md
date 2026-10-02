@@ -10,8 +10,8 @@
 This document provides a systematic comparative analysis between the empirical results obtained by the proposed RL-driven active episodic memory system and the theoretical foundations, hypotheses, and benchmarks established in the published scientific literature. The analysis is conducted in preparation for submission to *Engineering Applications of Artificial Intelligence* (EAAI, Elsevier) and serves to validate that the experimental findings are scientifically grounded, statistically rigorous, and aligned with the current state of the art.
 
 **Primary Audited Sources:**
-- [`outputs/eaai_metrics.json`](../../outputs/eaai_metrics.json)
-- [`outputs/eaai_metrics.csv`](../../outputs/eaai_metrics.csv)
+- [`outputs/mnist/eaai_metrics.json`](../../outputs/mnist/eaai_metrics.json)
+- [`outputs/mnist/eaai_metrics.csv`](../../outputs/mnist/eaai_metrics.csv)
 - [Baseline Comparison Analysis](baseline-comparison.md)
 - [Engineering Metrics Reference](metrics-reference.md)
 
@@ -70,7 +70,7 @@ $$\tilde{x} = \operatorname{clip}(x + \mathcal{N}(0, \sigma^2 \mathbf{I}),\; 0.0
 
 ### 3.1. Complete Empirical Results Matrix
 
-All values below were verified directly from the audited records in [`outputs/eaai_metrics.json`](../../outputs/eaai_metrics.json):
+All values below were verified directly from the audited records in [`outputs/mnist/eaai_metrics.json`](../../outputs/mnist/eaai_metrics.json):
 
 | Evaluation Dimension | B0 (Pure CNN) | B1 (Unbound Mem.) | B2 (FIFO) | B3 (LFU) | B4 (Proposed RL) | Absolute Gain (B4 vs B2/B3) |
 |:---|:---:|:---:|:---:|:---:|:---:|:---:|
@@ -97,11 +97,11 @@ The following comparative framework maps each verified empirical behavior to the
 | Scientific Domain | Seminal Reference | Theoretical Proposition in the Literature | Empirical Result Obtained |
 |:---|:---|:---|:---|
 | **[Out-of-Distribution Detection](../Literatura/Out-of-Distribution/README.md)** | Lee et al. (2018); Kamoi & Kobayashi (2020); Chen et al. (2010 — Ledoit-Wolf); Nguyen (2026 — HUE-OOD) | Softmax confidence collapses under noise; Mahalanobis distance in the latent space is effective for anomaly detection. | B0 collapses to $20.30\%$ at $\sigma = 0.8$; Mahalanobis++ reroutes $100\%$ of OOD cases to episodic memory. |
-| **[Episodic Memory](../Literatura/Episodic%20Memory/README.md)** | Pritzel et al. (2017 — NEC); Blundell et al. (2016 — MFEC); Jain & Lindsey (2018 — Semiparametric) | Combining a slow parametric extractor with a fast non-parametric memory, grounded in the CLS Theory from neuroscience. | B4 achieves a $61.48\%$ Cache Hit Rate, rescuing predictions lost by the CNN. |
+| **[Episodic Memory](../Literatura/Episodic Memory/README.md)** | Pritzel et al. (2017 — NEC); Blundell et al. (2016 — MFEC); Jain & Lindsey (2018 — Semiparametric) | Combining a slow parametric extractor with a fast non-parametric memory, grounded in the CLS Theory from neuroscience. | B4 achieves a $61.48\%$ Cache Hit Rate, rescuing predictions lost by the CNN. |
 | **Cache Pollution** | Alonso & Krichmar (2024 — SQHN); Alabed (2019 — RLCache); Zhou et al. (2024 — Catcher+) | Blind heuristics admit noise, contaminating latent density and severely degrading retrieval performance. | Heuristics B2 and B3 fall to $17.60\%$ (worse than standalone CNN B0 at $20.30\%$); B4 with Action 0 sustains $27.30\%$. |
-| **[Continual Learning](../Literatura/Continual%20Learning/README.md)** | Isele & Cosgun (AAAI 2018 — SER); Zheng et al. (2024 — Coresets); Schaul et al. (2015 — PER) | Theorem: *Distribution Matching* is the only policy that prevents catastrophic forgetting of dormant classes. | Eviction KL divergence drops from $0.5003$ nats (FIFO/LFU) to $0.0028$ nats ($177\times$ reduction in B4 via Action 3). |
+| **[Continual Learning](../Literatura/Continual Learning/README.md)** | Isele & Cosgun (AAAI 2018 — SER); Zheng et al. (2024 — Coresets); Schaul et al. (2015 — PER) | Theorem: *Distribution Matching* is the only policy that prevents catastrophic forgetting of dormant classes. | Eviction KL divergence drops from $0.5003$ nats (FIFO/LFU) to $0.0028$ nats ($177\times$ reduction in B4 via Action 3). |
 | **Streaming Evaluation** | Haug et al. (2022 — float); Wu et al. (2026 — Continual Edge AI) | Prequential drift evaluation in continuous streams via *Forgetting Rate* and *Drift Restoration Time*. | B4 reduces forgetting by $2.50\%$ and recovers from drift $44.8$ steps faster than FIFO and LFU. |
-| **[Edge AI & Sustainability](../Literatura/Edge%20AI/README.md)** | Jain et al. (2022 — LMOS); Pittorino & Roveri (2026 — Adaptive Edge) | Embedded systems require $O(1)$ memory and strictly bounded latency to avoid OOM-induced halts. | B1 grows to $35.2$ MB; B4 enforces a ceiling of $9.92$ MB with mean latency of $6.67$ ms ($\approx 150$ fps). |
+| **[Edge AI & Sustainability](../Literatura/Edge AI/README.md)** | Jain et al. (2022 — LMOS); Pittorino & Roveri (2026 — Adaptive Edge) | Embedded systems require $O(1)$ memory and strictly bounded latency to avoid OOM-induced halts. | B1 grows to $35.2$ MB; B4 enforces a ceiling of $9.92$ MB with mean latency of $6.67$ ms ($\approx 150$ fps). |
 
 ---
 
@@ -195,9 +195,9 @@ Based on the consistency of results and mapping to the literature:
   - [Scientific Literature Hub](../Literatura/README.md)
   - [Unified Scientific Glossary](../Literatura/GLOSSARIO.md)
   - [Literature: Out-of-Distribution](../Literatura/Out-of-Distribution/README.md)
-  - [Literature: Episodic Memory](../Literatura/Episodic%20Memory/README.md)
-  - [Literature: Continual Learning](../Literatura/Continual%20Learning/README.md)
-  - [Literature: Edge AI](../Literatura/Edge%20AI/README.md)
+  - [Literature: Episodic Memory](../Literatura/Episodic Memory/README.md)
+  - [Literature: Continual Learning](../Literatura/Continual Learning/README.md)
+  - [Literature: Edge AI](../Literatura/Edge AI/README.md)
   - [Literature: Q-Learning](../Literatura/Q-Learning/README.md)
 
 ---

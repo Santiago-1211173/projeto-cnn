@@ -184,9 +184,9 @@ Every document must end with a navigation footer:
 ---
 
 **Navigation:**
-- Previous: [Previous Document Title](relative-link)
+- Previous: [Previous Document Title](#relative-link)
 - Up: [Documentation Index](../README.md)
-- Next: [Next Document Title](relative-link)
+- Next: [Next Document Title](#relative-link)
 ```
 
 ### Cross-Reference Convention
@@ -268,8 +268,8 @@ The agent MUST also read the existing Portuguese documentation files in `docs/` 
 **Objective:** Create the GPL-3.0 license file and a machine-readable CITATION.cff file.
 
 **Files to CREATE:**
-- [x] 0.1 [`LICENSE`](../LICENSE) `[COMPLETED]`
-- [x] 0.2 [`CITATION.cff`](../CITATION.cff) `[COMPLETED]`
+- [x] 0.1 [`LICENSE`](../../LICENSE) `[COMPLETED]`
+- [x] 0.2 [`CITATION.cff`](../../CITATION.cff) `[COMPLETED]`
 
 ### 0.1 -- `LICENSE` `[COMPLETED]`
 - Location: `projeto-cnn/LICENSE`
@@ -411,13 +411,13 @@ The agent MUST also read the existing Portuguese documentation files in `docs/` 
 **Objective:** Create the `docs/architecture/` directory with deep-dive documentation for every architectural component.
 
 **Files to CREATE:**
-- [x] 2.1 [`docs/architecture/README.md`](architecture/README.md) -- System Architecture Overview `[COMPLETED]`
-- [x] 2.2 [`docs/architecture/cnn-feature-extractor.md`](architecture/cnn-feature-extractor.md) -- CNN Feature Extractor `[COMPLETED]`
-- [x] 2.3 [`docs/architecture/ood-detection.md`](architecture/ood-detection.md) -- Mahalanobis++ OOD Routing `[COMPLETED]`
-- [x] 2.4 [`docs/architecture/episodic-memory.md`](architecture/episodic-memory.md) -- Capacity-Bounded k-NN Buffer `[COMPLETED]`
-- [x] 2.5 [`docs/architecture/rl-agent.md`](architecture/rl-agent.md) -- Double DQN + PER Agent `[COMPLETED]`
-- [x] 2.6 [`docs/architecture/reward-system.md`](architecture/reward-system.md) -- Curriculum Learning Rewards `[COMPLETED]`
-- [x] 2.7 [`docs/architecture/data-flow.md`](architecture/data-flow.md) -- End-to-End Data Flow `[COMPLETED]`
+- [x] 2.1 [`docs/architecture/README.md`](../architecture/README.md) -- System Architecture Overview `[COMPLETED]`
+- [x] 2.2 [`docs/architecture/cnn-feature-extractor.md`](../architecture/cnn-feature-extractor.md) -- CNN Feature Extractor `[COMPLETED]`
+- [x] 2.3 [`docs/architecture/ood-detection.md`](../architecture/ood-detection.md) -- Mahalanobis++ OOD Routing `[COMPLETED]`
+- [x] 2.4 [`docs/architecture/episodic-memory.md`](../architecture/episodic-memory.md) -- Capacity-Bounded k-NN Buffer `[COMPLETED]`
+- [x] 2.5 [`docs/architecture/rl-agent.md`](../architecture/rl-agent.md) -- Double DQN + PER Agent `[COMPLETED]`
+- [x] 2.6 [`docs/architecture/reward-system.md`](../architecture/reward-system.md) -- Curriculum Learning Rewards `[COMPLETED]`
+- [x] 2.7 [`docs/architecture/data-flow.md`](../architecture/data-flow.md) -- End-to-End Data Flow `[COMPLETED]`
 
 ### 2.1 -- Architecture Overview: `docs/architecture/README.md` `[COMPLETED]`
 
@@ -613,9 +613,9 @@ The agent MUST also read the existing Portuguese documentation files in `docs/` 
 **Objective:** Create the `docs/getting-started/` directory with installation, quickstart, and configuration reference.
 
 **Files to CREATE:**
-- [x] 3.1 [`docs/getting-started/README.md`](getting-started/README.md) -- Getting Started Index `[COMPLETED]`
-- [x] 3.2 [`docs/getting-started/quickstart.md`](getting-started/quickstart.md) -- Installation and Quick Start `[COMPLETED]`
-- [x] 3.3 [`docs/getting-started/configuration.md`](getting-started/configuration.md) -- Configuration Reference `[COMPLETED]`
+- [x] 3.1 [`docs/getting-started/README.md`](../getting-started/README.md) -- Getting Started Index `[COMPLETED]`
+- [x] 3.2 [`docs/getting-started/quickstart.md`](../getting-started/quickstart.md) -- Installation and Quick Start `[COMPLETED]`
+- [x] 3.3 [`docs/getting-started/configuration.md`](../getting-started/configuration.md) -- Configuration Reference `[COMPLETED]`
 
 ### 3.1 -- Getting Started Index: `docs/getting-started/README.md` `[COMPLETED]`
 
@@ -691,10 +691,10 @@ The agent MUST also read the existing Portuguese documentation files in `docs/` 
 **Objective:** Create the `docs/guides/` directory with step-by-step workflow guides.
 
 **Files to CREATE:**
-- [x] 4.1 [`docs/guides/README.md`](guides/README.md) -- Guides Index `[COMPLETED]`
-- [x] 4.2 [`docs/guides/training-pipeline.md`](guides/training-pipeline.md) -- Full Training Pipeline `[COMPLETED]`
-- [x] 4.3 [`docs/guides/evaluation.md`](guides/evaluation.md) -- Running the EAAI Evaluation `[COMPLETED]`
-- [x] 4.4 [`docs/guides/visualization.md`](guides/visualization.md) -- Explainable AI and Visualization Tools `[COMPLETED]`
+- [x] 4.1 [`docs/guides/README.md`](../guides/README.md) -- Guides Index `[COMPLETED]`
+- [x] 4.2 [`docs/guides/training-pipeline.md`](../guides/training-pipeline.md) -- Full Training Pipeline `[COMPLETED]`
+- [x] 4.3 [`docs/guides/evaluation.md`](../guides/evaluation.md) -- Running the EAAI Evaluation `[COMPLETED]`
+- [x] 4.4 [`docs/guides/visualization.md`](../guides/visualization.md) -- Explainable AI and Visualization Tools `[COMPLETED]`
 
 ### 4.1 -- Guides Index: `docs/guides/README.md` `[COMPLETED]`
 
@@ -789,13 +789,13 @@ The agent MUST also read the existing Portuguese documentation files in `docs/` 
 **Objective:** Create the `docs/api/` directory with detailed API reference for every public module.
 
 **Files to CREATE:**
-- [x] 5.1 [`docs/api/README.md`](api/README.md) -- API Reference Index `[COMPLETED]`
-- [x] 5.2 [`docs/api/config.md`](api/config.md) -- `src/config.py` Reference `[COMPLETED]`
-- [x] 5.3 [`docs/api/custom-cnn.md`](api/custom-cnn.md) -- `src/models/custom_cnn.py` Reference `[COMPLETED]`
-- [x] 5.4 [`docs/api/knn-bandit-agent.md`](api/knn-bandit-agent.md) -- `src/models/knn_bandit_agent.py` Reference `[COMPLETED]`
-- [x] 5.5 [`docs/api/rl-agent.md`](api/rl-agent.md) -- `src/models/rl_agent.py` Reference `[COMPLETED]`
-- [x] 5.6 [`docs/api/reward-manager.md`](api/reward-manager.md) -- `src/models/reward_manager.py` Reference `[COMPLETED]`
-- [x] 5.7 [`docs/api/train-rl-online-simulation.md`](api/train-rl-online-simulation.md) -- `training/train_rl_online_simulation.py` Reference `[COMPLETED]`
+- [x] 5.1 [`docs/api/README.md`](../api/README.md) -- API Reference Index `[COMPLETED]`
+- [x] 5.2 [`docs/api/config.md`](../api/config.md) -- `src/config.py` Reference `[COMPLETED]`
+- [x] 5.3 [`docs/api/custom-cnn.md`](../api/custom-cnn.md) -- `src/models/custom_cnn.py` Reference `[COMPLETED]`
+- [x] 5.4 [`docs/api/knn-bandit-agent.md`](../api/knn-bandit-agent.md) -- `src/models/knn_bandit_agent.py` Reference `[COMPLETED]`
+- [x] 5.5 [`docs/api/rl-agent.md`](../api/rl-agent.md) -- `src/models/rl_agent.py` Reference `[COMPLETED]`
+- [x] 5.6 [`docs/api/reward-manager.md`](../api/reward-manager.md) -- `src/models/reward_manager.py` Reference `[COMPLETED]`
+- [x] 5.7 [`docs/api/train-rl-online-simulation.md`](../api/train-rl-online-simulation.md) -- `training/train_rl_online_simulation.py` Reference `[COMPLETED]`
 
 ### 5.1 -- API Reference Index: `docs/api/README.md` `[COMPLETED]`
 
@@ -872,9 +872,9 @@ Description of what the method does.
 **Objective:** Create the `docs/results/` directory with a comprehensive presentation of experimental results.
 
 **Files to CREATE:**
-- [x] 6.1 [`docs/results/README.md`](results/README.md) -- Results Overview `[COMPLETED]`
-- [x] 6.2 [`docs/results/baseline-comparison.md`](results/baseline-comparison.md) -- Baseline Comparison Analysis `[COMPLETED]`
-- [x] 6.3 [`docs/results/metrics-reference.md`](results/metrics-reference.md) -- Engineering Metrics Reference `[COMPLETED]`
+- [x] 6.1 [`docs/results/README.md`](../results/README.md) -- Results Overview `[COMPLETED]`
+- [x] 6.2 [`docs/results/baseline-comparison.md`](../results/baseline-comparison.md) -- Baseline Comparison Analysis `[COMPLETED]`
+- [x] 6.3 [`docs/results/metrics-reference.md`](../results/metrics-reference.md) -- Engineering Metrics Reference `[COMPLETED]`
 
 ### 6.1 -- Results Overview: `docs/results/README.md` `[COMPLETED]`
 

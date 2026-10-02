@@ -1,156 +1,179 @@
-# Out-of-Distribution Detection: Mahalanobis++
+# Out-of-Distribution Detection: Mahalanobis++ and Dual Uncertainty Arbiter
 
-> Part of the [Active Episodic Memory Management via Reinforcement Learning for Robust CNN Inference on Out-of-Distribution Data](../../README.md) documentation.
-> Parent: [System Architecture](README.md) | Up: [System Architecture](README.md)
-
----
-
-## 1. Overview and Purpose
-
-In resource-constrained edge deployments, deep neural networks encounter inputs corrupted by physical sensor noise, lens smearing, lighting shifts, and environmental concept drift. Conventional classification networks output uncalibrated, overconfident predictions on anomalous inputs because the softmax function maps arbitrary high logit activations to probabilities approaching 1.0.
-
-To provide trustworthy inference, the system integrates **Mahalanobis++**, an Out-of-Distribution (OOD) routing mechanism implemented in `MahalanobisPlusPlus` within [`training/train_rl_online_simulation.py`](../../training/train_rl_online_simulation.py). The detector monitors the 128D latent space of the CNN, computing geometric distances to nominal class manifolds to determine whether a query can be safely classified by the parametric CNN or must be routed to the $k$-NN episodic memory buffer for rescue.
+> Part of the [Active Episodic Memory Management via Reinforcement Learning for Robust CNN Inference on Out-of-Distribution Data](file:///c:/Users/sanfr/Desktop/projetos-gecad/projeto-cnn/README.md) documentation.  
+> Parent: [System Architecture](file:///c:/Users/sanfr/Desktop/projetos-gecad/projeto-cnn/docs/architecture/README.md) | Up: [System Architecture](file:///c:/Users/sanfr/Desktop/projetos-gecad/projeto-cnn/docs/architecture/README.md)
 
 ---
 
-## 2. Mathematical Formulation
+## 1. Overview and Rationale
 
-### 2.1. Standard Mahalanobis Distance
-Given a latent feature vector $z \in \mathbb{R}^{D}$ and nominal class statistics consisting of class centroid $\mu_c \in \mathbb{R}^{D}$ and class covariance matrix $\Sigma_c \in \mathbb{R}^{D \times D}$, the classical Mahalanobis distance is defined as:
+In safety-critical Edge AI deployments, deep vision networks encounter inputs corrupted by sensor degradation, low illumination, lens smearing, and non-stationary environment drift. Standard neural networks output uncalibrated, overconfident predictions on anomalous inputs because the softmax function maps arbitrary high logit activations to probabilities approaching 1.0.
+
+To provide dependable inference, the architecture incorporates an **Uncertainty & Out-of-Distribution (OOD) Arbiter** that inspects the 128D latent bottleneck space before final classification. Depending on the complexity and chromatic statistics of the visual domain, the system deploys one of two mathematically grounded routing mechanisms:
+
+1. **Mahalanobis++ (MNIST Regime):** Evaluates $L_2$-normalized representations on the unit hypersphere $\mathbb{S}^{127}$ against class-conditional Gaussian centroids and Ledoit-Wolf regularized covariance matrices.
+2. **Dual Uncertainty Arbiter (CIFAR-10 Regime):** Fuses representational discrepancy (unnormalized Mahalanobis distance) with predictive uncertainty (Shannon entropy of Softmax posteriors), providing provable coverage against both aleatoric noise and epistemic shift on natural image manifolds (Kaur et al., ICML 2021; Nguyen, 2026).
+
+---
+
+## 2. Mathematical Formulations
+
+### 2.1. Regime 1: Mahalanobis++ on Unit Hypersphere (MNIST)
+
+#### Classical Mahalanobis Distance
+Given a latent vector $z \in \mathbb{R}^{D}$ ($D=128$), class centroid $\mu_c \in \mathbb{R}^{D}$, and covariance $\Sigma_c \in \mathbb{R}^{D \times D}$, the classical Mahalanobis distance is:
 $$D_M(z, c) = \sqrt{(z - \mu_c)^T \Sigma_c^{-1} (z - \mu_c)}$$
 
-The distance measures how many standard deviations away $z$ lies from the center of class $c$, accounting for multi-dimensional feature correlations.
-
-### 2.2. $L_2$ Normalization (Unit Hypersphere Projection)
-Standard Mahalanobis distance suffers in deep feature spaces because feature magnitudes $\|z\|_2$ vary drastically across classes and activations, inflating distance variances and causing false alarms on high-norm nominal samples.
-
-Following Guo et al. (2025), **Mahalanobis++** applies an $L_2$ normalization step prior to distance evaluation, projecting all latent vectors onto the unit hypersphere $\mathbb{S}^{D-1}$:
-$$z_{\text{norm}} = \frac{z}{\|z\|_2 + \epsilon}$$
-where $\epsilon = 10^{-8}$ prevents division by zero. On the unit hypersphere, the Mahalanobis distance simplifies to directional alignment scaled by regularized precision:
+#### $L_2$ Normalization (Unit Hypersphere Projection)
+On stylized grayscale digits, raw activation norms vary widely across classes, inflating distance variance. Following Guo et al. (2025), Mahalanobis++ projects latent representations onto the unit hypersphere $\mathbb{S}^{D-1}$:
+$$z_{\text{norm}} = \frac{z}{\|z\|_2 + \epsilon}, \quad \epsilon = 10^{-8}$$
+On the hypersphere, the metric evaluates directional deviation scaled by regularized precision:
 $$D_{M}^{++}(z_{\text{norm}}, c) = \sqrt{(z_{\text{norm}} - \mu_c)^T \Sigma_c^{-1} (z_{\text{norm}} - \mu_c)}$$
-
-When evaluating an incoming query against all $C=10$ classes without prior label knowledge, the detector selects the distance to the closest class manifold:
+The minimum distance across all $C=10$ classes is selected:
 $$D_{M}^{++}(z_{\text{norm}}) = \min_{c \in \{0, \dots, C-1\}} D_{M}^{++}(z_{\text{norm}}, c)$$
 
-### 2.3. Ledoit-Wolf Shrinkage Covariance Regularization
-In edge vision setups, computing empirical sample covariance matrices $\Sigma_c$ for $D = 128$ dimensions across finite memory partitions (e.g., $N_c \approx 500$ samples per class) is prone to ill-conditioning. The empirical covariance matrix:
-$$\Sigma_{\text{sample}} = \frac{1}{N - 1} \sum_{i=1}^{N} (z_i - \mu)(z_i - \mu)^T$$
-frequently has near-zero eigenvalues, causing its inverse (the precision matrix $\Sigma^{-1}$) to explode numerically.
-
-To ensure well-conditioned precision matrices without manual cross-validation of ridge penalties, Mahalanobis++ applies **Ledoit-Wolf Analytic Shrinkage** (Chen et al., 2010):
+#### Ledoit-Wolf Analytic Covariance Shrinkage
+To prevent numerical singularity when inverting empirical covariance matrices $\Sigma_c$ with finite sample partitions, Mahalanobis++ applies **Ledoit-Wolf Analytic Shrinkage** (Chen et al., 2010):
 $$\Sigma_{\text{LW}} = (1 - \rho) \Sigma_{\text{sample}} + \rho \nu I$$
-where:
-- $\nu = \frac{1}{D} \text{Tr}(\Sigma_{\text{sample}})$ is the mean variance across dimensions.
-- $\rho \in [0, 1]$ is the analytically optimal shrinkage intensity computed from sample variance and asymptotic risk minimization.
-
-This formulation guarantees that $\Sigma_{\text{LW}}$ is strictly positive definite, invertible, and numerically robust on edge hardware.
+where $\nu = \frac{1}{D} \text{Tr}(\Sigma_{\text{sample}})$ and $\rho \in [0, 1]$ is the analytically optimal shrinkage intensity minimizing quadratic risk. This guarantees that precision matrices $\Sigma_{\text{LW}}^{-1}$ are strictly positive definite and numerically stable on edge hardware.
 
 ---
 
-## 3. Threshold Calibration
+### 2.2. Regime 2: Dual Uncertainty Arbiter (CIFAR-10)
 
-The decision boundary separating In-Distribution (ID) from Out-of-Distribution (OOD) is calibrated empirically on nominal validation data:
+#### Why Natural Manifolds Require Dual Uncertainty
+On natural RGB images (CIFAR-10), $L_2$ normalization suppresses informative feature scale variance across complex backgrounds and textures. Furthermore, deep neural networks on natural images can exhibit two distinct failure modes:
+1. **Representational Outliers (Epistemic Shift):** Samples whose latent representations lie far outside any nominal training cluster, detectable via unnormalized Mahalanobis distance.
+2. **Predictive Ambiguity (Aleatoric Noise):** Samples that fall close to class decision boundaries where the network outputs high-entropy, diffused predictions across multiple classes.
 
-```python
-# training/train_rl_online_simulation.py
-detector.calibrate_threshold(clean_features, percentile=95.0)
-```
+#### Mathematical Formulation
+The `DualUncertaintyArbiter` ([`src/cifar10/ood_arbiter.py`](file:///c:/Users/sanfr/Desktop/projetos-gecad/projeto-cnn/src/cifar10/ood_arbiter.py)) computes two complementary uncertainty signals:
 
-1. The detector processes $N=5,000$ clean in-distribution training features through the CNN.
-2. It computes the minimum Mahalanobis++ distance for each sample: $\{d_1, d_2, \dots, d_N\}$.
-3. The routing threshold $\tau$ is set to the **95th percentile** of these distances:
-   $$\tau = \text{Percentile}_{95}(\{d_i\}_{i=1}^{N})$$
-4. In the baseline system configuration ([`src/config.py`](../../src/config.py)), this empirical threshold is set to **$\tau = 12.5$**.
+1. **Unnormalized Mahalanobis Distance:**
+   $$d_M(z) = \min_{c \in \{0, \dots, 9\}} \sqrt{(z - \mu_c)^T \Sigma_c^{-1} (z - \mu_c)}$$
+   Fitted on raw unnormalized 128D latent vectors using Ledoit-Wolf regularized empirical precision.
 
-Any sample with $D_{M}^{++} \le \tau$ has a $95\%$ probability of belonging to the nominal training distribution. Samples exceeding $\tau$ are classified as anomalies, sensor corruption, or concept drift.
+2. **Predictive Shannon Entropy:**
+   $$H(p) = -\sum_{c=0}^{9} p_c \ln(p_c + \epsilon)$$
+   where $p \in \Delta^9$ is the Softmax posterior distribution emitted by `RawModelCIFAR10`.
+
+#### Dual Decision Rule
+A query is flagged as uncertain/OOD and routed to the episodic memory if **either** condition exceeds its calibrated in-distribution threshold:
+$$\text{Is\_OOD}(z, p) = \left( d_M(z) > \tau_M \right) \quad \lor \quad \left( H(p) > \tau_H \right)$$
 
 ---
 
-## 4. Routing Logic and Pipeline Decision Tree
+## 3. Threshold Calibration Protocols
 
-The routing arbiter executes the following decision logic for each incoming visual query:
+Both arbiters are calibrated empirically on clean in-distribution training data using the 95th-percentile rule:
+
+| Calibration Parameter | MNIST Mahalanobis++ | CIFAR-10 Dual Uncertainty |
+|:---|:---:|:---:|
+| **Source Script** | [`scripts/profile_latent.py`](file:///c:/Users/sanfr/Desktop/projetos-gecad/projeto-cnn/scripts/profile_latent.py) | [`scripts/cifar10/profile_latent.py`](file:///c:/Users/sanfr/Desktop/projetos-gecad/projeto-cnn/scripts/cifar10/profile_latent.py) |
+| **Calibration Set** | 5,000 clean training features | 5,000 clean training features |
+| **Percentile Target** | $95.0\text{th}$ percentile | $95.0\text{th}$ percentile |
+| **Mahalanobis Threshold ($\tau_M$)** | $\tau = 12.5$ | $\tau_M = 16.0380$ |
+| **Entropy Threshold ($\tau_H$)** | N/A | $\tau_H = 0.7382\text{ nats}$ |
+| **Rejection Mechanism** | Single geometric threshold | Logical OR of geometric and predictive bounds |
+
+Any sample within nominal bounds has $\ge 95\%$ probability of belonging to the in-distribution training manifold. Corrupted or out-of-distribution inputs trigger immediate rescue routing.
+
+---
+
+## 4. Routing Logic and Flowchart
 
 ```mermaid
 flowchart TD
-    QUERY["Incoming Latent Vector z [128D]"] --> NORM["L2 Normalization:<br>z_norm = z / (||z||_2 + eps)"]
-    NORM --> BATCH["Evaluate Mahalanobis++ Precision Matrix<br>Across All 10 Classes"]
-    BATCH --> MIN_DIST["Extract Minimum Distance:<br>d_M = min_c d_M(z_norm, c)"]
-    
-    MIN_DIST --> DECISION{"Is d_M <= tau (12.5)?"}
-    
-    DECISION -->|Yes: In-Distribution| PATH_CNN["Route to Parametric CNN<br>Output: argmax(p_CNN)<br>Low Latency (0.48 ms)"]
-    DECISION -->|No: Anomaly / Drift| PATH_KNN["Route to Episodic Memory<br>Output: k-NN Bandit Voting<br>Rescued Prediction"]
-    
-    style QUERY fill:#1f242c,stroke:#388bfd,stroke-width:1px
-    style DECISION fill:#24292e,stroke:#d29922,stroke-width:2px
-    style PATH_CNN fill:#1f242c,stroke:#2ea043,stroke-width:1px
-    style PATH_KNN fill:#1f242c,stroke:#a371f7,stroke-width:1px
-```
+    subgraph InputQuery["1. Input Query"]
+        Z["Latent Bottleneck Vector z in R^128"]
+        P["Softmax Posterior Probabilities p in Delta^9"]
+    end
 
-- **Nominal Path (Parametric CNN):** If $D_{M}^{++} \le \tau$, the sample is within nominal distribution boundaries. The system emits the CNN argmax prediction directly, avoiding memory queries.
-- **Rescue Path (Episodic Memory):** If $D_{M}^{++} > \tau$, the sample has suffered semantic corruption or noise shift. The CNN probability distribution is considered untrustworthy, and the latent vector is dispatched to the episodic memory buffer for $k$-NN neighbor voting.
+    subgraph MNISTRouting["2. MNIST Routing Path (Mahalanobis++)"]
+        NORM["L2 Hypersphere Normalization:<br>z_norm = z / ||z||_2"]
+        MAHA_M["Evaluate Min Mahalanobis Distance:<br>d_M = min_c d_M(z_norm, c)"]
+        CHECK_M{"d_M <= 12.5?"}
+        
+        Z -.-> NORM --> MAHA_M --> CHECK_M
+    end
+
+    subgraph CIFAR10Routing["3. CIFAR-10 Routing Path (Dual Uncertainty)"]
+        MAHA_C["Compute Unnormalized Mahalanobis:<br>d_M(z) = min_c d_M(z, c)"]
+        ENT_C["Compute Shannon Entropy:<br>H(p) = -sum p_c ln(p_c)"]
+        CHECK_C{"d_M <= 16.04<br>AND<br>H(p) <= 0.74 nats?"}
+        
+        Z -.-> MAHA_C --> CHECK_C
+        P -.-> ENT_C --> CHECK_C
+    end
+
+    subgraph ExecutionTargets["4. Execution Targets"]
+        CNN_EXEC["Parametric CNN Inference<br>y = argmax(p)<br>Latency: < 2.5 ms | B0 Nominal"]
+        KNN_EXEC["Route to Episodic Memory<br>Non-parametric k-NN Rescue<br>Latency: < 7.0 ms | B4 Active"]
+        
+        CHECK_M -->|Yes: Nominal| CNN_EXEC
+        CHECK_M -->|No: Anomaly| KNN_EXEC
+        CHECK_C -->|Yes: Nominal| CNN_EXEC
+        CHECK_C -->|No: Uncertain| KNN_EXEC
+    end
+
+    style InputQuery fill:#1f242c,stroke:#388bfd,stroke-width:1px
+    style MNISTRouting fill:#1f242c,stroke:#a371f7,stroke-width:1px
+    style CIFAR10Routing fill:#1f242c,stroke:#d29922,stroke-width:1px
+    style ExecutionTargets fill:#1f242c,stroke:#2ea043,stroke-width:1px
+```
 
 ---
 
 ## 5. Profile Serialization and Persistence
 
-To avoid recomputing class centroids and covariance inversions on each edge startup, the statistical profiles are saved to disk as a compressed `.npz` archive via `detector.save(path)`:
+To ensure instantaneous edge startup without recomputing covariance matrices:
+- **MNIST Profiles:** Serialized to [`outputs/mnist/mahalanobis_pp_profiles.npz`](file:///c:/Users/sanfr/Desktop/projetos-gecad/projeto-cnn/outputs/mnist/mahalanobis_pp_profiles.npz).
+- **CIFAR-10 Profiles:** Serialized to [`outputs/cifar10/mahalanobis_pp_profiles.npz`](file:///c:/Users/sanfr/Desktop/projetos-gecad/projeto-cnn/outputs/cifar10/mahalanobis_pp_profiles.npz).
 
-### File Format (`outputs/mahalanobis_pp_profiles.npz`)
-- `n_classes`: Scalar integer `10`
-- `latent_dim`: Scalar integer `128`
-- `threshold`: Scalar float `12.5`
-- `mu_0` $\dots$ `mu_9`: Arrays of shape `(128,)` storing class mean vectors
-- `precision_0` $\dots$ `precision_9`: Arrays of shape `(128, 128)` storing inverted Ledoit-Wolf precision matrices $\Sigma_c^{-1}$
-
-Loading takes $< 15$ ms from disk, establishing instant operational readiness on embedded hardware.
+Each archive stores:
+1. `n_classes`: Scalar integer `10`.
+2. `latent_dim`: Scalar integer `128`.
+3. `threshold_mahalanobis`: Scalar float ($\tau_M$).
+4. `threshold_entropy`: Scalar float ($\tau_H$).
+5. `mu_{c}`: 1D array of shape `(128,)` storing centroid for class $c \in \{0, \dots, 9\}$.
+6. `precision_{c}`: 2D regularized precision matrix of shape `(128, 128)` for class $c \in \{0, \dots, 9\}$.
 
 ---
 
-## 6. Code Usage Example
+## 6. Code Usage Example: Dual Uncertainty Arbiter
 
 ```python
-# training/train_rl_online_simulation.py
 import numpy as np
-from training.train_rl_online_simulation import MahalanobisPlusPlus
+from src.cifar10.ood_arbiter import DualUncertaintyArbiter
 
-# 1. Instantiate detector
-detector = MahalanobisPlusPlus(n_classes=10, latent_dim=128, threshold=12.5)
+# Instantiate Arbiter
+arbiter = DualUncertaintyArbiter(n_classes=10, latent_dim=128)
 
-# 2. Fit on clean reference embeddings (N=5000, D=128)
-clean_features = np.random.randn(5000, 128).astype(np.float32)
-clean_labels = np.random.randint(0, 10, size=5000).astype(np.int32)
-detector.fit(clean_features, clean_labels)
+# Load calibrated profiles
+arbiter.load("outputs/cifar10/mahalanobis_pp_profiles.npz")
+print(f"Loaded thresholds: tau_M = {arbiter.threshold_mahalanobis:.2f}, tau_H = {arbiter.threshold_entropy:.2f}")
 
-# 3. Calibrate empirical threshold
-threshold = detector.calibrate_threshold(clean_features, percentile=95.0)
-print(f"Calibrated threshold: {threshold:.2f}")
+# Evaluate streaming batch
+z_batch = np.random.randn(8, 128).astype(np.float32)
+p_batch = np.ones((8, 10), dtype=np.float32) / 10.0  # High entropy uniform
 
-# 4. Evaluate an unknown query vector
-query = np.random.randn(128).astype(np.float32)
-is_ood, distance = detector.is_out_of_distribution(query)
+# Compute uncertainty routing
+is_ood = arbiter.predict_batch(z_batch, p_batch)
+dists = arbiter.compute_mahalanobis_batch(z_batch)
+entropies = arbiter.compute_entropy_batch(p_batch)
 
-if is_ood:
-    print(f"OOD Detected! Distance {distance:.2f} > {threshold:.2f}. Routing to k-NN.")
-else:
-    print(f"In-Distribution sample ({distance:.2f} <= {threshold:.2f}). Routing to CNN.")
+for i in range(len(is_ood)):
+    status = "OOD -> Route to Memory" if is_ood[i] else "In-Distribution -> CNN"
+    print(f"Sample {i}: d_M={dists[i]:.2f}, H={entropies[i]:.2f} nats | Decision: {status}")
 ```
 
 ---
 
-## 7. Scientific References
-
-1. **Guo et al. (2025):** *Mahalanobis++: Improved Out-of-Distribution Detection via Feature Normalization and Regularized Covariance.* IEEE Transactions on Pattern Analysis and Machine Intelligence.
-2. **Chen et al. (2010):** *Shrinkage Algorithms for MMSE Covariance Estimation.* IEEE Transactions on Signal Processing, 58(10), 5016-5029.
-3. **Lee et al. (2018):** *A Simple Unified Framework for Detecting Out-of-Distribution Samples and Adversarial Attacks.* Advances in Neural Information Processing Systems (NeurIPS 2018).
-4. **Kamoi & Kobayashi (2020):** *Why is the Mahalanobis Distance Effective for Out-of-Distribution Detection?* arXiv:2003.00402.
-
----
-
 **Navigation:**
-- Previous: [CNN Feature Extractor](cnn-feature-extractor.md)
-- Up: [System Architecture](README.md)
-- Next: [Episodic Memory](episodic-memory.md)
+- Previous: [CNN Feature Extractor](file:///c:/Users/sanfr/Desktop/projetos-gecad/projeto-cnn/docs/architecture/cnn-feature-extractor.md)
+- Up: [System Architecture](file:///c:/Users/sanfr/Desktop/projetos-gecad/projeto-cnn/docs/architecture/README.md)
+- Next: [Episodic Memory Buffer](file:///c:/Users/sanfr/Desktop/projetos-gecad/projeto-cnn/docs/architecture/episodic-memory.md)
 
 ---
-Licensed under the GNU General Public License v3.0. See [LICENSE](../../LICENSE) for details.
+
+Licensed under the GNU General Public License v3.0. See [LICENSE](file:///c:/Users/sanfr/Desktop/projetos-gecad/projeto-cnn/LICENSE) for details.

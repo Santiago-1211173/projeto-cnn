@@ -31,3 +31,43 @@ def create_dataset(data_dir: str, batch_size: int = CNN_BATCH_SIZE):
     
     dataset = tf.data.Dataset.from_tensor_slices((X_train, y_train))
     return dataset.shuffle(10000).batch(batch_size).prefetch(tf.data.AUTOTUNE)
+
+
+# --- Unified Dataset Interface ---
+
+def load_dataset_raw(dataset_name: str, data_dir: str, kind: str = 'train') -> tuple:
+    """
+    Unified loader dispatching to MNIST or CIFAR-10.
+
+    Args:
+        dataset_name: 'mnist' or 'cifar10'.
+        data_dir: Path to the raw data directory.
+        kind: 'train' or 't10k'.
+
+    Returns:
+        Tuple of (images, labels) as numpy arrays.
+    """
+    if dataset_name == 'cifar10':
+        from src.data.cifar10_loader import load_cifar10_raw
+        return load_cifar10_raw(data_dir, kind=kind)
+    else:
+        return load_mnist_raw(data_dir, kind=kind)
+
+
+def create_dataset_for(dataset_name: str, data_dir: str, batch_size: int = CNN_BATCH_SIZE):
+    """
+    Unified dataset pipeline factory.
+
+    Args:
+        dataset_name: 'mnist' or 'cifar10'.
+        data_dir: Path to the raw data directory.
+        batch_size: Training batch size.
+
+    Returns:
+        tf.data.Dataset pipeline.
+    """
+    if dataset_name == 'cifar10':
+        from src.data.cifar10_loader import create_cifar10_dataset
+        return create_cifar10_dataset(data_dir, batch_size=batch_size)
+    else:
+        return create_dataset(data_dir, batch_size=batch_size)

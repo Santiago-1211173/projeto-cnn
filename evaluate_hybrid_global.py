@@ -52,7 +52,7 @@ from src.config import (
     MAHALANOBIS_PP_PROFILES_PATH,
     NOISE_SWEEP,
 )
-from src.data.loader import load_mnist_raw
+from src.data.loader import load_mnist_raw, load_dataset_raw
 from src.models.knn_bandit_agent import KNNBanditAgent128D
 from src.models.rl_agent import RLAgent
 from training.train_rl_online_simulation import (
@@ -83,10 +83,11 @@ def run_baselines(
     noise_levels: Optional[List[float]] = None,
     capacity: int = MEMORY_CAPACITY,
     samples_per_level: int = 1000,
-    output_dir: str = OUTPUT_DIR,
+    output_dir: Optional[str] = None,
     pipeline: Optional[OnlineStreamPipeline] = None,
     detector: Optional[MahalanobisPlusPlus] = None,
     rl_agent: Optional[RLAgent] = None,
+    dataset_name: Optional[str] = None,
 ) -> Dict[str, Dict[str, float]]:
     """
     Executes comparative evaluation across all 5 independent baselines.
@@ -105,6 +106,7 @@ def run_baselines(
         pipeline: Optional pre-loaded OnlineStreamPipeline instance.
         detector: Optional pre-fitted MahalanobisPlusPlus detector instance.
         rl_agent: Optional pre-loaded RLAgent instance.
+        dataset_name: Name of dataset ('mnist' or 'cifar10').
 
     Returns:
         Nested dictionary mapping baseline ID ('B0', 'B1', 'B2', 'B3', 'B4')
@@ -113,37 +115,45 @@ def run_baselines(
     if noise_levels is None:
         noise_levels = list(NOISE_SWEEP)
 
+    dataset_name = (dataset_name or os.environ.get("DATASET", "mnist")).lower()
+    if output_dir is None:
+        output_dir = os.path.join(PROJECT_ROOT, "outputs", dataset_name)
+    data_dir = os.path.join(PROJECT_ROOT, "data", "CIFAR10", "raw") if dataset_name == "cifar10" else os.path.join(PROJECT_ROOT, "data", "MNIST", "raw")
+    checkpoint_dir = os.path.join(output_dir, "checkpoints")
+    mahalanobis_pp_path = os.path.join(output_dir, "mahalanobis_pp_profiles.npz")
+    rl_agent_path = os.path.join(checkpoint_dir, "rl_agent_phase3.pt")
+
     os.makedirs(output_dir, exist_ok=True)
 
     # 1. Initialize Pipeline & Reference Data
     logger.info("=" * 75)
-    logger.info("INITIALIZING EAAI PHASE 4 HYBRID GLOBAL EVALUATION")
+    logger.info(f"INITIALIZING EAAI PHASE 4 HYBRID GLOBAL EVALUATION [{dataset_name.upper()}]")
     logger.info(f"Noise Levels: {noise_levels} | Capacity: {capacity:,} | Samples/Level: {samples_per_level:,}")
     logger.info("=" * 75)
 
     if pipeline is None:
-        pipeline = OnlineStreamPipeline()
+        pipeline = OnlineStreamPipeline(data_dir=data_dir, checkpoint_dir=checkpoint_dir, dataset_name=dataset_name)
 
     # 2. Initialize Mahalanobis++ OOD Detector
     if detector is None:
         detector = MahalanobisPlusPlus()
-        if os.path.exists(MAHALANOBIS_PP_PROFILES_PATH):
-            detector.load(MAHALANOBIS_PP_PROFILES_PATH)
+        if os.path.exists(mahalanobis_pp_path):
+            detector.load(mahalanobis_pp_path)
         else:
             seed_fit_count = min(capacity, len(pipeline.x_train))
             clean_feats_fit, _, _ = pipeline.extract_features_batch(pipeline.x_train[:seed_fit_count])
             detector.fit(clean_feats_fit, pipeline.y_train[:seed_fit_count])
             detector.calibrate_threshold(clean_feats_fit, percentile=95.0)
-            detector.save(MAHALANOBIS_PP_PROFILES_PATH)
+            detector.save(mahalanobis_pp_path)
 
     # 3. Load Trained RL Agent (Double DQN + PER)
     if rl_agent is None:
         rl_agent = RLAgent()
-        if os.path.exists(RL_AGENT_CHECKPOINT_PATH):
-            rl_agent.load(RL_AGENT_CHECKPOINT_PATH)
-            logger.info(f"Restored trained RLAgent weights from {RL_AGENT_CHECKPOINT_PATH}.")
+        if os.path.exists(rl_agent_path):
+            rl_agent.load(rl_agent_path)
+            logger.info(f"Restored trained RLAgent weights from {rl_agent_path}.")
         else:
-            logger.warning(f"No checkpoint found at {RL_AGENT_CHECKPOINT_PATH}; using initialized agent.")
+            logger.warning(f"No checkpoint found at {rl_agent_path}; using initialized agent.")
 
     # 4. Extract Clean Reference Prototypes for Memory Bank Seeding
     seed_count = min(capacity, len(pipeline.x_train))
@@ -152,8 +162,8 @@ def run_baselines(
     clean_seed_feats, _, _ = pipeline.extract_features_batch(clean_seed_x, batch_size=512)
     logger.info(f"Prepared {len(clean_seed_feats):,} reference seed memories.")
 
-    # 5. Load and Partition Test Dataset (MNIST t10k)
-    x_test_raw, y_test_raw = load_mnist_raw(DATA_DIR, kind="t10k")
+    # 5. Load and Partition Test Dataset (t10k)
+    x_test_raw, y_test_raw = load_dataset_raw(dataset_name, data_dir, kind="t10k")
     x_test_raw = (x_test_raw.astype(np.float32) / 255.0)
     y_test_raw = y_test_raw.astype(np.int32)
 
@@ -635,21 +645,30 @@ def generate_eaai_dashboard(
 def main() -> None:
     """Command-line entry point for standalone Phase 4 evaluation."""
     parser = argparse.ArgumentParser(description="Evaluate Hybrid Global Vision Pipeline (Phase 4 EAAI).")
+    parser.add_argument("--dataset", type=str, default="mnist", choices=["mnist", "cifar10"], help="Dataset to evaluate (default: mnist).")
     parser.add_argument("--capacity", type=int, default=MEMORY_CAPACITY, help="Memory capacity (default: 5000).")
     parser.add_argument("--samples-per-level", type=int, default=1000, help="Test samples evaluated per noise level.")
     parser.add_argument("--noise-levels", type=float, nargs="+", default=[0.0, 0.2, 0.4, 0.6, 0.8], help="Noise levels.")
-    parser.add_argument("--output-dir", type=str, default=OUTPUT_DIR, help="Directory to save metric outputs.")
+    parser.add_argument("--output-dir", type=str, default=None, help="Directory to save metric outputs.")
 
     args = parser.parse_args()
+
+    os.environ["DATASET"] = args.dataset
+    if "src.config" in sys.modules:
+        import importlib
+        importlib.reload(sys.modules["src.config"])
+
+    output_dir = args.output_dir or os.path.join(PROJECT_ROOT, "outputs", args.dataset)
 
     results = run_baselines(
         noise_levels=args.noise_levels,
         capacity=args.capacity,
         samples_per_level=args.samples_per_level,
-        output_dir=args.output_dir,
+        output_dir=output_dir,
+        dataset_name=args.dataset,
     )
 
-    logger.info("Phase 4 Global Evaluation completed successfully.")
+    logger.info(f"Phase 4 Global Evaluation [{args.dataset.upper()}] completed successfully.")
 
 
 if __name__ == "__main__":

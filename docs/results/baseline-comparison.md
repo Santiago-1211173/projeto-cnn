@@ -9,7 +9,7 @@
 
 This document provides a comprehensive quantitative and qualitative evaluation of the five operational baselines implemented in the semiparametric edge vision architecture. The benchmark evaluates the hypothesis that active, reinforcement learning-driven memory curation outperforms conventional static eviction policies (FIFO, LFU) and unbounded memory buffers when operating under progressive sensory noise and non-stationary concept drift.
 
-All data reported in this document are extracted directly from the standardized benchmark run recorded in [`outputs/eaai_metrics.json`](../../outputs/eaai_metrics.json) and [`outputs/eaai_metrics.csv`](../../outputs/eaai_metrics.csv), executed under the prequential evaluation protocol described in [evaluate_hybrid_global.py](../../evaluate_hybrid_global.py).
+All data reported in this document are extracted directly from the standardized benchmark run recorded in [`outputs/mnist/eaai_metrics.json`](../../outputs/mnist/eaai_metrics.json) and [`outputs/mnist/eaai_metrics.csv`](../../outputs/mnist/eaai_metrics.csv), executed under the prequential evaluation protocol described in [evaluate_hybrid_global.py](../../evaluate_hybrid_global.py).
 
 ---
 
@@ -180,7 +180,8 @@ The comparative evaluation yields three foundational conclusions for dependable 
 **Navigation:**
 - Previous: [Experimental Results Overview](README.md)
 - Up: [Documentation Index](../README.md)
-- Next: [Engineering Metrics Reference](metrics-reference.md)
+- Next: [CIFAR-10 Baseline Comparison Analysis](baseline-comparison-cifar10.md)
+- Also: [Cross-Dataset Analysis](cross-dataset-analysis.md) | [Engineering Metrics Reference](metrics-reference.md)
 
 ---
 Licensed under the GNU General Public License v3.0. See [LICENSE](../../LICENSE) for details.

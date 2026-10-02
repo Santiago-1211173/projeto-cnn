@@ -435,7 +435,17 @@ class RLAgent:
         if np.random.rand() < epsilon:
             return int(np.random.randint(0, self.n_actions))
 
-        state_tensor = torch.as_tensor(state, dtype=torch.float32, device=self.device).unsqueeze(0)
+        state_arr = np.asarray(state, dtype=np.float32)
+        if np.any(state_arr > 1.0):
+            state_arr = self.get_state_vector(
+                mahalanobis_dist=float(state_arr[0]),
+                local_entropy=float(state_arr[1]),
+                min_knn_dist=float(state_arr[2]),
+                prediction_error=float(state_arr[3]),
+                ram_occupancy=float(state_arr[4]),
+            )
+
+        state_tensor = torch.as_tensor(state_arr, dtype=torch.float32, device=self.device).unsqueeze(0)
         with torch.no_grad():
             q_values = self.policy_net(state_tensor)
             best_action = int(torch.argmax(q_values, dim=1).item())

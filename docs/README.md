@@ -1,68 +1,70 @@
 # Documentation Index
 
-> Part of the [Active Episodic Memory Management via Reinforcement Learning for Robust CNN Inference on Out-of-Distribution Data](../README.md) documentation.  
-> Parent: [Root README](../README.md)
+> Part of the [Active Episodic Memory Management via Reinforcement Learning for Robust CNN Inference on Out-of-Distribution Data](file:///c:/Users/sanfr/Desktop/projetos-gecad/projeto-cnn/README.md) documentation.  
+> Parent: [Root README](file:///c:/Users/sanfr/Desktop/projetos-gecad/projeto-cnn/README.md)
 
 ---
 
 ## Overview
 
-This directory contains the complete technical documentation for the RL-driven active episodic memory management system designed for robust Out-of-Distribution (OOD) routing in resource-constrained Edge AI environments. The documentation covers system architecture, installation and configuration procedures, reproduction guides, API references, and experimental benchmark results submitted to *Engineering Applications of Artificial Intelligence* (EAAI).
+This directory contains the complete technical documentation for the active semiparametric episodic memory architecture designed for robust Out-of-Distribution (OOD) routing and active cache curation in resource-constrained Edge AI systems. The documentation encompasses mathematical foundations, hardware budgets, dual-dataset empirical validations (MNIST handwritten digits and CIFAR-10 natural images), API contracts, procedural workflows, and journal publication benchmarks prepared for *Engineering Applications of Artificial Intelligence* (EAAI, Elsevier).
 
-All technical documentation within this hierarchy is authored in academic English, strictly follows standard Markdown formatting, and excludes decorative emojis.
+All technical documentation adheres to academic English standards, utilizes clean standard Markdown formatting, and strictly excludes decorative emojis.
 
 ---
 
 ## Documentation Map
 
-The table below outlines all sections of the technical documentation hierarchy, their directory locations, scope, and implementation status.
+The table below outlines all primary sections in the technical documentation hierarchy, their directory locations, scope, and status:
 
 | Section | Directory Path | Description | Status |
-|:--------|:---------------|:------------|:-------|
-| [Root Overview](../README.md) | `.` | Top-level project introduction, abstract, key results, repository structure, and reproduction pipeline. | `[COMPLETED]` |
-| [System Architecture](architecture/README.md) | `docs/architecture/` | Deep-dive architectural specifications for the CNN feature extractor, Mahalanobis++ OOD detector, k-NN episodic memory, Double DQN agent, reward system, and data flow. | `[COMPLETED]` |
-| [Getting Started](getting-started/README.md) | `docs/getting-started/` | System prerequisites, dependency installation, raw MNIST dataset layout, quickstart verification, and configuration parameter reference. | `[COMPLETED]` |
-| [Usage Guides](guides/README.md) | `docs/guides/` | Procedural workflows for the end-to-end training pipeline, online drift simulation, 5-baseline evaluation, and publication figure generation. | `[COMPLETED]` |
-| [API Reference](api/README.md) | `docs/api/` | Comprehensive technical reference documenting classes, methods, data structures, tensor shapes, and type annotations for all core modules. | `[COMPLETED]` |
-| [Experimental Results](results/README.md) | `docs/results/` | In-depth analysis of the 5-baseline benchmark across noise levels, latency/memory profiles, drift restoration, and metric definitions. | `[COMPLETED]` |
-| [Comparative Literature Validation](results/literature-validation.md) | `docs/results/` | Systematic confrontation of empirical results against published scientific literature, root cause analysis, statistical rigor, and EAAI submission guidelines. | `[COMPLETED]` |
-| [Scientific Literature](Literatura/README.md) | `docs/Literatura/` | Curated literature taxonomy, foundational research guidelines, and unified scientific glossary covering 12 domain pillars. | `[COMPLETED]` |
-| [Historical Archive](_archive/README.md) | `docs/_archive/` | Historical pre-refactoring technical notes and architectural records preserved for developmental traceability. | `[ARCHIVED]` |
-| [Master Action Plan](Plano_de_Acao_EAAI.md) | `docs/` | Historical master execution and scientific plan for EAAI journal benchmark evaluation. | `[HISTORICAL]` |
+|:---|:---|:---|:---|
+| [Root Overview](file:///c:/Users/sanfr/Desktop/projetos-gecad/projeto-cnn/README.md) | `.` | Top-level project abstract, dataset support matrix, side-by-side benchmark summary, architecture flowchart, and reproduction commands. | `[COMPLETED]` |
+| [System Architecture](file:///c:/Users/sanfr/Desktop/projetos-gecad/projeto-cnn/docs/architecture/README.md) | [`docs/architecture/`](file:///c:/Users/sanfr/Desktop/projetos-gecad/projeto-cnn/docs/architecture/README.md) | Architectural deep-dives: CNN backbones (MNIST & CIFAR-10), Mahalanobis++ & Dual Uncertainty OOD arbiters, episodic memory, and Double DQN agent. | `[COMPLETED]` |
+| [Getting Started](file:///c:/Users/sanfr/Desktop/projetos-gecad/projeto-cnn/docs/getting-started/README.md) | [`docs/getting-started/`](file:///c:/Users/sanfr/Desktop/projetos-gecad/projeto-cnn/docs/getting-started/README.md) | Host prerequisites, environment installation, MNIST binary setup, CIFAR-10 automated loader, quickstart reproduction, and configuration registry. | `[COMPLETED]` |
+| [Usage Guides](file:///c:/Users/sanfr/Desktop/projetos-gecad/projeto-cnn/docs/guides/README.md) | [`docs/guides/`](file:///c:/Users/sanfr/Desktop/projetos-gecad/projeto-cnn/docs/guides/README.md) | Step-by-step procedural workflows for the 5-stage training pipelines (MNIST and CIFAR-10), baseline evaluations, and XAI visualization tools. | `[COMPLETED]` |
+| [API Reference](file:///c:/Users/sanfr/Desktop/projetos-gecad/projeto-cnn/docs/api/README.md) | [`docs/api/`](file:///c:/Users/sanfr/Desktop/projetos-gecad/projeto-cnn/docs/api/README.md) | Technical reference documenting classes, tensor dimensions, methods, and complexity bounds for core modules and the specialized CIFAR-10 package. | `[COMPLETED]` |
+| [CIFAR-10 Module API](file:///c:/Users/sanfr/Desktop/projetos-gecad/projeto-cnn/docs/api/cifar10.md) | [`docs/api/cifar10.md`](file:///c:/Users/sanfr/Desktop/projetos-gecad/projeto-cnn/docs/api/cifar10.md) | API specification for `RawModelCIFAR10`, `DualUncertaintyArbiter`, residual layers, and pure TensorFlow Adam optimizer. | `[COMPLETED]` |
+| [Experimental Results Hub](file:///c:/Users/sanfr/Desktop/projetos-gecad/projeto-cnn/docs/results/README.md) | [`docs/results/`](file:///c:/Users/sanfr/Desktop/projetos-gecad/projeto-cnn/docs/results/README.md) | Central experimental hub providing access to per-dataset benchmarks, telemetry, dashboards, and metrics definitions. | `[COMPLETED]` |
+| [MNIST Baseline Benchmark](file:///c:/Users/sanfr/Desktop/projetos-gecad/projeto-cnn/docs/results/baseline-comparison.md) | [`docs/results/baseline-comparison.md`](file:///c:/Users/sanfr/Desktop/projetos-gecad/projeto-cnn/docs/results/baseline-comparison.md) | Quantitative 5-baseline evaluation on MNIST under 5 noise levels, cache hit rates, LMOS efficiency, and class balance. | `[COMPLETED]` |
+| [CIFAR-10 Baseline Benchmark](file:///c:/Users/sanfr/Desktop/projetos-gecad/projeto-cnn/docs/results/baseline-comparison-cifar10.md) | [`docs/results/baseline-comparison-cifar10.md`](file:///c:/Users/sanfr/Desktop/projetos-gecad/projeto-cnn/docs/results/baseline-comparison-cifar10.md) | Quantitative 5-baseline evaluation on CIFAR-10, natural manifold dynamics, dual uncertainty routing, and eviction balance. | `[COMPLETED]` |
+| [Cross-Dataset Synthesis](file:///c:/Users/sanfr/Desktop/projetos-gecad/projeto-cnn/docs/results/cross-dataset-analysis.md) | [`docs/results/cross-dataset-analysis.md`](file:///c:/Users/sanfr/Desktop/projetos-gecad/projeto-cnn/docs/results/cross-dataset-analysis.md) | Flagship scientific synthesis confronting MNIST vs. CIFAR-10, side-by-side performance matrices, McNemar test, and core thesis validation. | `[COMPLETED]` |
+| [Comparative Literature Validation](file:///c:/Users/sanfr/Desktop/projetos-gecad/projeto-cnn/docs/results/literature-validation.md) | [`docs/results/literature-validation.md`](file:///c:/Users/sanfr/Desktop/projetos-gecad/projeto-cnn/docs/results/literature-validation.md) | Systematic confrontation of empirical results against published scientific literature, root cause analysis, and statistical rigor. | `[COMPLETED]` |
+| [Scientific Literature](file:///c:/Users/sanfr/Desktop/projetos-gecad/projeto-cnn/docs/Literatura/README.md) | [`docs/Literatura/`](file:///c:/Users/sanfr/Desktop/projetos-gecad/projeto-cnn/docs/Literatura/README.md) | Curated literature taxonomy, foundational research guidelines, and unified scientific glossary covering 12 domain pillars. | `[COMPLETED]` |
+| [Historical Archive](file:///c:/Users/sanfr/Desktop/projetos-gecad/projeto-cnn/docs/_archive/README.md) | [`docs/_archive/`](file:///c:/Users/sanfr/Desktop/projetos-gecad/projeto-cnn/docs/_archive/README.md) | Historical pre-refactoring technical notes and architectural records preserved for developmental traceability. | `[ARCHIVED]` |
 
 ---
 
 ## Recommended Reading Order
 
-For researchers and engineers examining this codebase for review, reproduction, or adaptation, the following reading progression is recommended:
+For researchers and peer reviewers examining this codebase, the recommended progression guides through both the low-dimensional pilot and the natural complexity scaling:
 
-1. **Architecture Overview (`architecture/README.md`):**  
-   Understand the semiparametric design philosophy combining a parametric CNN with a non-parametric episodic memory buffer, mediated by an OOD routing gate.
+### Track A: Architectural Foundations
+1. **[System Architecture](file:///c:/Users/sanfr/Desktop/projetos-gecad/projeto-cnn/docs/architecture/README.md):** Understand the semiparametric design philosophy and the **invariant 128D latent bottleneck** linking heterogeneous CNN backbones to the shared episodic memory and RL governor.
+2. **[CNN Feature Extractor](file:///c:/Users/sanfr/Desktop/projetos-gecad/projeto-cnn/docs/architecture/cnn-feature-extractor.md):** Examine both the custom from-scratch MNIST CNN (225k parameters) and the upgraded CIFAR-10 ResNet-9 backbone (6.57M parameters).
+3. **[Out-of-Distribution Detection](file:///c:/Users/sanfr/Desktop/projetos-gecad/projeto-cnn/docs/architecture/ood-detection.md):** Review the Mahalanobis++ hypersphere detector on MNIST and the Dual Uncertainty Arbiter (Mahalanobis + Shannon entropy) on CIFAR-10.
+4. **[End-to-End Data Flow](file:///c:/Users/sanfr/Desktop/projetos-gecad/projeto-cnn/docs/architecture/data-flow.md):** Trace sample progression through inference, uncertainty gating, episodic rescue, and RL eviction.
 
-2. **End-to-End Data Flow (`architecture/data-flow.md`):**  
-   Trace the lifecycle of a tensor through feature extraction, covariance-based Mahalanobis scoring, threshold comparison, memory retrieval, and RL eviction selection.
+### Track B: Setup and Execution
+5. **[Installation & Quickstart](file:///c:/Users/sanfr/Desktop/projetos-gecad/projeto-cnn/docs/getting-started/quickstart.md):** Set up runtime dependencies and verify the environment across both datasets.
+6. **[Configuration Reference](file:///c:/Users/sanfr/Desktop/projetos-gecad/projeto-cnn/docs/getting-started/configuration.md):** Review global constants, dataset paths, memory bounds, and hyperparameter registries.
+7. **[Training Pipeline Guide](file:///c:/Users/sanfr/Desktop/projetos-gecad/projeto-cnn/docs/guides/training-pipeline.md):** Follow execution workflows for both MNIST and CIFAR-10 pipelines.
+8. **[Running Evaluation](file:///c:/Users/sanfr/Desktop/projetos-gecad/projeto-cnn/docs/guides/evaluation.md):** Execute the 5-baseline prequential streaming benchmark on either dataset.
 
-3. **Getting Started (`getting-started/README.md`):**  
-   Configure the local environment, verify required runtimes (Python 3.10+, PyTorch 2.0+, TensorFlow 2.10.1), and position the raw MNIST binary assets.
-
-4. **Training Pipeline Guide (`guides/training-pipeline.md`):**  
-   Follow the reproducible 5-step sequence to train the CNN, profile the latent space, populate the initial memory bank, execute online RL simulation, and run benchmark evaluation.
-
-5. **API Reference (`api/README.md`):**  
-   Review module interfaces, type contracts, and configuration hyperparameters when modifying model components or extending memory eviction heuristics.
-
-6. **Experimental Results (`results/README.md`):**  
-   Examine empirical findings comparing the RL active memory system (B4) against Parametric-only (B0), Unbounded Memory (B1), FIFO (B2), and LFU (B3) baselines.
+### Track C: Scientific Verification & Results
+9. **[Cross-Dataset Scientific Synthesis](file:///c:/Users/sanfr/Desktop/projetos-gecad/projeto-cnn/docs/results/cross-dataset-analysis.md):** Read the overarching synthesis comparing low-complexity and high-complexity regimes.
+10. **[CIFAR-10 Benchmark Analysis](file:///c:/Users/sanfr/Desktop/projetos-gecad/projeto-cnn/docs/results/baseline-comparison-cifar10.md):** Inspect detailed quantitative metrics, eviction balance, and Pareto trade-offs on natural images.
+11. **[MNIST Benchmark Analysis](file:///c:/Users/sanfr/Desktop/projetos-gecad/projeto-cnn/docs/results/baseline-comparison.md):** Examine the baseline results and extreme noise robustness on stylized digits.
+12. **[Literature Validation](file:///c:/Users/sanfr/Desktop/projetos-gecad/projeto-cnn/docs/results/literature-validation.md):** Review formal statistical testing (McNemar $p < 0.001$), confidence intervals, and alignment with peer-reviewed literature.
 
 ---
 
 ## Scientific Literature Repository
 
-The `docs/Literatura/` directory preserves the curated scientific research base established prior to implementation. It contains:
+The [`docs/Literatura/`](file:///c:/Users/sanfr/Desktop/projetos-gecad/projeto-cnn/docs/Literatura/README.md) directory preserves the curated scientific research foundation established prior to implementation:
 
-- Curated literature repositories across **12 foundational AI pillars**: Active Perception, Deep Learning, Early Exit, Episodic Memory, Hopfield Networks, Out-of-Distribution Detection, Contextual Bandits, Q-Learning, Reinforcement Learning, RL + LLMs, Continual Learning, and Edge AI.
-- A comprehensive [Unified Scientific Glossary](Literatura/GLOSSARIO.md) providing formal definitions, theoretical foundations, and mathematical formulations from A to Z.
-- Specialized research agent guidelines for each literature topic.
+- Curated repositories across **12 foundational AI pillars**: Active Perception, Deep Learning, Early Exit, Episodic Memory, Hopfield Networks, Out-of-Distribution Detection, Contextual Bandits, Q-Learning, Reinforcement Learning, RL + LLMs, Continual Learning, and Edge AI.
+- A comprehensive [Unified Scientific Glossary](file:///c:/Users/sanfr/Desktop/projetos-gecad/projeto-cnn/docs/Literatura/GLOSSARIO.md) providing formal definitions, theoretical foundations, and mathematical formulations.
 
 > [!NOTE]
 > The literature collection is maintained in its original Portuguese research format as an archival foundation and operates independently of the English technical documentation hierarchy.
@@ -70,8 +72,8 @@ The `docs/Literatura/` directory preserves the curated scientific research base 
 ---
 
 **Navigation:**
-- Up: [Root README](../README.md)
+- Up: [Root README](file:///c:/Users/sanfr/Desktop/projetos-gecad/projeto-cnn/README.md)
 
 ---
 
-Licensed under the GNU General Public License v3.0. See [LICENSE](../LICENSE) for details.
+Licensed under the GNU General Public License v3.0. See [LICENSE](file:///c:/Users/sanfr/Desktop/projetos-gecad/projeto-cnn/LICENSE) for details.

@@ -14,8 +14,8 @@ requirements.txt.bak
 
 # Pastas de Dados e Outputs
 # (Ignora ficheiros pesados, datasets e resultados de treino)
-data/
-outputs/
+/data/
+/outputs/
 *.pt
 *.pth
 *.h5

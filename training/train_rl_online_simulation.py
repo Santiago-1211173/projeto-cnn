@@ -62,10 +62,11 @@ from src.config import (
     MAHALANOBIS_PP_PROFILES_PATH,
 )
 from src.models.custom_cnn import RawModel
+from src.models.custom_cnn_cifar10 import RawModelCIFAR10
 from src.models.knn_bandit_agent import KNNBanditAgent128D
 from src.models.reward_manager import RewardManager
 from src.models.rl_agent import RLAgent
-from src.data.loader import load_mnist_raw
+from src.data.loader import load_mnist_raw, load_dataset_raw
 
 # Configure module-level logging
 logger = logging.getLogger(__name__)
@@ -342,12 +343,28 @@ class OnlineStreamPipeline:
     and predictions in deterministic chunks to minimize CPU/GPU dispatch overhead.
     """
 
-    def __init__(self, data_dir: str = DATA_DIR, checkpoint_dir: str = CHECKPOINT_DIR) -> None:
+    def __init__(
+        self,
+        data_dir: Optional[str] = None,
+        checkpoint_dir: Optional[str] = None,
+        dataset_name: Optional[str] = None,
+    ) -> None:
+        self.dataset_name = (dataset_name or os.environ.get("DATASET", "mnist")).lower()
+        if data_dir is None:
+            from src.config import CIFAR10_DATA_DIR, MNIST_DATA_DIR
+            data_dir = CIFAR10_DATA_DIR if self.dataset_name == "cifar10" else MNIST_DATA_DIR
+        if checkpoint_dir is None:
+            checkpoint_dir = os.path.join(PROJECT_ROOT, "outputs", self.dataset_name, "checkpoints")
+
         self.data_dir = data_dir
         self.checkpoint_dir = checkpoint_dir
 
-        # Initialize CNN model
-        self.cnn = RawModel()
+        # Initialize CNN model based on dataset
+        if self.dataset_name == "cifar10":
+            self.cnn = RawModelCIFAR10()
+        else:
+            self.cnn = RawModel()
+
         self.ckpt = tf.train.Checkpoint(model=self.cnn)
         latest_ckpt = tf.train.latest_checkpoint(self.checkpoint_dir)
         if latest_ckpt:
@@ -356,11 +373,11 @@ class OnlineStreamPipeline:
         else:
             logger.warning(f"No checkpoint found in {self.checkpoint_dir}; using initial weights.")
 
-        # Load MNIST dataset
-        self.x_train, self.y_train = load_mnist_raw(self.data_dir, kind="train")
+        # Load dataset
+        self.x_train, self.y_train = load_dataset_raw(self.dataset_name, self.data_dir, kind="train")
         self.x_train = self.x_train.astype(np.float32) / 255.0
         self.y_train = self.y_train.astype(np.int32)
-        logger.info(f"Loaded {len(self.x_train):,} base samples from {self.data_dir}.")
+        logger.info(f"Loaded {len(self.x_train):,} base samples from {self.data_dir} [{self.dataset_name.upper()}].")
 
     def extract_features_batch(
         self,
@@ -371,7 +388,7 @@ class OnlineStreamPipeline:
         Extracts 128D latent vectors, predicted labels, and probability distributions in chunks.
 
         Args:
-            images: Image array of shape (N, 28, 28, 1).
+            images: Image array of shape (N, H, W, C).
             batch_size: Batch extraction chunk size.
 
         Returns:
@@ -430,6 +447,7 @@ class TrainRLOnlineSimulation:
         replay_capacity: int = REPLAY_BUFFER_CAPACITY,
         mahalanobis_threshold: float = MAHALANOBIS_THRESHOLD,
         device: Optional[str] = "cpu",
+        dataset_name: Optional[str] = None,
     ) -> None:
         """
         Initializes the complete simulation ecosystem.
@@ -439,6 +457,7 @@ class TrainRLOnlineSimulation:
         self.latent_dim = latent_dim
         self.mahalanobis_threshold = mahalanobis_threshold
         self.device = device
+        self.dataset_name = (dataset_name or os.environ.get("DATASET", "mnist")).lower()
 
         # Components
         self.memory = KNNBanditAgent128D(
@@ -466,7 +485,12 @@ class TrainRLOnlineSimulation:
 
         self.pipeline: Optional[OnlineStreamPipeline] = None
 
-    def initialize_detector(self, pipeline: OnlineStreamPipeline, num_samples: int = 5000) -> None:
+    def initialize_detector(
+        self,
+        pipeline: OnlineStreamPipeline,
+        num_samples: int = 5000,
+        save_profiles_path: Optional[str] = None,
+    ) -> None:
         """
         Initializes or fits Mahalanobis++ profiles using clean reference data.
         """
@@ -480,6 +504,13 @@ class TrainRLOnlineSimulation:
         # Calibrate threshold to 95th percentile of clean in-distribution data
         self.mah_detector.calibrate_threshold(clean_feats, percentile=95.0)
 
+        # Save calibrated profiles to disk
+        profiles_path = save_profiles_path or os.path.join(
+            PROJECT_ROOT, "outputs", self.dataset_name, "mahalanobis_pp_profiles.npz"
+        )
+        os.makedirs(os.path.dirname(profiles_path), exist_ok=True)
+        self.mah_detector.save(profiles_path)
+
     def execute_simulation(
         self,
         n_episodes: int = 1,
@@ -491,8 +522,8 @@ class TrainRLOnlineSimulation:
         epsilon_end: float = 0.05,
         log_interval: int = SIMULATION_LOG_INTERVAL,
         train_frequency: int = 4,
-        output_csv_path: Optional[str] = SIMULATION_CSV_PATH,
-        save_agent_path: Optional[str] = RL_AGENT_CHECKPOINT_PATH,
+        output_csv_path: Optional[str] = None,
+        save_agent_path: Optional[str] = None,
     ) -> Dict[str, List[float]]:
         """
         Executes the online streaming simulation with structured CSV logging and metrics tracking.
@@ -512,8 +543,16 @@ class TrainRLOnlineSimulation:
         Returns:
             Dictionary containing metrics histories: rewards, losses, alphas, epsilons, sizes, steps.
         """
+        if output_csv_path is None:
+            output_csv_path = os.path.join(PROJECT_ROOT, "outputs", self.dataset_name, "train_rl_simulation_log.csv")
+        if save_agent_path is None:
+            save_agent_path = os.path.join(PROJECT_ROOT, "outputs", self.dataset_name, "checkpoints", "rl_agent_phase3.pt")
+
+        os.makedirs(os.path.dirname(output_csv_path), exist_ok=True)
+        os.makedirs(os.path.dirname(save_agent_path), exist_ok=True)
+
         if self.pipeline is None:
-            self.pipeline = OnlineStreamPipeline()
+            self.pipeline = OnlineStreamPipeline(dataset_name=self.dataset_name)
             self.initialize_detector(self.pipeline)
 
         # Metrics aggregation lists
@@ -548,7 +587,7 @@ class TrainRLOnlineSimulation:
         current_chunk_pos = 0
 
         # Pre-allocate streaming chunk buffers
-        stream_x_chunk = np.empty((0, 28, 28, 1), dtype=np.float32)
+        stream_x_chunk = np.empty((0,) + self.pipeline.x_train.shape[1:], dtype=np.float32)
         stream_y_chunk = np.empty(0, dtype=np.int32)
         stream_feats_chunk = np.empty((0, self.latent_dim), dtype=np.float32)
         stream_preds_chunk = np.empty(0, dtype=np.int32)
@@ -779,7 +818,8 @@ def run_simulation(
     noise_injection_rate: float = SIMULATION_NOISE_RATE,
     capacity: int = MEMORY_CAPACITY,
     n_steps: Optional[int] = None,
-    output_csv_path: Optional[str] = SIMULATION_CSV_PATH,
+    output_csv_path: Optional[str] = None,
+    dataset: str = "mnist",
 ) -> Dict[str, List[float]]:
     """
     Public interface function required by Phase 3 contract in Plano_de_Acao_EAAI.md.
@@ -790,10 +830,12 @@ def run_simulation(
         capacity: Maximum episodic memory capacity (default: 5000).
         n_steps: Total steps to execute (default: SIMULATION_STEPS = 50000).
         output_csv_path: Optional CSV output path for structured logging.
+        dataset: Target dataset name ('mnist' or 'cifar10').
 
     Returns:
         Dictionary mapping metric names ("rewards", "losses", etc.) to lists of float values.
     """
+    os.environ["DATASET"] = dataset
     steps_to_run = SIMULATION_STEPS if n_steps is None else n_steps
 
     sim = TrainRLOnlineSimulation(
@@ -802,6 +844,7 @@ def run_simulation(
         latent_dim=LATENT_DIM,
         buffer_size=SLIDING_VALIDATION_BUFFER_SIZE,
         alpha_decay=CURRICULUM_ALPHA_DECAY,
+        dataset_name=dataset,
     )
 
     return sim.execute_simulation(
@@ -819,18 +862,24 @@ def run_simulation(
 def main() -> None:
     """Command-line entry point for standalone execution."""
     parser = argparse.ArgumentParser(description="Online RL Simulation under Non-Stationary Environments (Phase 3).")
+    parser.add_argument("--dataset", type=str, default="mnist", choices=["mnist", "cifar10"], help="Dataset (default: mnist).")
     parser.add_argument("--episodes", type=int, default=1, help="Number of episodes (default: 1).")
     parser.add_argument("--steps", type=int, default=SIMULATION_STEPS, help="Number of streaming steps (default: 50000).")
     parser.add_argument("--capacity", type=int, default=MEMORY_CAPACITY, help="Memory capacity (default: 5000).")
     parser.add_argument("--noise-rate", type=float, default=SIMULATION_NOISE_RATE, help="Noise injection rate (default: 0.1).")
     parser.add_argument("--noise-level", type=float, default=SIMULATION_NOISE_LEVEL, help="Noise intensity (default: 0.6).")
     parser.add_argument("--log-interval", type=int, default=SIMULATION_LOG_INTERVAL, help="Logging interval (default: 500).")
-    parser.add_argument("--output-csv", type=str, default=SIMULATION_CSV_PATH, help="Path for CSV logging output.")
-    parser.add_argument("--save-agent", type=str, default=RL_AGENT_CHECKPOINT_PATH, help="Path to save trained RL agent.")
+    parser.add_argument("--output-csv", type=str, default=None, help="Path for CSV logging output.")
+    parser.add_argument("--save-agent", type=str, default=None, help="Path to save trained RL agent.")
 
     args = parser.parse_args()
 
-    sim = TrainRLOnlineSimulation(capacity=args.capacity)
+    os.environ["DATASET"] = args.dataset
+    if "src.config" in sys.modules:
+        import importlib
+        importlib.reload(sys.modules["src.config"])
+
+    sim = TrainRLOnlineSimulation(capacity=args.capacity, dataset_name=args.dataset)
     sim.execute_simulation(
         n_episodes=args.episodes,
         n_steps=args.steps,

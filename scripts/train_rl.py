@@ -1,6 +1,7 @@
 """
 Training script for the k-NN Bandit RL Agent (Episodic Memory).
 Unifies 10D and 128D memory bank seeding using the centralized configuration.
+Supports both MNIST and CIFAR-10 datasets via --dataset argument.
 """
 
 import sys
@@ -13,18 +14,6 @@ import tensorflow as tf
 # Add project root to path
 PROJECT_ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), '..'))
 sys.path.insert(0, PROJECT_ROOT)
-
-from src.config import (
-    DATA_DIR,
-    CHECKPOINT_DIR,
-    MEMORY_BANK_10D_PATH,
-    MEMORY_BANK_128D_PATH,
-    NOISE_SWEEP,
-    KNN_K
-)
-from src.models.custom_cnn import RawModel
-from src.models.knn_bandit_agent import KNNBanditAgent
-from src.data.loader import load_mnist_raw
 
 # Logging Setup
 logging.basicConfig(level=logging.INFO, format='%(message)s')
@@ -52,6 +41,13 @@ def extract_states_cnn(images: np.ndarray, cnn, latent_dim: int, batch_size: int
 def main():
     parser = argparse.ArgumentParser(description="Train/Seed the k-NN Bandit Agent.")
     parser.add_argument(
+        "--dataset",
+        type=str,
+        default="mnist",
+        choices=["mnist", "cifar10"],
+        help="Dataset to seed memory with (default: mnist)."
+    )
+    parser.add_argument(
         "--latent_dim",
         type=int,
         default=128,
@@ -61,10 +57,31 @@ def main():
     parser.add_argument(
         "--k",
         type=int,
-        default=KNN_K,
+        default=30,
         help="Number of nearest neighbors to query."
     )
     args = parser.parse_args()
+
+    os.environ["DATASET"] = args.dataset
+    if "src.config" in sys.modules:
+        import importlib
+        importlib.reload(sys.modules["src.config"])
+
+    from src.config import (
+        DATA_DIR,
+        CHECKPOINT_DIR,
+        MEMORY_BANK_10D_PATH,
+        MEMORY_BANK_128D_PATH,
+        NOISE_SWEEP,
+        DATASET
+    )
+    from src.data.loader import load_dataset_raw
+    from src.models.knn_bandit_agent import KNNBanditAgent
+
+    if args.dataset == "cifar10":
+        from src.models.custom_cnn_cifar10 import RawModelCIFAR10 as ModelClass
+    else:
+        from src.models.custom_cnn import RawModel as ModelClass
 
     # 1. Configure Hardware
     gpus = tf.config.list_physical_devices('GPU')
@@ -73,8 +90,8 @@ def main():
             tf.config.experimental.set_memory_growth(gpu, True)
 
     # 2. Load CNN
-    logger.info("Loading CNN (Feature Extractor)...")
-    cnn = RawModel()
+    logger.info(f"Loading CNN (Feature Extractor) [{DATASET.upper()}]...")
+    cnn = ModelClass()
     ckpt = tf.train.Checkpoint(model=cnn)
     latest_ckpt = tf.train.latest_checkpoint(CHECKPOINT_DIR)
     if not latest_ckpt:
@@ -94,8 +111,8 @@ def main():
         save_path = MEMORY_BANK_10D_PATH
 
     # 4. Load Dataset
-    logger.info("Loading MNIST training dataset...")
-    x_train, y_train = load_mnist_raw(DATA_DIR, kind='train')
+    logger.info(f"Loading {DATASET.upper()} training dataset...")
+    x_train, y_train = load_dataset_raw(args.dataset, DATA_DIR, kind='train')
     x_train = x_train.astype(np.float32) / 255.0
 
     # 5. Oracle Seeding across the noise sweep
@@ -173,6 +190,7 @@ def main():
     logger.info(f"\nMemory size: {stats['size']:,}")
     logger.info(f"Positive rewards ratio: {stats['reward_positive_pct']:.1f}%")
     
+    os.makedirs(os.path.dirname(save_path), exist_ok=True)
     agent.save(save_path)
     logger.info(f"Success! Agent memory saved to: {save_path}")
 

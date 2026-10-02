@@ -1,7 +1,7 @@
 # Estudo Comparativo Aprofundado: Resultados Experimentais vs. Literatura Científica
 
 > **Contexto de Publicação:** Preparação experimental para submissão à revista internacional *Engineering Applications of Artificial Intelligence* (EAAI, Elsevier).  
-> **Fontes Primárias Auditadas:** [`outputs/eaai_metrics.json`](file:///c:/Users/sanfr/Desktop/projetos-gecad/projeto-cnn/outputs/eaai_metrics.json) • [`outputs/eaai_metrics.csv`](file:///c:/Users/sanfr/Desktop/projetos-gecad/projeto-cnn/outputs/eaai_metrics.csv) • [`docs/results/baseline-comparison.md`](file:///c:/Users/sanfr/Desktop/projetos-gecad/projeto-cnn/docs/results/baseline-comparison.md) • [`docs/results/metrics-reference.md`](file:///c:/Users/sanfr/Desktop/projetos-gecad/projeto-cnn/docs/results/metrics-reference.md)  
+> **Fontes Primárias Auditadas:** [`outputs/mnist/eaai_metrics.json`](file:///c:/Users/sanfr/Desktop/projetos-gecad/projeto-cnn/outputs/mnist/eaai_metrics.json) • [`outputs/mnist/eaai_metrics.csv`](file:///c:/Users/sanfr/Desktop/projetos-gecad/projeto-cnn/outputs/mnist/eaai_metrics.csv) • [`docs/results/baseline-comparison.md`](file:///c:/Users/sanfr/Desktop/projetos-gecad/projeto-cnn/docs/results/baseline-comparison.md) • [`docs/results/metrics-reference.md`](file:///c:/Users/sanfr/Desktop/projetos-gecad/projeto-cnn/docs/results/metrics-reference.md)  
 > **Repositório de Literatura de Referência:** [`docs/Literatura/`](file:///c:/Users/sanfr/Desktop/projetos-gecad/projeto-cnn/docs/Literatura/README.md) • [`docs/Literatura/GLOSSARIO.md`](file:///c:/Users/sanfr/Desktop/projetos-gecad/projeto-cnn/docs/Literatura/GLOSSARIO.md)
 
 ---
@@ -55,7 +55,7 @@ x_ruidoso = clip(x + Ruído_Gaussiano(média=0, desvio=sigma), min=0.0, max=1.0)
 
 ### Matriz Completa de Resultados Empíricos
 
-Os valores abaixo foram confirmados diretamente a partir dos registos auditados em [`outputs/eaai_metrics.json`](file:///c:/Users/sanfr/Desktop/projetos-gecad/projeto-cnn/outputs/eaai_metrics.json):
+Os valores abaixo foram confirmados diretamente a partir dos registos auditados em [`outputs/mnist/eaai_metrics.json`](file:///c:/Users/sanfr/Desktop/projetos-gecad/projeto-cnn/outputs/mnist/eaai_metrics.json):
 
 | Dimensão de Avaliação | B0 (CNN Pura) | B1 (Mem. Infinita) | B2 (FIFO) | B3 (LFU) | B4 (RL Proposto) | Ganho Absoluto (B4 vs B2/B3) |
 | :--- | :---: | :---: | :---: | :---: | :---: | :---: |
@@ -82,11 +82,11 @@ O quadro comparativo a seguir mapeia cada comportamento empírico verificado às
 | Domínio Científico | Publicação Seminal de Referência | Proposição Teórica na Literatura | Resultado Empírico Obtido no Sistema |
 | :--- | :--- | :--- | :--- |
 | **[Out-of-Distribution](file:///c:/Users/sanfr/Desktop/projetos-gecad/projeto-cnn/docs/Literatura/Out-of-Distribution/README.md)** | Lee et al. (2018)<br>Kamoi & Kobayashi (2020)<br>Chen et al. (2010 - Ledoit-Wolf)<br>Nguyen (2026 - HUE-OOD) | A confiança Softmax entra em colapso sob ruído; Mahalanobis no espaço latente é eficaz para detetar anomalias. | B0 colapsa para 20.30% sob sigma=0.8; Mahalanobis++ reencaminha 100% dos casos OOD para a memória. |
-| **[Memória Episódica](file:///c:/Users/sanfr/Desktop/projetos-gecad/projeto-cnn/docs/Literatura/Episodic%20Memory/README.md)** | Pritzel et al. (2017 - NEC)<br>Blundell et al. (2016 - MFEC)<br>Jain & Lindsey (2018 - Semiparametric) | Combinação de extrator lento com memória não-paramétrica rápida baseada na Teoria CLS da neurociência. | B4 atinge 61.48% de Taxa de Acertos de Cache, resgatando predições perdidas pela CNN. |
+| **[Memória Episódica](file:///c:/Users/sanfr/Desktop/projetos-gecad/projeto-cnn/docs/Literatura/Episodic Memory/README.md)** | Pritzel et al. (2017 - NEC)<br>Blundell et al. (2016 - MFEC)<br>Jain & Lindsey (2018 - Semiparametric) | Combinação de extrator lento com memória não-paramétrica rápida baseada na Teoria CLS da neurociência. | B4 atinge 61.48% de Taxa de Acertos de Cache, resgatando predições perdidas pela CNN. |
 | **Poluição de Cache** | Alonso & Krichmar (2024 - SQHN)<br>Alabed (2019 - RLCache)<br>Zhou et al. (2024 - Catcher+) | Heurísticas cegas admitem ruído, contaminando a densidade latente e degradando severamente a recuperação. | Heurísticas B2 e B3 caem para 17.60% (pior que CNN B0 com 20.30%); B4 com Ação 0 sustenta 27.30%. |
-| **[Continual Learning](file:///c:/Users/sanfr/Desktop/projetos-gecad/projeto-cnn/docs/Literatura/Continual%20Learning/README.md)** | Isele & Cosgun (AAAI 2018 - SER)<br>Zheng et al. (2024 - Coresets)<br>Schaul et al. (2015 - PER) | Teorema: *Distribution Matching* é a única política que previne o esquecimento de classes dormentes. | Divergência KL cai de 0.5003 nats (FIFO/LFU) para 0.0028 nats (redução de 177x no B4 via Ação 3). |
+| **[Continual Learning](file:///c:/Users/sanfr/Desktop/projetos-gecad/projeto-cnn/docs/Literatura/Continual Learning/README.md)** | Isele & Cosgun (AAAI 2018 - SER)<br>Zheng et al. (2024 - Coresets)<br>Schaul et al. (2015 - PER) | Teorema: *Distribution Matching* é a única política que previne o esquecimento de classes dormentes. | Divergência KL cai de 0.5003 nats (FIFO/LFU) para 0.0028 nats (redução de 177x no B4 via Ação 3). |
 | **Avaliação de Fluxo** | Haug et al. (2022 - float)<br>Wu et al. (2026 - Continual Edge AI) | Avaliação de drift em fluxo contínuo prequencial através de *Forgetting Rate* e *Drift Restoration Time*. | B4 reduz o esquecimento em 2.50% e recupera do drift 44.8 passos mais rápido que FIFO e LFU. |
-| **[Edge AI & Sustentabilidade](file:///c:/Users/sanfr/Desktop/projetos-gecad/projeto-cnn/docs/Literatura/Edge%20AI/README.md)** | Jain et al. (2022 - LMOS)<br>Pittorino & Roveri (2026 - Adaptive Edge) | Sistemas embarcados exigem memória O(1) e latência estritamente limitada para evitar paragens por OOM. | B1 cresce para 35.2 MB; B4 fixa teto em 9.92 MB com latência média de 6.67 ms (aprox. 150 fps). |
+| **[Edge AI & Sustentabilidade](file:///c:/Users/sanfr/Desktop/projetos-gecad/projeto-cnn/docs/Literatura/Edge AI/README.md)** | Jain et al. (2022 - LMOS)<br>Pittorino & Roveri (2026 - Adaptive Edge) | Sistemas embarcados exigem memória O(1) e latência estritamente limitada para evitar paragens por OOM. | B1 cresce para 35.2 MB; B4 fixa teto em 9.92 MB com latência média de 6.67 ms (aprox. 150 fps). |
 
 ---
 
@@ -166,7 +166,7 @@ Com base na consistência dos resultados e no mapeamento com a literatura:
   * [Hub Central de Literatura Científica](file:///c:/Users/sanfr/Desktop/projetos-gecad/projeto-cnn/docs/Literatura/README.md)
   * [Glossário Científico Unificado de IA e Redes Neuronais](file:///c:/Users/sanfr/Desktop/projetos-gecad/projeto-cnn/docs/Literatura/GLOSSARIO.md)
   * [Literatura: Out-of-Distribution](file:///c:/Users/sanfr/Desktop/projetos-gecad/projeto-cnn/docs/Literatura/Out-of-Distribution/README.md)
-  * [Literatura: Memória Episódica](file:///c:/Users/sanfr/Desktop/projetos-gecad/projeto-cnn/docs/Literatura/Episodic%20Memory/README.md)
-  * [Literatura: Continual Learning](file:///c:/Users/sanfr/Desktop/projetos-gecad/projeto-cnn/docs/Literatura/Continual%20Learning/README.md)
-  * [Literatura: Edge AI](file:///c:/Users/sanfr/Desktop/projetos-gecad/projeto-cnn/docs/Literatura/Edge%20AI/README.md)
+  * [Literatura: Memória Episódica](file:///c:/Users/sanfr/Desktop/projetos-gecad/projeto-cnn/docs/Literatura/Episodic Memory/README.md)
+  * [Literatura: Continual Learning](file:///c:/Users/sanfr/Desktop/projetos-gecad/projeto-cnn/docs/Literatura/Continual Learning/README.md)
+  * [Literatura: Edge AI](file:///c:/Users/sanfr/Desktop/projetos-gecad/projeto-cnn/docs/Literatura/Edge AI/README.md)
   * [Literatura: Q-Learning](file:///c:/Users/sanfr/Desktop/projetos-gecad/projeto-cnn/docs/Literatura/Q-Learning/README.md)

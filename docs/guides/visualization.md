@@ -1,7 +1,7 @@
 # Explainable AI and Visualization Tools
 
-> Part of the [Active Episodic Memory Management via Reinforcement Learning for Robust CNN Inference on Out-of-Distribution Data](../../README.md) documentation.
-> Parent: [Usage Guides](README.md) | Up: [Documentation Index](../README.md)
+> Part of the [Active Episodic Memory Management via Reinforcement Learning for Robust CNN Inference on Out-of-Distribution Data](file:///c:/Users/sanfr/Desktop/projetos-gecad/projeto-cnn/README.md) documentation.  
+> Parent: [Usage Guides](file:///c:/Users/sanfr/Desktop/projetos-gecad/projeto-cnn/docs/guides/README.md) | Up: [Documentation Index](file:///c:/Users/sanfr/Desktop/projetos-gecad/projeto-cnn/docs/README.md)
 
 ---
 
@@ -9,7 +9,7 @@
 
 Explainability and diagnostic transparency are foundational requirements for deploying autonomous vision systems in safety-critical edge environments. Black-box deep neural networks frequently fail silently when subjected to sensor degradation, producing confident misclassifications without operational warnings.
 
-To provide comprehensive interpretability across all architectural layers, the repository includes four specialized Explainable AI (XAI) and visual diagnostic tools located in the `visualizations/` directory:
+To provide comprehensive interpretability across all architectural layers, the repository includes four specialized Explainable AI (XAI) and visual diagnostic tools, alongside publication-grade multi-panel evaluation dashboards for both MNIST and CIFAR-10:
 
 ```mermaid
 flowchart TD
@@ -36,173 +36,112 @@ flowchart TD
         P4["outputs/episodic_memory_rescue_full.png"]
         T4 --> P4
     end
+
+    subgraph V5["Publication Evaluation Dashboards"]
+        T5["evaluate_hybrid_global.py & scripts/cifar10/evaluate_baselines.py"]
+        P5_M["outputs/mnist/eaai_evaluation_dashboard.png"]
+        P5_C["outputs/cifar10/eaai_evaluation_dashboard.png"]
+        T5 --> P5_M
+        T5 --> P5_C
+    end
 ```
 
 ---
 
 ## 2. Tool 1: Latent Space Collapse Mapping (t-SNE)
 
-### 2.1. Concept and Purpose
-
-The script `visualizations/make_tsne.py` visualizes the geometry of the 128-dimensional bottleneck latent manifold under nominal and perturbed conditions using t-Distributed Stochastic Neighbor Embedding (t-SNE).
-
-- **Nominal Scenario (Clean Images):** The custom CNN maps clean digit classes into compact, linearly separable clusters in the latent manifold.
+The script [`visualizations/make_tsne.py`](file:///c:/Users/sanfr/Desktop/projetos-gecad/projeto-cnn/visualizations/make_tsne.py) visualizes the geometry of the 128-dimensional bottleneck latent manifold under nominal and perturbed conditions using t-Distributed Stochastic Neighbor Embedding (t-SNE):
+- **Nominal Scenario (Clean Images):** The CNN maps clean digit classes into compact, linearly separable clusters in the latent manifold.
 - **Corrupted Scenario (Noisy Images):** When sensor noise ($\sigma = 0.6$) corrupts the inputs, the representations scatter and overlap across class boundaries. This diagnostic provides visual justification for why parametric Softmax layers fail under noise, and why distance-based OOD detection (Mahalanobis++) is essential to trigger non-parametric memory retrieval.
 
-### 2.2. Execution Command
-
+Execution:
 ```bash
-# Generate comparative 2-panel t-SNE latent space projection
 python visualizations/make_tsne.py
 ```
-
-### 2.3. Output Artifacts
-
-- **Primary Output:** `outputs/colapso_latente_tsne.png` (300 DPI high-resolution figure).
-- **Visualization Structure:**
-  - **Left Panel (Scenario A):** Clean input projection (2,000 samples). Clear, well-separated clusters colored by true digit class (0 through 9).
-  - **Right Panel (Scenario B):** Noise-corrupted input projection ($\sigma = 0.6$). Demonstrates latent dispersion, boundary collapse, and inter-class entanglement.
+Output: `outputs/colapso_latente_tsne.png` (300 DPI high-resolution figure).
 
 ---
 
 ## 3. Tool 2: Gradient-Based Saliency Maps (Pixel Attention)
 
-### 3.1. Concept and Purpose
-
-The script `visualizations/make_saliency.py` calculates the gradient of the predicted class score with respect to input image pixels, revealing exactly which spatial regions of the image dominate the CNN decision:
-
+The script [`visualizations/make_saliency.py`](file:///c:/Users/sanfr/Desktop/projetos-gecad/projeto-cnn/visualizations/make_saliency.py) calculates the gradient of the predicted class score with respect to input image pixels, revealing exactly which spatial regions of the image dominate the CNN decision:
 $$S(x) = \left| \frac{\partial \hat{y}_c}{\partial x} \right|$$
-
-Where:
-- $x \in \mathbb{R}^{28 \times 28}$ is the input image tensor.
-- $\hat{y}_c = \text{Softmax}(z)_c$ is the unnormalized logit or winning probability for class $c$.
-- $S(x)$ is the normalized gradient magnitude map, scaled to $[0.0, 1.0]$.
-
 This diagnostic demonstrates whether the CNN is focusing on legitimate morphological stroke patterns or attending to spurious background artifacts induced by sensor noise.
 
-### 3.2. Execution Command
-
+Execution:
 ```bash
-# Generate gradient-based saliency heatmaps and overlays
 python visualizations/make_saliency.py
 ```
-
-### 3.3. Output Artifacts
-
-- **Primary Output:** `outputs/mapa_saliencia.png` (300 DPI high-resolution figure).
-- **Visualization Structure:** A 5-row, 3-column comparative grid displaying the first five test digits:
-  - **Column 1 (Original):** Raw grayscale input image with true ground-truth label.
-  - **Column 2 (Raw Heatmap):** Color-mapped (`hot`) gradient intensity highlighting primary activation foci.
-  - **Column 3 (XAI Overlay):** Semi-transparent saliency heatmap superimposed directly over the grayscale digit strokes.
+Output: `outputs/mapa_saliencia.png` (300 DPI high-resolution figure).
 
 ---
 
 ## 4. Tool 3: Decision Confidence Profiles and Correction Flow
 
-### 4.1. Concept and Purpose
+The script [`visualizations/make_decision_profiles.py`](file:///c:/Users/sanfr/Desktop/projetos-gecad/projeto-cnn/visualizations/make_decision_profiles.py) analyzes the confidence profiles of the parametric CNN against the expected rewards of the $k$-NN episodic memory across noise tiers.
 
-The script `visualizations/make_decision_profiles.py` performs a comparative confidence analysis between the parametric CNN and the non-parametric $k$-NN episodic memory on ambiguous and noise-corrupted test samples.
-
-The tool identifies challenging inputs where the CNN is either incorrect ($\hat{y}_{\text{CNN}} \neq y^*$) or exhibits low confidence ($\max_c P(c) < 0.7$). It then generates two complementary analytical plots:
-1. **Confidence Profile:** Side-by-side bar plots comparing the CNN Softmax probability distribution against the $k$-NN expected reward vector across all 10 digit classes.
-2. **Correction Flow Matrix:** A reclassification transition heatmap showing how often $k$-NN retrieval rescues CNN mistakes versus introducing errors, accompanied by a net correction gain summary.
-
-### 4.2. Execution Command
-
+Execution:
 ```bash
-# Generate confidence comparisons and correction flow diagrams
 python visualizations/make_decision_profiles.py
 ```
-
-### 4.3. Output Artifacts
-
-- **Output 1:** `outputs/perfil_confianca_cnn_vs_knn.png` (or `outputs/perfil_confianca_cnn_knn.png`). Displays the 8 most ambiguous digit cases, contrasting CNN probability spikes with $k$-NN neighbor voting weights.
-- **Output 2:** `outputs/fluxo_correcoes_cnn_knn.png` (200 DPI). Contains:
-  - Reclassification transition matrix (CNN prediction vs. $k$-NN corrected prediction).
-  - Accuracy comparison bar chart under noisy test conditions ($\sigma = 0.6$).
-  - Summary metric box reporting total corrections, true positive rescues, and net accuracy gain.
+Output: `outputs/fluxo_correcoes_cnn_knn.png` (300 DPI high-resolution figure).
 
 ---
 
-## 5. Tool 4: 128D Episodic Memory Rescue Visualizer
+## 5. Tool 4: Episodic Memory Prototype Rescue Inspection
 
-### 5.1. Concept and Purpose
+The script [`visualizations/make_memory_rescue.py`](file:///c:/Users/sanfr/Desktop/projetos-gecad/projeto-cnn/visualizations/make_memory_rescue.py) renders a 3-zone visual trace illustrating how an incoming corrupted sample is rescued by $k$-NN voting among the 15 nearest latent prototypes:
+1. **Zone 1 (Ingestion & OOD):** Displays corrupted input and computed Mahalanobis distance exceeding threshold.
+2. **Zone 2 (Retrieval):** Displays the image patches and distances of the 15 nearest prototypes retrieved from the 128D memory buffer.
+3. **Zone 3 (Arbitration):** Plots the voting consensus overriding the erroneous CNN prediction.
 
-The script `visualizations/make_memory_rescue.py` provides an instance-level demonstration of the hybrid routing mechanism in action. It identifies a representative "Hero Case" from the test stream: a sample where severe sensor noise corrupts the digit, causing the CNN to misclassify, but where the Mahalanobis++ detector flags the anomaly and routes the representation to episodic memory, which retrieves correct nearest neighbors to produce the correct class vote.
-
-### 5.2. Execution Command
-
+Execution:
 ```bash
-# Generate full multi-zone episodic memory rescue dashboard and individual panels
 python visualizations/make_memory_rescue.py
 ```
-
-### 5.3. Dashboard Architecture (Three Operational Zones)
-
-The visualization decomposes the rescue event into three contiguous functional zones rendered with a dark aesthetic (`#121212` background):
-
-```text
-+-------------------------------------------------------------------------------+
-|                        EPISODIC MEMORY RESCUE DASHBOARD                       |
-+-----------------------+-------------------------------+-----------------------+
-|  ZONE 1: INGESTION    |  ZONE 2: EPISODIC RETRIEVAL   |  ZONE 3: ARBITRATION  |
-|  - Clean image        |  - Grid of 15 nearest         |  - Class vote summary |
-|  - Noisy image        |    prototypes from memory     |  - Rescue confirmation|
-|  - CNN prediction     |  - Euclidean distance (d)     |  - Trustworthy badge  |
-|  - Mahalanobis dist   |  - Class label indicators     |                       |
-+-----------------------+-------------------------------+-----------------------+
-```
-
-1. **Zone 1: Ingestion and OOD Detection**
-   - Displays the original clean digit and the noise-corrupted input ($\sigma = 0.6$).
-   - Shows the incorrect CNN prediction (e.g., misclassifying digit 7 as digit 2).
-   - Displays the computed Mahalanobis++ distance ($D_M = 18.42$) and flags that it exceeds the calibrated threshold ($\tau = 14.82$), triggering the OOD route.
-
-2. **Zone 2: 128D Episodic Memory Retrieval**
-   - Queries the memory bank using vectorized Euclidean distances in the 128D latent space.
-   - Renders the actual image patches of the **15 nearest neighbor prototypes** stored in episodic memory.
-   - Annotates each prototype with its stored semantic label and Euclidean distance ($d_i$). Neighbor borders are colored green for correct prototypes and red for incorrect ones.
-
-3. **Zone 3: Arbitration and Hybrid Decision**
-   - Aggregates the 15 retrieved prototype votes.
-   - Plots the voting distribution (e.g., 13 votes for digit 7, 2 votes for digit 2).
-   - Confirms the successful rescue: the hybrid system overrides the faulty CNN prediction and outputs the correct ground-truth label.
-
-### 5.4. Output Artifacts
-
-The script exports the unified dashboard and modular sub-panels suitable for research presentations and papers:
-
-| File Path | Description | Dimensions |
-|:----------|:------------|:-----------|
-| `outputs/episodic_memory_rescue_full.png` | Complete 3-zone unified rescue dashboard. | $2200 \times 900$ px (150 DPI) |
-| `outputs/episodic_memory_rescue_zone1.png` | Isolated Zone 1: Input corruption & OOD routing. | $750 \times 900$ px |
-| `outputs/episodic_memory_rescue_zone2.png` | Isolated Zone 2: 15 nearest retrieved memory prototypes. | $1500 \times 900$ px |
-| `outputs/episodic_memory_rescue_zone3.png` | Isolated Zone 3: Vote aggregation & rescue confirmation. | $750 \times 900$ px |
-
-> [!NOTE]
-> Identical copies of these four rescue figures are mirrored in the root `assets/` directory for direct rendering in README documents.
+Output: `outputs/episodic_memory_rescue_full.png`.
 
 ---
 
-## 6. Diagnostic Tools Summary Table
+## 6. Publication Evaluation Dashboards (EAAI Standard)
 
-The table below catalogs all visualization and diagnostic tools available in the codebase:
+Both baseline evaluation pipelines (`evaluate_hybrid_global.py` for MNIST and `scripts/cifar10/evaluate_baselines.py` for CIFAR-10) automatically render 4-panel publication-grade dashboards displaying comprehensive comparative telemetry:
 
-| Tool Script | Execution Command | Primary Output File | Core Technical Focus | Typical Runtime |
-|:------------|:------------------|:--------------------|:---------------------|:----------------|
-| `visualizations/make_tsne.py` | `python visualizations/make_tsne.py` | `outputs/colapso_latente_tsne.png` | 2D t-SNE latent space cluster separation vs. noise collapse. | $\approx 60-90$ s |
-| `visualizations/make_saliency.py` | `python visualizations/make_saliency.py` | `outputs/mapa_saliencia.png` | Pixel-level backpropagated gradient saliency and stroke attention. | $\approx 10-15$ s |
-| `visualizations/make_decision_profiles.py` | `python visualizations/make_decision_profiles.py` | `outputs/fluxo_correcoes_cnn_knn.png` | CNN Softmax confidence vs. $k$-NN expected reward profiles. | $\approx 20-30$ s |
-| `visualizations/make_memory_rescue.py` | `python visualizations/make_memory_rescue.py` | `outputs/episodic_memory_rescue_full.png` | 3-zone visualization of 15 nearest 128D memory prototypes. | $\approx 30-45$ s |
-| `evaluate_hybrid_global.py` | `python evaluate_hybrid_global.py` | `outputs/eaai_evaluation_dashboard.png` | 4-panel publication benchmark dashboard (accuracy, efficiency, hit rate, KL). | $\approx 2-3$ min |
-| `scripts/evaluate_global.py` | `python scripts/evaluate_global.py` | `outputs/hybrid_global_evaluation.png` | Double-panel Mahalanobis threshold sweep on test and disjoint splits. | $\approx 1-2$ min |
+### 6.1. Dashboard Structure and Panels
+Each dashboard adheres to a consistent 4-panel layout:
+- **Panel 1 (Top-Left): Prequential Accuracy vs. Noise ($\sigma \in \{0.0, 0.2, 0.4, 0.6, 0.8\}$):**  
+  Plots accuracy trajectories for all 5 baselines (B0 to B4). Demonstrates the severe degradation of pure CNN (B0) under noise and the superiority of the proposed active agent (B4).
+- **Panel 2 (Top-Right): Operational Trade-Off Scatter (Latency vs. Peak RAM):**  
+  Contrasts per-inference latency (ms) against maximum resident RAM consumption (MB). Highlights the Pareto optimality of B4 (< 10 MB RAM, < 7 ms latency) and the prohibitive memory explosion of unbounded memory B1 (> 52 MB).
+- **Panel 3 (Bottom-Left): OOD Cache Hit Rate ($H_{\text{OOD}}$):**  
+  Bar chart comparing the percentage of correct classifications on samples routed to episodic memory. Confirms that RL active filtering (Action 0) prevents cache pollution, delivering higher hit rates than blind FIFO/LFU eviction.
+- **Panel 4 (Bottom-Right): Eviction Class Divergence ($D_{\text{KL}}$):**  
+  Log-scale bar chart illustrating Kullback-Leibler divergence between the empirical memory class distribution and the uniform target $\mathcal{U}(0, 9)$. Proves that active redundancy eviction (Action 3) maintains balanced class representation ($D_{\text{KL}} \le 0.003$ nats), outperforming FIFO by $> 1,200\times$.
+
+### 6.2. Generated Dashboard Locations
+- **MNIST Dashboard:** [`outputs/mnist/eaai_evaluation_dashboard.png`](file:///c:/Users/sanfr/Desktop/projetos-gecad/projeto-cnn/outputs/mnist/eaai_evaluation_dashboard.png)
+- **CIFAR-10 Dashboard:** [`outputs/cifar10/eaai_evaluation_dashboard.png`](file:///c:/Users/sanfr/Desktop/projetos-gecad/projeto-cnn/outputs/cifar10/eaai_evaluation_dashboard.png)
+
+---
+
+## 7. Diagnostic Tools Summary Table
+
+| Tool Script | Execution Command | Primary Output File | Core Focus | Typical Runtime |
+|:---|:---|:---|:---|:---|
+| `visualizations/make_tsne.py` | `python visualizations/make_tsne.py` | `outputs/colapso_latente_tsne.png` | 2D t-SNE latent manifold clustering vs. noise dispersion | $\approx 60-90$ s |
+| `visualizations/make_saliency.py` | `python visualizations/make_saliency.py` | `outputs/mapa_saliencia.png` | Pixel-level backpropagated gradient saliency maps | $\approx 10-15$ s |
+| `visualizations/make_decision_profiles.py` | `python visualizations/make_decision_profiles.py` | `outputs/fluxo_correcoes_cnn_knn.png` | CNN confidence vs. $k$-NN expected return flow | $\approx 20-30$ s |
+| `visualizations/make_memory_rescue.py` | `python visualizations/make_memory_rescue.py` | `outputs/episodic_memory_rescue_full.png` | 3-zone visual trace of 15 nearest prototype rescue | $\approx 30-45$ s |
+| `evaluate_hybrid_global.py` | `python evaluate_hybrid_global.py --dataset mnist` | [`outputs/mnist/eaai_evaluation_dashboard.png`](file:///c:/Users/sanfr/Desktop/projetos-gecad/projeto-cnn/outputs/mnist/eaai_evaluation_dashboard.png) | 4-panel publication benchmark dashboard on MNIST | $\approx 2-3$ min |
+| `scripts/cifar10/evaluate_baselines.py` | `python scripts/cifar10/evaluate_baselines.py` | [`outputs/cifar10/eaai_evaluation_dashboard.png`](file:///c:/Users/sanfr/Desktop/projetos-gecad/projeto-cnn/outputs/cifar10/eaai_evaluation_dashboard.png) | 4-panel publication benchmark dashboard on CIFAR-10 | $\approx 2-3$ min |
 
 ---
 
 **Navigation:**
-- Previous: [Running the EAAI Evaluation](evaluation.md)
-- Up: [Usage Guides](README.md)
-- Next: [API Reference](../api/README.md)
+- Previous: [Running the EAAI Evaluation](file:///c:/Users/sanfr/Desktop/projetos-gecad/projeto-cnn/docs/guides/evaluation.md)
+- Up: [Usage Guides](file:///c:/Users/sanfr/Desktop/projetos-gecad/projeto-cnn/docs/guides/README.md)
+- Next: [API Reference Index](file:///c:/Users/sanfr/Desktop/projetos-gecad/projeto-cnn/docs/api/README.md)
 
 ---
-Licensed under the GNU General Public License v3.0. See [LICENSE](../../LICENSE) for details.
+
+Licensed under the GNU General Public License v3.0. See [LICENSE](file:///c:/Users/sanfr/Desktop/projetos-gecad/projeto-cnn/LICENSE) for details.
