@@ -207,6 +207,10 @@ class PrioritizedReplayBuffer:
         self.ptr = (self.ptr + 1) % self.capacity
         self.size = min(self.size + 1, self.capacity)
 
+    def __len__(self) -> int:
+        """Returns current number of stored experiences."""
+        return self.size
+
     def sample(
         self,
         batch_size: int,
@@ -541,6 +545,9 @@ class RLAgent:
             logger.debug(f"Target network synced at step {self.train_step}")
 
         return float(loss.item())
+
+    # Convenient alias for update_weights
+    update = update_weights
 
     # =========================================================================
     # PERSISTENCE & STATS

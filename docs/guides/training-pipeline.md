@@ -138,7 +138,47 @@ python scripts/cifar10/evaluate_baselines.py --samples-per-level 1000 --noise-le
 
 ---
 
-## 4. Expected Outputs Summary Table
+## 4. Track C: CIFAR-100 Dedicated Pipeline
+
+### Step 4.1: ResNet-14 Backbone Training
+Trains the deep ResNet-14 backbone (`RawModelCIFAR100`, 6 residual blocks) with AdamW, Cutout ($8\times8$), Cosine Annealing, and 100-class Label Smoothing:
+```bash
+python scripts/cifar100/train_cnn.py --model-version v2 --epochs 150 --batch-size 128 --latent-dim 128 --optimizer adamw --lr 0.001 --weight-decay 0.0001 --cutmix-prob 0.5 --standardize
+```
+- **Execution Script:** [`scripts/cifar100/train_cnn.py`](file:///c:/Users/sanfr/Desktop/projetos-gecad/projeto-cnn/scripts/cifar100/train_cnn.py)
+- **Output:** `outputs/cifar100/checkpoints/modelo_dissecado-*` and `outputs/cifar100/checkpoints/model_meta.json`.
+- **Key Result:** Achieved **74.27%** nominal top-1 test accuracy on 100 classes using the promoted ResNet-18 V2 architecture ($+6.97\%$ gain over initial V1 baseline).
+
+### Step 4.2: Episodic Memory Seeding & Dual Uncertainty Calibration
+Fits the 100-class Dual Uncertainty Arbiter using Ledoit-Wolf shrinkage and seeds the 5,000-slot memory bank with balanced prototypes:
+```bash
+python scripts/cifar100/seed_memory.py --checkpoint-dir outputs/cifar100/checkpoints --latent-dim 128 --k 10 --capacity 5000
+```
+- **Execution Script:** [`scripts/cifar100/seed_memory.py`](file:///c:/Users/sanfr/Desktop/projetos-gecad/projeto-cnn/scripts/cifar100/seed_memory.py)
+- **Outputs:** `outputs/cifar100/arbiter_profiles.npz` and `outputs/cifar100/knn_memory_bank.npz`.
+- **Calibrated Thresholds:** $\tau_M = 8.69$, $\tau_H = 2.09$.
+
+### Step 4.3: Online Streaming RL Simulation under Drift
+Executes online prequential streaming simulation with the Double DQN + PER agent under concept drift and noise injection:
+```bash
+python scripts/cifar100/train_simulation.py --steps 50000 --log-interval 1000
+```
+- **Execution Script:** [`scripts/cifar100/train_simulation.py`](file:///c:/Users/sanfr/Desktop/projetos-gecad/projeto-cnn/scripts/cifar100/train_simulation.py)
+- **Outputs:** `outputs/cifar100/checkpoints/rl_agent_phase3.pt` and `outputs/cifar100/train_rl_simulation_log.csv`.
+- **Learned Actions:** Action 0 (Filter noise outliers) and Action 3 (Prune intra-class redundancy); Mean reward $+0.928$.
+
+### Step 4.4: 5-Baseline Comparative Benchmark
+Runs the comprehensive comparative benchmark on 5,000 streaming test samples across 5 noise levels:
+```bash
+python scripts/cifar100/evaluate_baselines.py --samples-per-level 1000 --capacity 5000 --k 10 --latent-dim 128
+```
+- **Execution Script:** [`scripts/cifar100/evaluate_baselines.py`](file:///c:/Users/sanfr/Desktop/projetos-gecad/projeto-cnn/scripts/cifar100/evaluate_baselines.py)
+- **Outputs:** `outputs/cifar100/eaai_metrics.json`, `outputs/cifar100/eaai_metrics.csv`, and `outputs/cifar100/eaai_evaluation_dashboard.png`.
+- **Key Result:** B4 achieves **71.80%** clean accuracy (+4.00% vs FIFO), **3.40%** accuracy at $\sigma=0.2$ ($2.27\times$ higher than FIFO at $1.50\%$), **15.68%** overall stream accuracy (#1 across all baselines), completely eliminates class starvation ($D_{KL} = 2.25 \times 10^{-8}\text{ nats}$ vs. $2.6551\text{ nats}$ for FIFO), bounds RAM to **8.82 MB**, and executes at **10.85 ms/sample** (92.1 fps).
+
+---
+
+## 5. Expected Outputs Summary Table
 
 | Dataset | Step | Artifact Path | Format | Description |
 |:---|:---|:---|:---|:---|
@@ -154,6 +194,12 @@ python scripts/cifar10/evaluate_baselines.py --samples-per-level 1000 --noise-le
 | **CIFAR-10** | Step 4 | `outputs/cifar10/checkpoints/rl_agent_phase3.pt` | PyTorch State | Double DQN policy network weights for CIFAR-10. |
 | **CIFAR-10** | Step 5 | `outputs/cifar10/eaai_metrics.json` | JSON | 5-baseline evaluation metrics on CIFAR-10. |
 | **CIFAR-10** | Step 5 | `outputs/cifar10/eaai_evaluation_dashboard.png` | PNG (300 DPI) | 4-panel publication evaluation dashboard for CIFAR-10. |
+| **CIFAR-100** | Step 1 | `outputs/cifar100/checkpoints/modelo_dissecado-*` | TF Checkpoint | ResNet-18 V2 backbone weights (74.27% acc). |
+| **CIFAR-100** | Step 2 | `outputs/cifar100/arbiter_profiles.npz` | NumPy NPZ | Dual Uncertainty 100-class profiles ($\tau_M=8.69, \tau_H=2.09$). |
+| **CIFAR-100** | Step 2 | `outputs/cifar100/knn_memory_bank.npz` | NumPy NPZ | Pre-allocated 5,000-slot memory bank (100 actions, $k=10$). |
+| **CIFAR-100** | Step 3 | `outputs/cifar100/checkpoints/rl_agent_phase3.pt` | PyTorch State | Double DQN policy network weights for CIFAR-100. |
+| **CIFAR-100** | Step 4 | `outputs/cifar100/eaai_metrics.json` | JSON | 5-baseline evaluation metrics on CIFAR-100. |
+| **CIFAR-100** | Step 4 | `outputs/cifar100/eaai_evaluation_dashboard.png` | PNG (300 DPI) | 4-panel publication evaluation dashboard for CIFAR-100. |
 
 ---
 

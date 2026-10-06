@@ -32,7 +32,7 @@ def calculate_accuracy(y_true: tf.Tensor, y_pred: tf.Tensor) -> tf.Tensor:
 
 def main() -> None:
     parser = argparse.ArgumentParser(description="Train the custom CNN model.")
-    parser.add_argument("--dataset", type=str, default="mnist", choices=["mnist", "cifar10"],
+    parser.add_argument("--dataset", type=str, default="mnist", choices=["mnist", "cifar10", "cifar100"],
                         help="Dataset to train on (default: mnist).")
     args = parser.parse_args()
 
@@ -45,7 +45,11 @@ def main() -> None:
     )
 
     # Select model and dataset loader based on dataset
-    if args.dataset == "cifar10":
+    if args.dataset == "cifar100":
+        from src.cifar100.model import RawModelCIFAR100 as ModelClass
+        from src.data.cifar100_loader import create_cifar100_dataset
+        train_dataset = create_cifar100_dataset(DATA_DIR, batch_size=CNN_BATCH_SIZE)
+    elif args.dataset == "cifar10":
         from src.models.custom_cnn_cifar10 import RawModelCIFAR10 as ModelClass
         from src.data.cifar10_loader import create_cifar10_dataset
         train_dataset = create_cifar10_dataset(DATA_DIR, batch_size=CNN_BATCH_SIZE)

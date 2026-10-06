@@ -37,17 +37,20 @@ def create_dataset(data_dir: str, batch_size: int = CNN_BATCH_SIZE):
 
 def load_dataset_raw(dataset_name: str, data_dir: str, kind: str = 'train') -> tuple:
     """
-    Unified loader dispatching to MNIST or CIFAR-10.
+    Unified loader dispatching to MNIST, CIFAR-10, or CIFAR-100.
 
     Args:
-        dataset_name: 'mnist' or 'cifar10'.
+        dataset_name: 'mnist', 'cifar10', or 'cifar100'.
         data_dir: Path to the raw data directory.
         kind: 'train' or 't10k'.
 
     Returns:
         Tuple of (images, labels) as numpy arrays.
     """
-    if dataset_name == 'cifar10':
+    if dataset_name == 'cifar100':
+        from src.data.cifar100_loader import load_cifar100_raw
+        return load_cifar100_raw(data_dir, kind=kind)
+    elif dataset_name == 'cifar10':
         from src.data.cifar10_loader import load_cifar10_raw
         return load_cifar10_raw(data_dir, kind=kind)
     else:
@@ -59,14 +62,17 @@ def create_dataset_for(dataset_name: str, data_dir: str, batch_size: int = CNN_B
     Unified dataset pipeline factory.
 
     Args:
-        dataset_name: 'mnist' or 'cifar10'.
+        dataset_name: 'mnist', 'cifar10', or 'cifar100'.
         data_dir: Path to the raw data directory.
         batch_size: Training batch size.
 
     Returns:
         tf.data.Dataset pipeline.
     """
-    if dataset_name == 'cifar10':
+    if dataset_name == 'cifar100':
+        from src.data.cifar100_loader import create_cifar100_dataset
+        return create_cifar100_dataset(data_dir, batch_size=batch_size)
+    elif dataset_name == 'cifar10':
         from src.data.cifar10_loader import create_cifar10_dataset
         return create_cifar10_dataset(data_dir, batch_size=batch_size)
     else:

@@ -1,5 +1,18 @@
 # src/config.py — Centralized project configuration
 import os
+import sys
+
+# Ensure Windows CUDA DLLs are found for GPU acceleration
+if sys.platform == "win32":
+    cuda_bin = r"C:\Users\sanfr\.conda\envs\tf_l40s\Library\bin"
+    if os.path.exists(cuda_bin):
+        if cuda_bin not in os.environ.get("PATH", ""):
+            os.environ["PATH"] = cuda_bin + os.pathsep + os.environ.get("PATH", "")
+        if hasattr(os, "add_dll_directory"):
+            try:
+                os.add_dll_directory(cuda_bin)
+            except Exception:
+                pass
 
 PROJECT_ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
@@ -29,8 +42,14 @@ THRESHOLD_SWEEP_STEP = 2.5
 # =============================================================================
 MNIST_DATA_DIR = os.path.join(PROJECT_ROOT, "data", "MNIST", "raw")
 CIFAR10_DATA_DIR = os.path.join(PROJECT_ROOT, "data", "CIFAR10", "raw")
+CIFAR100_DATA_DIR = os.path.join(PROJECT_ROOT, "data", "CIFAR100", "raw")
 
-DATA_DIR = CIFAR10_DATA_DIR if DATASET == "cifar10" else MNIST_DATA_DIR
+if DATASET == "cifar100":
+    DATA_DIR = CIFAR100_DATA_DIR
+elif DATASET == "cifar10":
+    DATA_DIR = CIFAR10_DATA_DIR
+else:
+    DATA_DIR = MNIST_DATA_DIR
 
 # =============================================================================
 # OUTPUT PATHS (Dataset-Scoped)
@@ -41,7 +60,7 @@ LOG_DIR = os.path.join(OUTPUT_DIR, "logs")
 
 # Agent defaults
 KNN_K = 30
-KNN_N_ACTIONS = 10
+KNN_N_ACTIONS = 100 if DATASET == "cifar100" else 10
 
 # --- Fase 1: Memoria Episodica ---
 MEMORY_CAPACITY = 5000
@@ -81,11 +100,13 @@ MEMORY_MAPPING_PATH = os.path.join(OUTPUT_DIR, "knn_memory_mapping.json")
 DATASET_INPUT_SHAPE = {
     "mnist": (28, 28, 1),
     "cifar10": (32, 32, 3),
+    "cifar100": (32, 32, 3),
 }
 
 DATASET_NUM_CLASSES = {
     "mnist": 10,
     "cifar10": 10,
+    "cifar100": 100,
 }
 
 INPUT_SHAPE = DATASET_INPUT_SHAPE.get(DATASET, (28, 28, 1))

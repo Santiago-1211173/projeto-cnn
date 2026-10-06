@@ -9,7 +9,7 @@
 
 This guide documents the experimental evaluation methodology developed for our submission to Elsevier *Engineering Applications of Artificial Intelligence* (EAAI), titled *"Active Episodic Memory Management via Reinforcement Learning for Robust CNN Inference on Out-of-Distribution Data"*.
 
-The benchmark systematically compares the proposed RL-driven active episodic memory curation architecture against four alternative system baselines under progressive non-stationary sensor noise and concept drift across two complexity regimes: **MNIST** (stylized digits) and **CIFAR-10** (natural RGB images). The evaluation follows a rigorous prequential (test-then-train) protocol to measure both predictive robustness and operational sustainability on resource-constrained Edge AI devices.
+The benchmark systematically compares the proposed RL-driven active episodic memory curation architecture against four alternative system baselines under progressive non-stationary sensor noise and concept drift across three complexity regimes: **MNIST** (stylized digits), **CIFAR-10** (natural RGB images), and **CIFAR-100** (fine-grained 100-class natural RGB images). The evaluation follows a rigorous prequential (test-then-train) protocol to measure both predictive robustness and operational sustainability on resource-constrained Edge AI devices.
 
 ---
 
@@ -19,9 +19,9 @@ To establish whether active reinforcement learning is superior to traditional ca
 
 ```mermaid
 flowchart TD
-    INPUT["Streaming Test Input x_t"] --> OOD{"Uncertainty Arbiter<br>MNIST: D_M > 12.5?<br>CIFAR-10: D_M > 16.04 OR H > 0.74?"}
+    INPUT["Streaming Test Input x_t"] --> OOD{"Uncertainty Arbiter<br>MNIST: D_M > 12.5?<br>CIFAR-10: D_M > 16.04 OR H > 0.74?<br>CIFAR-100: D_M > 7.71 OR H > 2.93?"}
     
-    OOD -- "In-Distribution" --> CNN["Parametric Vision Backbone<br>(MNIST: 4-layer CNN | CIFAR-10: ResNet-9)"]
+    OOD -- "In-Distribution" --> CNN["Parametric Vision Backbone<br>(MNIST: 4-layer CNN | CIFAR-10: ResNet-9 | CIFAR-100: ResNet-14)"]
     
     OOD -- "Out-of-Distribution / Uncertain" --> ROUTE{Baseline Routing Strategy}
     
@@ -79,7 +79,7 @@ Following Haug et al. (2022) and Wu et al. (2026), evaluation executes in test-t
 4. **Per-Sample Latency ($\tau_{\text{lat}}$):** Mean execution time (ms) including extraction, routing, retrieval, and eviction.
 5. **Peak RAM Consumption ($M_{\text{peak}}$):** Maximum resident heap memory tracked via `tracemalloc`.
 6. **OOD Cache Hit Rate ($H_{\text{OOD}}$):** Correct rescue classification percentage on routed samples.
-7. **Eviction Class Divergence ($D_{\text{KL}}$):** Kullback-Leibler divergence between memory class distribution and uniform target $\mathcal{U}(0, 9)$.
+7. **Eviction Class Divergence ($D_{\text{KL}}$):** Kullback-Leibler divergence between memory class distribution and uniform target.
 
 ---
 
@@ -102,6 +102,16 @@ python evaluate_hybrid_global.py \
 python scripts/cifar10/evaluate_baselines.py \
     --samples-per-level 1000 \
     --noise-levels 0.0 0.2 0.4 0.6 0.8
+```
+
+### 4.3. Running CIFAR-100 Evaluation
+```bash
+# Execute comparative 5-baseline evaluation on CIFAR-100
+python scripts/cifar100/evaluate_baselines.py \
+    --samples-per-level 1000 \
+    --capacity 5000 \
+    --k 10 \
+    --latent-dim 128
 ```
 
 ---
