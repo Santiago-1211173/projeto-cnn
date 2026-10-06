@@ -7,17 +7,18 @@
 
 ## 1. Overview and Invariant Latent Contract
 
-The parametric cortical backbone of the system extracts semantic visual representations from raw pixel arrays and emits nominal classification predictions. To evaluate semiparametric active memory management across distinct complexity regimes, the repository implements two specialized vision backbones:
-1. **MNIST Feature Extractor (`RawModel` in `src/models/custom_cnn.py`):** A custom 4-layer convolutional neural network built exclusively with low-level TensorFlow primitives (`tf.Module`) without high-level Keras abstractions.
-2. **CIFAR-10 Feature Extractor (`RawModelCIFAR10` in `src/cifar10/model.py`):** An upgraded ResNet-9 architecture incorporating residual shortcut connections, Batch Normalization, and Global Average Pooling.
+The parametric cortical backbone of the system extracts semantic visual representations from raw pixel arrays and emits nominal classification predictions. To evaluate semiparametric active memory management across distinct complexity regimes, the repository implements three specialized vision backbones:
+1. **MNIST Feature Extractor ([`RawModel`](file:///c:/Users/sanfr/Desktop/projetos-gecad/projeto-cnn/src/models/custom_cnn.py)):** A custom 4-layer convolutional neural network built exclusively with low-level TensorFlow primitives (`tf.Module`) without high-level Keras abstractions (225,034 parameters).
+2. **CIFAR-10 Feature Extractor ([`RawModelCIFAR10`](file:///c:/Users/sanfr/Desktop/projetos-gecad/projeto-cnn/src/cifar10/model.py)):** An upgraded ResNet-9 architecture incorporating residual shortcut connections, Batch Normalization, and Global Average Pooling (6,568,394 parameters), achieving 91.18% nominal clean test accuracy.
+3. **CIFAR-100 Feature Extractor ([`RawModelCIFAR100V2`](file:///c:/Users/sanfr/Desktop/projetos-gecad/projeto-cnn/src/cifar100/model.py)):** An upgraded 18-layer deep residual network (ResNet-18 V2) structured across 4 hierarchical stages (8 residual blocks) featuring learned strided convolutions and a Batch Normalization bottleneck (11,250,532 parameters), achieving 74.27% nominal clean test accuracy.
 
 ### The Invariant 128D Latent Contract
-Despite differing input dimensions ($28 \times 28 \times 1$ vs. $32 \times 32 \times 3$) and model capacities (225k vs. 6.57M parameters), **both architectures strictly conform to an identical architectural contract**:
-$$\Phi: \mathcal{X} \to \left(\mathbb{R}^{128}, \Delta^9\right)$$
-- **Latent Bottleneck:** Penultimate feature vector $z \in \mathbb{R}^{128}$ after ReLU non-linearity.
-- **Classification Head:** Linear projection yielding 10-class Softmax posterior probabilities $p \in \Delta^9$.
+Despite differing input dimensions ($28 \times 28 \times 1$ vs. $32 \times 32 \times 3$) and model capacities (225k, 6.57M, and 11.25M parameters), **all three architectures strictly conform to an identical architectural contract**:
+$$\Phi: \mathcal{X} \to \left(\mathbb{R}^{128}, \Delta^{C-1}\right), \quad C \in \{10, 100\}$$
+- **Latent Bottleneck:** Penultimate feature vector $z \in \mathbb{R}^{128}$ after ReLU non-linearity (and dedicated Batch Normalization in ResNet-18 V2).
+- **Classification Head:** Linear projection yielding class Softmax posterior probabilities $p \in \Delta^9$ (MNIST, CIFAR-10) or $p \in \Delta^{99}$ (CIFAR-100).
 
-This invariant interface guarantees that downstream components—including the $k$-NN episodic memory buffer ([`KNNBanditAgent128D`](file:///c:/Users/sanfr/Desktop/projetos-gecad/projeto-cnn/src/models/knn_bandit_agent.py)), the 5D state representation of the RL agent ([`RLAgent`](file:///c:/Users/sanfr/Desktop/projetos-gecad/projeto-cnn/src/models/rl_agent.py)), and the Curriculum Learning reward manager ([`RewardManager`](file:///c:/Users/sanfr/Desktop/projetos-gecad/projeto-cnn/src/models/reward_manager.py))—operate identically across datasets without modification.
+This invariant interface guarantees that downstream components—including the $k$-NN episodic memory buffer ([`KNNBanditAgent128D`](file:///c:/Users/sanfr/Desktop/projetos-gecad/projeto-cnn/src/models/knn_bandit_agent.py)), the 5D state representation of the RL agent ([`RLAgent`](file:///c:/Users/sanfr/Desktop/projetos-gecad/projeto-cnn/src/models/rl_agent.py)), and the Curriculum Learning reward manager ([`RewardManager`](file:///c:/Users/sanfr/Desktop/projetos-gecad/projeto-cnn/src/models/reward_manager.py))—operate identically across datasets without structural modification.
 
 ---
 
@@ -78,9 +79,40 @@ To form tight, well-clustered class manifolds necessary for episodic memory retr
 
 ---
 
-## 4. Weight Initialization and Optimization Strategies
+## 4. CIFAR-100 Feature Extractor: ResNet-18 V2 Backbone
 
-### 4.1. Weight Initialization
+### 4.1. Purpose and Architecture Motivation
+Fine-grained 100-class natural image classification ($32 \times 32 \times 3$) presents exceptional representational challenges: high class-cardinality entropy ($H_{\max} = \ln(100) \approx 4.6052\text{ nats}$) and subtle inter-class visual boundaries (such as differentiating between subordinate species of aquatic mammals, insects, or trees). Shallow backbones or networks employing non-learned spatial pooling (such as blind Max-Pooling) induce catastrophic spatial information collapse and feature entanglement on 100-class datasets.
+
+To construct linearly separable, tightly clustered class manifolds required for episodic memory retrieval and dual uncertainty gating, `RawModelCIFAR100V2` ([`src/cifar100/model.py`](file:///c:/Users/sanfr/Desktop/projetos-gecad/projeto-cnn/src/cifar100/model.py)) implements an enhanced 18-layer residual architecture (ResNet-18 V2):
+- **4 Progressive Hierarchical Stages:** 8 residual blocks expanding channel capacity from 64 to 512 ($64 \to 128 \to 256 \to 512$).
+- **Learned Strided Downsampling:** Replaces blind max-pooling with strided convolutions ($s=2$) in the first block of Stages 2, 3, and 4, preserving nuanced spatial topologies across resolution transitions.
+- **Global Average Pooling:** Collapses $4 \times 4 \times 512$ feature volumes into a 512D spatial summary vector without flattening parameter explosion.
+- **Normalized Latent Bottleneck:** Projects 512D representations into 128D, followed by dedicated Batch Normalization (`latent_bn`) and ReLU activation, stabilizing latent manifold variance before the 100-class linear classification head.
+
+### 4.2. Layer-by-Layer Architecture Specification
+
+| # | Stage / Layer Group | Component / Sub-Layers | Input Shape | Output Shape | Details and Operations | Trainable Parameters |
+|:---|:---|:---|:---|:---|:---|:---|
+| **0** | **Input Image** | Input | $32 \times 32 \times 3$ | $32 \times 32 \times 3$ | Standardized RGB pixel tensor | 0 |
+| **1** | **Prep Stage** | `prep_conv` + `prep_bn` + ReLU | $32 \times 32 \times 3$ | $32 \times 32 \times 64$ | Conv $3 \times 3$, stride 1, padding 'SAME' | 1,792 + 128 = **1,920** |
+| **2** | **Stage 1 (64 Ch)** | 2x `ResidualBlock` ($s=1$) | $32 \times 32 \times 64$ | $32 \times 32 \times 64$ | 4x Conv($3 \times 3, 64$) + BN + ReLU + Identity shortcuts | 2x (73,856 + 256) = **148,224** |
+| **3** | **Stage 2 (128 Ch)** | ResBlock 1 ($s=2$) + ResBlock 2 ($s=1$) | $32 \times 32 \times 64$ | $16 \times 16 \times 128$ | Conv($3 \times 3, 128, s=2$) + $1 \times 1$ Shortcut + Conv($3 \times 3, 128$) | 230,528 + 295,680 = **526,208** |
+| **4** | **Stage 3 (256 Ch)** | ResBlock 1 ($s=2$) + ResBlock 2 ($s=1$) | $16 \times 16 \times 128$ | $8 \times 8 \times 256$ | Conv($3 \times 3, 256, s=2$) + $1 \times 1$ Shortcut + Conv($3 \times 3, 256$) | 919,808 + 1,181,184 = **2,100,992** |
+| **5** | **Stage 4 (512 Ch)** | ResBlock 1 ($s=2$) + ResBlock 2 ($s=1$) | $8 \times 8 \times 256$ | $4 \times 4 \times 512$ | Conv($3 \times 3, 512, s=2$) + $1 \times 1$ Shortcut + Conv($3 \times 3, 512$) | 3,674,624 + 4,721,664 = **8,396,288** |
+| **6** | **Global Avg Pool** | `GlobalAvgPool2DLayer` | $4 \times 4 \times 512$ | $512$ | Spatial mean reduction across $H \times W$ | 0 |
+| **7** | **Latent Bottleneck** | `DenseLayer` + `BatchNorm2D` + ReLU | $512$ | $128$ | Dense ($512 \to 128$) + BN(128) + ReLU activation | 65,664 + 256 = **65,920** |
+| **8** | **Classifier Head** | `DenseLayer` + Softmax | $128$ | $100$ | 100-class categorical logits projection | 12,800 + 100 = **12,900** |
+
+- **Total Learnable Parameters:** **11,250,532 parameters** (11,252,452 trainable variables, 11,262,308 total variables including moving BN stats).
+- **Weight Storage Footprint:** $\approx 45.0\text{ MB}$ (`float32`).
+- **Nominal Test Accuracy Achieved:** **74.27% Top-1 accuracy** on clean CIFAR-100 test set (150 epochs).
+
+---
+
+## 5. Weight Initialization and Optimization Strategies
+
+### 5.1. Weight Initialization
 - **Convolutional Kernels (`Conv2DLayer`):** Initialized using **He Normal** (Kaiming Normal) initialization:
   $$W \sim \mathcal{N}\left(0, \sqrt{\frac{2}{k_h \cdot k_w \cdot c_{\text{in}}}}\right)$$
   Preserves activation variance across repeated ReLU non-linearities and deep residual blocks.
@@ -88,60 +120,69 @@ To form tight, well-clustered class manifolds necessary for episodic memory retr
   $$W \sim \mathcal{U}\left(-\sqrt{\frac{6}{d_{\text{in}} + d_{\text{out}}}}, +\sqrt{\frac{6}{d_{\text{in}} + d_{\text{out}}}}\right)$$
 - **Batch Normalization (`BatchNorm2DLayer`):** $\gamma$ initialized to $1.0$, $\beta$ to $0.0$; running mean to $0.0$, running variance to $1.0$ (momentum $\mu = 0.9$, $\epsilon = 10^{-5}$).
 
-### 4.2. Training Optimization Protocols
+### 5.2. Training Optimization Protocols
 
-| Parameter | MNIST Training (`scripts/train_cnn.py`) | CIFAR-10 Training (`scripts/cifar10/train_cnn.py`) |
-|:---|:---|:---|
-| **Optimizer** | Custom `SGD` with `assign_sub` | Pure TensorFlow `Adam` with decoupled weight decay |
-| **Learning Rate** | $\eta = 0.05$ (constant) | $\eta = 0.001$ with Cosine Annealing decay |
-| **Weight Decay** | None | $\lambda = 10^{-4}$ (applied only to 2D/4D weight kernels) |
-| **Batch Size** | 128 | 128 |
-| **Epochs** | 10 | 25 |
-| **Data Augmentation** | None (standard raw digits) | Random Horizontal Flip + Random Crop ($32 \times 32$, pad 4) |
-| **Convergence Milestone** | $> 98.5\%$ validation accuracy | $> 90.0\%$ test accuracy (Achieved: **91.18%**) |
+| Parameter | MNIST Training (`scripts/train_cnn.py`) | CIFAR-10 Training (`scripts/cifar10/train_cnn.py`) | CIFAR-100 Training (`scripts/cifar100/train_cnn.py`) |
+|:---|:---|:---|:---|
+| **Backbone Model** | `RawModel` (4-Layer CNN) | `RawModelCIFAR10` (ResNet-9) | `RawModelCIFAR100V2` (ResNet-18 V2) |
+| **Optimizer** | Custom `SGD` with `assign_sub` | Pure TensorFlow `Adam` with decoupled weight decay | Custom `AdamW` (`SGDMomentum` option supported) |
+| **Learning Rate** | $\eta = 0.05$ (constant) | $\eta = 0.001$ with Cosine Annealing decay | $\eta = 0.001$ with Cosine Annealing decay |
+| **Weight Decay** | None | $\lambda = 10^{-4}$ (applied only to 2D/4D weight kernels) | $\lambda = 10^{-4}$ (applied only to 2D/4D weight kernels) |
+| **Batch Size** | 128 | 128 | 128 |
+| **Epochs** | 10 | 25 | 150 |
+| **Data Augmentation** | None (standard raw digits) | Random Horizontal Flip + Random Crop ($32 \times 32$, pad 4) | Random Crop + Flip + CutMix ($p=0.5$) + Label Smoothing ($0.1$) |
+| **Convergence Milestone** | $> 98.5\%$ validation accuracy | $> 90.0\%$ test accuracy (Achieved: **91.18%**) | $> 74.0\%$ test accuracy (Achieved: **74.27%**) |
 
 ---
 
-## 5. Architectural Justification of the 128D Latent Bottleneck
+## 6. Architectural Justification of the 128D Latent Bottleneck
 
-The decision to standardize both models on a **128-dimensional bottleneck** is mathematically and operationally governed by four principles:
+The decision to standardize all three backbones on an invariant **128-dimensional bottleneck** is mathematically and operationally governed by four principles:
 
 1. **Information Bottleneck Principle:**  
-   In both networks, spatial features ($1,600\text{D}$ for MNIST, $256\text{D}$ post-GAP for CIFAR-10) are projected into $128\text{D}$. This optimal compression factor forces the representation to discard high-frequency spatial noise and background artifacts while preserving morphological and semantic invariants.
+   In all three networks, high-dimensional intermediate representations ($1,600\text{D}$ for MNIST, $256\text{D}$ post-GAP for CIFAR-10, $512\text{D}$ post-GAP for CIFAR-100) are compressed into $128\text{D}$. This compression factor forces the representations to discard high-frequency noise and background clutter while preserving semantic discriminability.
 
 2. **Mitigating Metric Collapse in $k$-NN Retrieval:**  
-   In ultra-high dimensions ($D > 500$), the ratio of distances between the nearest and farthest neighbors converges to 1 ($\lim_{D \to \infty} \frac{d_{\max} - d_{\min}}{d_{\min}} \to 0$). At $D=128$, the Euclidean metric remains discriminative, enabling robust nearest-neighbor retrieval within sub-millisecond query budgets.
+   In ultra-high dimensions ($D > 500$), the ratio of distances between the nearest and farthest neighbors converges to 1 ($\lim_{D \to \infty} \frac{d_{\max} - d_{\min}}{d_{\min}} \to 0$). At $D=128$, the Euclidean metric remains discriminative, enabling robust nearest-neighbor retrieval within sub-millisecond query budgets across both 10-class and 100-class settings.
 
 3. **Strict $O(1)$ RAM Bounds for Edge Microcontrollers:**  
    A pre-allocated buffer of $N=5,000$ exemplars in $128\text{D}$ occupies:
    $$5,000 \times 128 \times 4\text{ bytes} \approx 2.56\text{ MB}$$
-   This deterministic footprint permits the entire episodic memory buffer to reside permanently in SRAM/L3 cache on resource-constrained Edge AI accelerators (e.g., NVIDIA Jetson, ARM Cortex-A).
+   This deterministic footprint permits the entire episodic memory buffer to reside permanently in SRAM/L3 cache on resource-constrained Edge AI accelerators (e.g., NVIDIA Jetson, ARM Cortex-A), allocating 500 prototypes per class on 10-class tasks and 50 prototypes per class on CIFAR-100.
 
 4. **Hardware Alignment with CUDA Warp Architecture:**  
    $128$ is an exact multiple of the 32-thread CUDA warp size. Memory controllers achieve 100% memory coalescing during vectorized distance evaluations, maximizing memory bus utilization.
 
 ---
 
-## 6. Code Usage Example: Dual Backbone Inference
+## 7. Code Usage Example: Tri-Backbone Inference
 
 ```python
 import tensorflow as tf
 from src.models.custom_cnn import RawModel as MNISTBackbone
 from src.cifar10.model import RawModelCIFAR10 as CIFAR10Backbone
+from src.cifar100.model import load_cifar100_backbone, RawModelCIFAR100V2
 
 # 1. MNIST Forward Pass
 mnist_model = MNISTBackbone()
 x_mnist = tf.random.uniform((1, 28, 28, 1), dtype=tf.float32)
 out_mnist = mnist_model(x_mnist)
-print("MNIST Latent Shape:", out_mnist["latent_features"].shape)  # (1, 128)
-print("MNIST Probs Shape :", out_mnist["probabilities"].shape)    # (1, 10)
+print("MNIST Latent Shape   :", out_mnist["latent_features"].shape)  # (1, 128)
+print("MNIST Probs Shape    :", out_mnist["probabilities"].shape)    # (1, 10)
 
 # 2. CIFAR-10 Forward Pass
-cifar_model = CIFAR10Backbone()
-x_cifar = tf.random.uniform((1, 32, 32, 3), dtype=tf.float32)
-out_cifar = cifar_model(x_cifar, training=False)
-print("CIFAR Latent Shape:", out_cifar["latent_features"].shape)  # (1, 128)
-print("CIFAR Probs Shape :", out_cifar["probabilities"].shape)    # (1, 10)
+cifar10_model = CIFAR10Backbone()
+x_cifar10 = tf.random.uniform((1, 32, 32, 3), dtype=tf.float32)
+out_cifar10 = cifar10_model(x_cifar10, training=False)
+print("CIFAR-10 Latent Shape:", out_cifar10["latent_features"].shape)  # (1, 128)
+print("CIFAR-10 Probs Shape :", out_cifar10["probabilities"].shape)    # (1, 10)
+
+# 3. CIFAR-100 Forward Pass (Restored ResNet-18 V2 Checkpoint)
+cifar100_model, standardize = load_cifar100_backbone("outputs/cifar100/checkpoints")
+x_cifar100 = tf.random.uniform((1, 32, 32, 3), dtype=tf.float32)
+out_cifar100 = cifar100_model(x_cifar100, training=False)
+print("CIFAR-100 Latent Shape:", out_cifar100["latent_features"].shape)  # (1, 128)
+print("CIFAR-100 Probs Shape :", out_cifar100["probabilities"].shape)    # (1, 100)
 ```
 
 ---

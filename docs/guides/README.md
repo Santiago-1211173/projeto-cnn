@@ -33,23 +33,22 @@ For researchers and engineers seeking to reproduce the experimental results pres
 flowchart TD
     subgraph S1["Phase A: Prerequisites & Verification"]
         A1["Install Dependencies<br>requirements.txt"]
-        A2["Extract MNIST Binaries<br>data/MNIST/raw/"]
+        A2["Download / Verify Datasets<br>MNIST | CIFAR-10 | CIFAR-100"]
         A3["Run Environment Verification<br>docs/getting-started/quickstart.md"]
         A1 --> A2 --> A3
     end
 
-    subgraph S2["Phase B: Training Pipeline"]
-        B1["Step 1: Train CNN<br>scripts/train_cnn.py"]
-        B2["Step 2: Profile Latent Space<br>scripts/profile_latent.py"]
-        B3["Step 3: Seed Episodic Memory<br>scripts/train_rl.py"]
-        B4["Step 4: Online RL Simulation<br>training/train_rl_online_simulation.py"]
-        B1 --> B2 --> B3 --> B4
+    subgraph S2["Phase B: Training Pipelines (Multi-Dataset)"]
+        direction TB
+        B_M["Track A: MNIST<br>scripts/train_cnn.py -> profile_latent.py -> train_rl.py -> train_rl_online_simulation.py"]
+        B_C10["Track B: CIFAR-10<br>scripts/cifar10/train_cnn.py -> profile_latent.py -> seed_memory.py -> train_simulation.py"]
+        B_C100["Track C: CIFAR-100<br>scripts/cifar100/train_cnn.py -> seed_memory.py -> train_simulation.py"]
     end
 
     subgraph S3["Phase C: Benchmark Evaluation"]
-        C1["Run 5-Baseline Benchmark<br>evaluate_hybrid_global.py"]
-        C2["Export Scientific Metrics<br>outputs/eaai_metrics.json"]
-        C1 --> C2
+        C_M["MNIST Evaluation<br>evaluate_hybrid_global.py --dataset mnist"]
+        C_C10["CIFAR-10 Evaluation<br>scripts/cifar10/evaluate_baselines.py"]
+        C_C100["CIFAR-100 Evaluation<br>scripts/cifar100/evaluate_baselines.py"]
     end
 
     subgraph S4["Phase D: Explainable AI & Analysis"]
@@ -59,11 +58,15 @@ flowchart TD
         D1 --> D2 --> D3
     end
 
-    S1 --> S2 --> S3 --> S4
+    S1 --> S2
+    B_M --> C_M
+    B_C10 --> C_C10
+    B_C100 --> C_C100
+    S3 --> S4
 ```
 
-1. **Prerequisites & Setup:** Complete the onboarding steps in [Installation and Quick Start](../getting-started/quickstart.md) to ensure hardware acceleration, directory structures, and dataset files are properly configured.
-2. **Execute Training Pipeline:** Follow [training-pipeline.md](training-pipeline.md) sequentially from Step 1 through Step 4. Do not omit the latent profiling step, as downstream routing depends on regularized covariance matrices.
+1. **Prerequisites & Setup:** Complete the onboarding steps in [Installation and Quick Start](../getting-started/quickstart.md) to ensure hardware acceleration, directory structures, and dataset files are properly configured across MNIST, CIFAR-10, and CIFAR-100.
+2. **Execute Training Pipeline:** Follow [training-pipeline.md](training-pipeline.md) sequentially for your target dataset track (Track A for MNIST, Track B for CIFAR-10, or Track C for CIFAR-100). Do not omit uncertainty profiling or memory seeding, as downstream prequential routing depends on regularized covariance matrices and reference prototypes.
 3. **Execute Comparative Evaluation:** Follow [evaluation.md](evaluation.md) to evaluate the trained active memory agent against blind eviction baselines (FIFO, LFU, pure CNN, and infinite memory).
 4. **Generate Visualizations:** Follow [visualization.md](visualization.md) to inspect model attention, latent cluster preservation, and memory rescue mechanics for presentation and manuscript figures.
 
@@ -71,15 +74,24 @@ flowchart TD
 
 ## 4. Hardware and Runtime Considerations
 
-The computational requirements vary across the different pipeline stages:
+The computational requirements vary across the different pipeline stages and complexity regimes:
 
 | Stage | Script | Typical Hardware | Memory Requirement | Estimated Duration |
 |:------|:-------|:-----------------|:-------------------|:-------------------|
-| CNN Training | `scripts/train_cnn.py` | CUDA GPU / Apple Silicon / CPU | ~1.5 GB VRAM / ~2 GB RAM | ~2-3 min (GPU), ~12 min (CPU) |
-| Latent Profiling | `scripts/profile_latent.py` | CPU or CUDA GPU | ~1.0 GB RAM | ~20-30 seconds |
-| Memory Seeding | `scripts/train_rl.py` | CPU or CUDA GPU | ~2.0 GB RAM | ~1-2 minutes |
-| Online RL Simulation | `training/train_rl_online_simulation.py` | CUDA GPU / Multi-core CPU | ~2.5 GB RAM | ~15-25 min (50,000 steps) |
-| Global Evaluation | `evaluate_hybrid_global.py` | CPU or CUDA GPU | ~1.5 GB RAM | ~2-4 minutes |
+| CNN Training (MNIST) | `scripts/train_cnn.py` | CUDA GPU / Apple Silicon / CPU | ~1.5 GB VRAM / ~2 GB RAM | ~2-3 min (GPU), ~12 min (CPU) |
+| Latent Profiling (MNIST) | `scripts/profile_latent.py` | CPU or CUDA GPU | ~1.0 GB RAM | ~20-30 seconds |
+| Memory Seeding (MNIST) | `scripts/train_rl.py` | CPU or CUDA GPU | ~2.0 GB RAM | ~1-2 minutes |
+| Online RL Simulation (MNIST) | `training/train_rl_online_simulation.py` | CUDA GPU / Multi-core CPU | ~2.5 GB RAM | ~15-25 min (50,000 steps) |
+| Global Evaluation (MNIST) | `evaluate_hybrid_global.py` | CPU or CUDA GPU | ~1.5 GB RAM | ~2-4 minutes |
+| CNN Training (CIFAR-10) | `scripts/cifar10/train_cnn.py` | CUDA GPU (RTX 4090/L40S) / CPU | ~2.0 GB VRAM / ~4 GB RAM | ~5-7 min (GPU), ~30 min (CPU) |
+| Latent Profiling (CIFAR-10) | `scripts/cifar10/profile_latent.py` | CPU or CUDA GPU | ~1.5 GB RAM | ~40-60 seconds |
+| Memory Seeding (CIFAR-10) | `scripts/cifar10/seed_memory.py` | CPU or CUDA GPU | ~2.5 GB RAM | ~2-3 minutes |
+| Online RL Simulation (CIFAR-10) | `scripts/cifar10/train_simulation.py` | CUDA GPU / Multi-core CPU | ~3.0 GB RAM | ~20-35 min (50,000 steps) |
+| 5-Baseline Evaluation (CIFAR-10) | `scripts/cifar10/evaluate_baselines.py` | CPU or CUDA GPU | ~2.0 GB RAM | ~3-5 minutes |
+| CNN Training (CIFAR-100) | `scripts/cifar100/train_cnn.py` | NVIDIA L40S / RTX 4090 / GPU | ~4.0 GB VRAM / ~6 GB RAM | ~35-45 min (150 epochs GPU) |
+| Memory Seeding & Profiling (CIFAR-100) | `scripts/cifar100/seed_memory.py` | CPU or CUDA GPU | ~3.5 GB RAM | ~2-4 minutes |
+| Online RL Simulation (CIFAR-100) | `scripts/cifar100/train_simulation.py` | CUDA GPU / Multi-core CPU | ~3.5 GB RAM | ~25-40 min (50,000 steps) |
+| 5-Baseline Evaluation (CIFAR-100) | `scripts/cifar100/evaluate_baselines.py` | CPU or CUDA GPU | ~2.5 GB RAM | ~4-6 minutes |
 | t-SNE Visualization | `visualizations/make_tsne.py` | Multi-core CPU | ~2.0 GB RAM | ~1-2 minutes |
 | Memory Rescue Dashboard | `visualizations/make_memory_rescue.py` | CPU or CUDA GPU | ~1.5 GB RAM | ~30-45 seconds |
 

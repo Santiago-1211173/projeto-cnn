@@ -34,14 +34,16 @@ self._usage_counts = np.zeros(self.capacity, dtype=np.int32)
 | Field / Attribute | Data Type | Array Shape | Purpose |
 |:------------------|:----------|:------------|:--------|
 | `_states` | `np.float32` | `(capacity, 128)` | 128D latent feature vectors extracted by the CNN |
-| `_actions` | `np.int32` | `(capacity,)` | Target classification labels ($0 \dots 9$) |
+| `_actions` | `np.int32` | `(capacity,)` | Target classification labels: $\{0, \dots, 9\}$ for MNIST/CIFAR-10 and $\{0, \dots, 99\}$ for CIFAR-100 |
 | `_rewards` | `np.float32` | `(capacity,)` | Experienced rewards ($+1.0$ for correct, $-1.0$ for error) |
 | `_insertion_ticks` | `np.int64` | `(capacity,)` | Monotonically increasing logical timestamps for FIFO ordering |
 | `_usage_counts` | `np.int32` | `(capacity,)` | Frequency of times this prototype was retrieved as a top-$k$ neighbor |
-| `capacity` | `int` | Scalar (`5000`) | Maximum buffer capacity |
-| `k` | `int` | Scalar (`30`) | Number of nearest neighbors queried during prediction |
+| `capacity` | `int` | Scalar (`5000`) | Maximum buffer capacity across all datasets |
+| `k` | `int` | Scalar (`30` or `10`) | Nearest neighbors queried during prediction: $k=30$ (MNIST), $k=10$ (CIFAR-10 and CIFAR-100) |
 | `size` | `int` | Scalar ($0 \le \text{size} \le C$) | Current number of active slots filled in memory |
 | `tick_counter` | `int` | Scalar | Global logical clock incremented on each insertion/eviction |
+
+At full capacity ($C = 5,000$), each class maintains an average allocation of 500 prototypes in 10-class regimes (MNIST, CIFAR-10) and 50 prototypes in the fine-grained 100-class regime (CIFAR-100), occupying a strictly bounded raw feature footprint of $5,000 \times 128 \times 4\text{ bytes} \approx 2.56\text{ MB}$.
 
 ---
 
@@ -92,15 +94,15 @@ else:
 ### Algorithmic Complexity:
 1. **Distance Calculation:** $O(N \cdot D)$ vectorized matrix-vector subtraction and Euclidean norm.
 2. **Partial Partition (`np.argpartition`):** Finds the top-$k$ smallest elements in $O(N)$ expected time, avoiding an expensive full $O(N \log N)$ sort over the entire buffer.
-3. **Local Sorting (`np.argsort`):** Sorts only the $k=30$ partitioned elements in $O(k \log k)$ time.
+3. **Local Sorting (`np.argsort`):** Sorts only the $k$ partitioned elements in $O(k \log k)$ time ($k=30$ for MNIST, $k=10$ for CIFAR-10 and CIFAR-100).
 
 ### Decision Voting (Inverse Distance Weighting):
 For each queried neighbor $i \in \{1, \dots, k\}$, an importance weight is computed inversely proportional to Euclidean distance:
 $$w_i = \frac{1}{d_i + \epsilon}$$
-where $\epsilon = 10^{-8}$ prevents division by zero. The expected reward for each candidate action $a \in \{0, \dots, 9\}$ is aggregated:
+where $\epsilon = 10^{-8}$ prevents division by zero. The expected reward for each candidate action $a \in \mathcal{Y}$ is aggregated across the neighborhood:
 $$R_{\text{expected}}(a) = \sum_{i \in \text{Neighbors}, a_i = a} r_i \cdot w_i$$
-The predicted class is the action maximizing expected return:
-$$\hat{y} = \arg\max_{a \in \{0, \dots, 9\}} R_{\text{expected}}(a)$$
+where $\mathcal{Y} = \{0, \dots, 9\}$ for MNIST and CIFAR-10, and $\mathcal{Y} = \{0, \dots, 99\}$ for CIFAR-100. The predicted class is the action maximizing expected return:
+$$\hat{y} = \arg\max_{a \in \mathcal{Y}} R_{\text{expected}}(a)$$
 
 Negative rewards ($r_i = -1.0$) stored from historical CNN errors act as repulsive barriers, penalizing wrong classes and rescuing corrupted predictions.
 
@@ -140,7 +142,7 @@ flowchart TD
 - **Criterion:** Identifies prototypes sharing the **exact same class label** ($a_i = a_{\text{new}}$) and evicts the geometric nearest neighbor:
   $$\text{target\_idx} = \arg\min_{i \in \text{Class}(a_{\text{new}})} \|z_i - z_{\text{new}}\|_2$$
   If no stored prototype belongs to class $a_{\text{new}}$, it safely falls back to LFU eviction.
-- **Advantage:** Eliminates clustering redundancy, expanding manifold coverage across underrepresented classes.
+- **Advantage:** Eliminates clustering redundancy and preserves class manifold balance. In the high-entropy 100-class CIFAR-100 regime where capacity is tightly bounded ($C = 5,000 / 100 = 50\text{ prototypes/class}$), naive FIFO eviction causes severe class starvation ($D_{KL} = 2.6551\text{ nats}$). In contrast, Action 3 (intra-class redundancy pruning) selectively evicts prototypes closest to the new exemplar within the same class, completely eliminating class extinction and maintaining near-zero distribution skew ($D_{KL} = 2.25 \times 10^{-8}\text{ nats} \approx 0.0000\text{ nats}$, representing a $> 1.1 \times 10^8 \times$ reduction in class imbalance).
 
 ---
 
@@ -172,8 +174,13 @@ stats = memory.get_memory_stats()
 
 ## 7. Persistence and Benchmark Performance
 
-### File Format (`outputs/knn_memory_bank_128d.npz`)
+### File Format and Storage Targets
 Serialized via `np.savez_compressed`:
+- **MNIST Memory Bank:** [`outputs/mnist/knn_memory_bank_128d.npz`](file:///c:/Users/sanfr/Desktop/projetos-gecad/projeto-cnn/outputs/mnist/knn_memory_bank_128d.npz)
+- **CIFAR-10 Memory Bank:** [`outputs/cifar10/knn_memory_bank_128d.npz`](file:///c:/Users/sanfr/Desktop/projetos-gecad/projeto-cnn/outputs/cifar10/knn_memory_bank_128d.npz)
+- **CIFAR-100 Memory Bank:** [`outputs/cifar100/knn_memory_bank.npz`](file:///c:/Users/sanfr/Desktop/projetos-gecad/projeto-cnn/outputs/cifar100/knn_memory_bank.npz)
+
+Each archive contains:
 - `states`: Shape `(size, 128)`, `float32`
 - `actions`: Shape `(size,)`, `int32`
 - `rewards`: Shape `(size,)`, `float32`
@@ -183,7 +190,7 @@ Serialized via `np.savez_compressed`:
 
 ### Performance Benchmarks:
 - **Sequential Ingestion:** 10,000 continuous insertions execute in **35.54 ms** ($\approx 281,000$ experiences/second).
-- **$k$-NN Query Latency:** Querying $k=30$ neighbors over a saturated buffer ($N=5,000, D=128$) takes **0.38 ms** on modern x86 CPU cores.
+- **$k$-NN Query Latency:** Querying $k=10$ or $k=30$ neighbors over a saturated buffer ($N=5,000, D=128$) takes **0.38 ms** on modern x86 CPU cores.
 
 ---
 

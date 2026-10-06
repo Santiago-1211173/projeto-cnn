@@ -12,7 +12,7 @@ Before installing project dependencies, verify that your host environment meets 
 ### Hardware Requirements
 - **CPU:** x86_64 or ARM64 processor with at least 4 physical cores (Intel Core i5/i7/Xeon, AMD Ryzen, or Apple Silicon).
 - **RAM:** Minimum 8 GB (16 GB recommended for running the 50,000-step prequential simulation without swapping).
-- **Disk Space:** Minimum 3.5 GB free space (accommodates repository code, MNIST and CIFAR-10 raw datasets, model checkpoints, `.npz` memory arrays, and visualization figures).
+- **Disk Space:** Minimum 5.0 GB free space (accommodates repository code, MNIST, CIFAR-10, and CIFAR-100 raw datasets, model checkpoints, `.npz` memory arrays, and visualization figures).
 - **GPU (Optional):** NVIDIA GPU with CUDA Compute Capability >= 7.0 and CUDA 11.8 / 12.x drivers (tested on NVIDIA RTX 4090 and NVIDIA L40S). GPU acceleration speeds up CNN training and PyTorch Double DQN tensor operations, though the entire pipeline executes deterministically on CPU.
 
 ### Operating System Support
@@ -107,11 +107,18 @@ python scripts/download_cifar10.py
 ```
 This fetches the archive (`cifar-10-python.tar.gz`), extracts all batch files (`data_batch_1` through `data_batch_5`, `test_batch`, and `batches.meta`), and verifies integrity.
 
+### 3.3. CIFAR-100 Dataset Setup (Python Pickle Distribution)
+To download and extract the official CIFAR-100 dataset into `data/CIFAR100/raw/` (or `data/cifar-100-python/`), execute the dedicated download script:
+```bash
+python scripts/cifar100/download_cifar100.py
+```
+This script fetches the official distribution archive (`cifar-100-python.tar.gz`), extracts the binary pickle batch files (`train`, `test`, `meta`), and verifies archive file integrity against corrupted transfers.
+
 ---
 
 ## 4. Environment and Dataset Verification
 
-Run the following unified check to verify runtime dependencies, hardware acceleration, and dataset accessibility across both MNIST and CIFAR-10:
+Run the following unified check to verify runtime dependencies, hardware acceleration, and dataset accessibility across MNIST, CIFAR-10, and CIFAR-100:
 
 ```bash
 python -c "
@@ -143,6 +150,21 @@ if os.path.exists(cifar_path):
     print(f'  [OK] CIFAR-10 batches verified at {cifar_path}')
 else:
     print(f'  [INFO] CIFAR-10 not found. Run: python scripts/download_cifar10.py')
+
+# Verify CIFAR-100
+cifar100_paths = [
+    os.path.join(PROJECT_ROOT, 'data', 'CIFAR100', 'raw', 'cifar-100-python'),
+    os.path.join(PROJECT_ROOT, 'data', 'cifar-100-python'),
+    os.path.join(PROJECT_ROOT, 'data', 'CIFAR100', 'raw'),
+]
+cifar100_found = any(
+    os.path.exists(p) and (os.path.exists(os.path.join(p, 'train')) or os.path.exists(os.path.join(p, 'cifar-100-python', 'train')))
+    for p in cifar100_paths
+)
+if cifar100_found:
+    print('  [OK] CIFAR-100 dataset verified.')
+else:
+    print('  [INFO] CIFAR-100 not found. Run: python scripts/cifar100/download_cifar100.py')
 "
 ```
 
@@ -150,7 +172,7 @@ else:
 
 ## 5. Minimal Reproduction Pipelines
 
-The repository provides modular, segregated execution pipelines for both MNIST and CIFAR-10:
+The repository provides modular, segregated execution pipelines across all three complexity regimes (MNIST, CIFAR-10, and CIFAR-100):
 
 ### 5.1. MNIST Reproduction Pipeline (5 Steps)
 
@@ -249,6 +271,57 @@ sequenceDiagram
 
 ---
 
+### 5.3. CIFAR-100 Reproduction Pipeline (5 Steps)
+
+```mermaid
+sequenceDiagram
+    autonumber
+    actor User as Researcher
+    participant CNN as scripts/cifar100/train_cnn.py
+    participant MEM as scripts/cifar100/seed_memory.py
+    participant RL as scripts/cifar100/train_simulation.py
+    participant EVAL as scripts/cifar100/evaluate_baselines.py
+
+    User->>CNN: python scripts/cifar100/train_cnn.py --model-version v2 --epochs 150
+    Note over CNN: Trains ResNet-18 V2 backbone (11,250,532 params)<br>AdamW + CutMix (p=0.5) + Cosine Annealing<br>Saves outputs/cifar100/checkpoints/modelo_dissecado-48
+    CNN-->>User: Nominal Top-1 Test Accuracy: 74.27%
+
+    User->>MEM: python scripts/cifar100/seed_memory.py --latent-dim 128 --k 10 --capacity 5000
+    Note over MEM: Fits 100-class Ledoit-Wolf Dual Uncertainty Arbiter<br>Seeds 5,000 prototypes (50/class, k=10)<br>Saves outputs/cifar100/arbiter_profiles.npz & knn_memory_bank.npz
+    MEM-->>User: Arbiter Calibrated (tau_M = 8.69, tau_H = 2.09 nats)
+
+    User->>RL: python scripts/cifar100/train_simulation.py --steps 50000
+    Note over RL: 50,000 Prequential steps under drift<br>Double DQN + PER learns Action 0 & Action 3<br>Saves outputs/cifar100/checkpoints/rl_agent_phase3.pt
+    RL-->>User: Active Eviction Policy Converged (Mean Reward: +0.928)
+
+    User->>EVAL: python scripts/cifar100/evaluate_baselines.py --samples-per-level 1000
+    Note over EVAL: Evaluates B0 through B4 baselines (5,000 streaming samples)<br>Generates metrics JSON, CSV, and Publication Dashboard
+    EVAL-->>User: Outputs outputs/cifar100/eaai_metrics.json (B4: 15.68% Overall, D_KL = 2.25e-8 nats)
+```
+
+1. **Train ResNet-18 V2 Backbone (150 Epochs):**
+   ```bash
+   python scripts/cifar100/train_cnn.py --model-version v2 --epochs 150 --batch-size 128 --latent-dim 128 --optimizer adamw --lr 0.001 --weight-decay 0.0001 --cutmix-prob 0.5
+   ```
+2. **Seed Episodic Memory & Calibrate 100-Class Dual Uncertainty Arbiter:**
+   ```bash
+   python scripts/cifar100/seed_memory.py --checkpoint-dir outputs/cifar100/checkpoints --latent-dim 128 --k 10 --capacity 5000
+   ```
+3. **Train Double DQN Active Memory Agent (Online Drift Simulation):**
+   ```bash
+   python scripts/cifar100/train_simulation.py --steps 50000 --log-interval 1000 --noise-rate 0.15 --redundancy-rate 0.15
+   ```
+4. **Run Standardized 5-Baseline Evaluation:**
+   ```bash
+   python scripts/cifar100/evaluate_baselines.py --samples-per-level 1000 --capacity 5000 --k 10 --latent-dim 128
+   ```
+5. **Verify Empirical Artifacts and Metrics:**
+   ```bash
+   python -c "import json; m = json.load(open('outputs/cifar100/eaai_metrics.json')); print('B4 Overall Acc:', m['B4']['overall_accuracy'], '%, Eviction D_KL:', m['B4']['eviction_kl_divergence'])"
+   ```
+
+---
+
 ## 6. Expected Output Artifacts
 
 Following completion of the reproduction pipelines, output artifacts are organized in dedicated dataset directories:
@@ -267,6 +340,13 @@ Following completion of the reproduction pipelines, output artifacts are organiz
 | `outputs/cifar10/checkpoints/` | `rl_agent_phase3.pt` | PyTorch State | Trained Double DQN agent weights for CIFAR-10. |
 | `outputs/cifar10/` | `eaai_metrics.json` | JSON | Formal 5-baseline evaluation metrics on CIFAR-10. |
 | `outputs/cifar10/` | `eaai_evaluation_dashboard.png` | PNG Image | 4-panel publication-grade evaluation dashboard for CIFAR-10. |
+| `outputs/cifar100/checkpoints/` | `modelo_dissecado-48` | TF Checkpoint | Promoted ResNet-18 V2 backbone weights (74.27% test acc). |
+| `outputs/cifar100/checkpoints/` | `model_meta.json` | JSON | Architecture metadata (V2, 11,250,532 params, standardize=True). |
+| `outputs/cifar100/` | `arbiter_profiles.npz` | NumPy Archive | Dual Uncertainty 100-class profiles ($\tau_M=8.69, \tau_H=2.09\text{ nats}$). |
+| `outputs/cifar100/` | `knn_memory_bank.npz` | NumPy Archive | Pre-allocated 5,000-slot episodic memory array (100 actions, $k=10$). |
+| `outputs/cifar100/checkpoints/` | `rl_agent_phase3.pt` | PyTorch State | Trained Double DQN agent weights for CIFAR-100. |
+| `outputs/cifar100/` | `eaai_metrics.json` | JSON | Formal 5-baseline evaluation metrics on CIFAR-100. |
+| `outputs/cifar100/` | `eaai_evaluation_dashboard.png` | PNG Image | 4-panel publication-grade evaluation dashboard for CIFAR-100. |
 
 ---
 

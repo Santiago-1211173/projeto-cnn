@@ -19,11 +19,11 @@ The system architecture utilizes a centralized configuration and environment reg
 
 ## 2. Multi-Dataset Path and Environment Resolution
 
-The repository supports dual datasets via directory isolation and environment variables:
+The repository supports three complexity regimes via directory isolation and environment variables:
 
 ```bash
 # Target dataset via environment variable
-export DATASET="cifar10"   # Options: "mnist" or "cifar10"
+export DATASET="cifar100"   # Options: "mnist", "cifar10", or "cifar100"
 ```
 
 ### Path Resolution Matrix
@@ -32,51 +32,52 @@ export DATASET="cifar10"   # Options: "mnist" or "cifar10"
 |:---|:---|:---|:---|
 | **MNIST (`mnist`)** | `data/MNIST/raw/` | `outputs/mnist/checkpoints/` | `outputs/mnist/` (`eaai_metrics.json`, `eaai_evaluation_dashboard.png`) |
 | **CIFAR-10 (`cifar10`)** | `data/CIFAR10/raw/cifar-10-batches-py/` | `outputs/cifar10/checkpoints/` | `outputs/cifar10/` (`eaai_metrics.json`, `eaai_evaluation_dashboard.png`) |
+| **CIFAR-100 (`cifar100`)** | `data/CIFAR100/raw/` (or `data/cifar-100-python/`) | `outputs/cifar100/checkpoints/` | `outputs/cifar100/` (`eaai_metrics.json`, `eaai_evaluation_dashboard.png`) |
 
 ---
 
 ## 3. Configuration Parameters Master Table
 
-The table below catalogs primary configuration parameters across MNIST and CIFAR-10 modules:
+The table below catalogs primary configuration parameters across MNIST, CIFAR-10, and CIFAR-100 modules:
 
-| Parameter | Default (MNIST) | Default (CIFAR-10) | Python Type | Subsystem / Scope | Functional Description |
-|:---|:---:|:---:|:---:|:---|:---|
-| `PROJECT_ROOT` | Dynamic `abspath` | Dynamic `abspath` | `str` | System Paths | Absolute path to repository root. |
-| `RANDOM_SEED` | `42` | `42` | `int` | General | Master pseudo-random number generator seed. |
-| `LATENT_DIM` | `128` | `128` | `int` | Invariant Contract | Bottleneck representation dimensionality $z \in \mathbb{R}^{128}$. |
-| `MEMORY_CAPACITY` | `5000` | `5000` | `int` | Episodic Memory | Maximum exemplar bound $N_{\max}$ of pre-allocated buffer. |
-| `KNN_K` | `30` | `10` | `int` | Episodic Memory | Nearest neighbors queried during distance-weighted voting. |
-| `OOD_ARBITER_TYPE` | `Mahalanobis++` | `Dual Uncertainty` | `str` | OOD Detection | Out-of-Distribution arbitration mechanism. |
-| `MAHALANOBIS_THRESHOLD` | `12.5` | `16.0380` | `float` | OOD Detection | Calibrated Mahalanobis distance threshold $\tau_M$. |
-| `ENTROPY_THRESHOLD` | N/A | `0.7382` | `float` | OOD Detection | Calibrated predictive Shannon entropy threshold $\tau_H$ (nats). |
-| `NOISE_SWEEP` | `[0.0, 0.2, 0.4, 0.6, 0.8]` | `[0.0, 0.2, 0.4, 0.6, 0.8]` | `list[float]` | Evaluation | Gaussian perturbation levels $\sigma$ applied during drift testing. |
-| `RL_STATE_DIM` | `5` | `5` | `int` | RL Agent | Dimension of state vector fed to Double DQN ($s_t \in \mathbb{R}^5$). |
-| `RL_N_ACTIONS` | `4` | `4` | `int` | RL Agent | Cardinality of discrete eviction action space $\{0, 1, 2, 3\}$. |
-| `CURRICULUM_ALPHA_DECAY`| `0.995` | `0.995` | `float` | Reward System | Multiplicative step decay for Curriculum interpolation $\alpha$. |
-| `SLIDING_VALIDATION_BUFFER_SIZE`| `100` | `100` | `int` | Reward System | Capacity of circular validation buffer tracking accuracy $R_{\text{acc}}$. |
-| `REPLAY_BUFFER_CAPACITY`| `10000` | `10000` | `int` | RL Agent | Capacity of binary SumTree backing Prioritized Experience Replay. |
-| `CNN_OPTIMIZER` | `SGD` (`assign_sub`) | `Adam` (Decoupled decay) | `class` | CNN Backbone | Optimization algorithm for parametric feature extractor. |
-| `CNN_LEARNING_RATE` | `0.05` | `0.001` (Cosine decay) | `float` | CNN Backbone | Initial optimizer learning rate $\eta$. |
-| `CNN_WEIGHT_DECAY` | `0.0` | `1e-4` | `float` | CNN Backbone | Decoupled $L_2$ weight regularization factor. |
-| `CNN_BATCH_SIZE` | `128` | `128` | `int` | CNN Backbone | Mini-batch size for parametric training. |
-| `CNN_EPOCHS` | `10` | `25` | `int` | CNN Backbone | Full training epochs through nominal dataset. |
-| `SIMULATION_STEPS` | `50000` | `50000` | `int` | RL Simulation | Total streaming prequential simulation steps. |
-| `SIMULATION_NOISE_RATE` | `0.1` | `0.1` | `float` | RL Simulation | Bernoulli probability $p_{\text{noise}}$ of perturbation per step. |
-| `SIMULATION_NOISE_LEVEL`| `0.6` | `0.6` | `float` | RL Simulation | Gaussian perturbation standard deviation $\sigma$ during simulation. |
+| Parameter | Default (MNIST) | Default (CIFAR-10) | Default (CIFAR-100) | Python Type | Subsystem / Scope | Functional Description |
+|:---|:---:|:---:|:---:|:---:|:---|:---|
+| `PROJECT_ROOT` | Dynamic `abspath` | Dynamic `abspath` | Dynamic `abspath` | `str` | System Paths | Absolute path to repository root. |
+| `RANDOM_SEED` | `42` | `42` | `42` | `int` | General | Master pseudo-random number generator seed. |
+| `LATENT_DIM` | `128` | `128` | `128` | `int` | Invariant Contract | Bottleneck representation dimensionality $z \in \mathbb{R}^{128}$. |
+| `MEMORY_CAPACITY` | `5000` | `5000` | `5000` | `int` | Episodic Memory | Maximum exemplar bound $N_{\max}$ of pre-allocated buffer. |
+| `KNN_K` | `30` | `10` | `10` | `int` | Episodic Memory | Nearest neighbors queried during distance-weighted voting. |
+| `OOD_ARBITER_TYPE` | `Mahalanobis++` | `Dual Uncertainty` | `Dual Uncertainty (100 Classes)` | `str` | OOD Detection | Out-of-Distribution arbitration mechanism. |
+| `MAHALANOBIS_THRESHOLD` | `12.5` | `16.0380` | `8.69` | `float` | OOD Detection | Calibrated Mahalanobis distance threshold $\tau_M$. |
+| `ENTROPY_THRESHOLD` | N/A | `0.7382` | `2.09` | `float` | OOD Detection | Calibrated predictive Shannon entropy threshold $\tau_H$ (nats). |
+| `NOISE_SWEEP` | `[0.0, 0.2, 0.4, 0.6, 0.8]` | `[0.0, 0.2, 0.4, 0.6, 0.8]` | `[0.0, 0.2, 0.4, 0.6, 0.8]` | `list[float]` | Evaluation | Gaussian perturbation levels $\sigma$ applied during drift testing. |
+| `RL_STATE_DIM` | `5` | `5` | `5` | `int` | RL Agent | Dimension of state vector fed to Double DQN ($s_t \in \mathbb{R}^5$). |
+| `RL_N_ACTIONS` | `4` | `4` | `4` | `int` | RL Agent | Cardinality of discrete eviction action space $\{0, 1, 2, 3\}$. |
+| `CURRICULUM_ALPHA_DECAY`| `0.995` | `0.995` | `0.995` | `float` | Reward System | Multiplicative step decay for Curriculum interpolation $\alpha$. |
+| `SLIDING_VALIDATION_BUFFER_SIZE`| `100` | `100` | `100` | `int` | Reward System | Capacity of circular validation buffer tracking accuracy $R_{\text{acc}}$. |
+| `REPLAY_BUFFER_CAPACITY`| `10000` | `10000` | `10000` | `int` | RL Agent | Capacity of binary SumTree backing Prioritized Experience Replay. |
+| `CNN_OPTIMIZER` | `SGD` (`assign_sub`) | `Adam` (Decoupled decay) | `AdamW` (Decoupled decay) | `class` | CNN Backbone | Optimization algorithm for parametric feature extractor. |
+| `CNN_LEARNING_RATE` | `0.05` | `0.001` (Cosine decay) | `0.001` (Cosine decay) | `float` | CNN Backbone | Initial optimizer learning rate $\eta$. |
+| `CNN_WEIGHT_DECAY` | `0.0` | `1e-4` | `1e-4` | `float` | CNN Backbone | Decoupled $L_2$ weight regularization factor. |
+| `CNN_BATCH_SIZE` | `128` | `128` | `128` | `int` | CNN Backbone | Mini-batch size for parametric training. |
+| `CNN_EPOCHS` | `10` | `25` | `150` | `int` | CNN Backbone | Full training epochs through nominal dataset. |
+| `SIMULATION_STEPS` | `50000` | `50000` | `50000` | `int` | RL Simulation | Total streaming prequential simulation steps. |
+| `SIMULATION_NOISE_RATE` | `0.1` | `0.1` | `0.15` | `float` | RL Simulation | Bernoulli probability $p_{\text{noise}}$ of perturbation per step. |
+| `SIMULATION_NOISE_LEVEL`| `0.6` | `0.6` | `0.6` | `float` | RL Simulation | Gaussian perturbation standard deviation $\sigma$ during simulation. |
 
 ---
 
 ## 4. Subsystem Breakdown and Detailed Explanations
 
 ### 4.1. Invariant 128D Architectural Contract
-Both `RawModel` (MNIST) and `RawModelCIFAR10` (CIFAR-10) project visual activations to a 128D latent vector:
+All parametric feature extractors—`RawModel` (MNIST), `RawModelCIFAR10` (CIFAR-10), and `RawModelCIFAR100V2` (CIFAR-100)—project visual activations to an invariant 128D latent vector:
 ```python
 # Invariant latent bottleneck across all models:
 LATENT_DIM = 128
 ```
 This guarantees that:
-- `KNNBanditAgent128D` requires zero modifications when switching between datasets.
-- Pre-allocated NumPy memory arrays remain identical in size ($2.54\text{ MB}$).
+- `KNNBanditAgent128D` requires zero modifications when switching between 10-class and 100-class datasets.
+- Pre-allocated NumPy memory arrays remain identical in static footprint ($2.54\text{ MB}$).
 - The Double DQN policy network input layer is always 5D.
 
 ### 4.2. OOD Arbitration Configurations
@@ -99,23 +100,42 @@ THRESHOLD_ENTROPY = 0.7382
 PROFILES_PATH = os.path.join(OUTPUT_DIR, "cifar10", "mahalanobis_pp_profiles.npz")
 ```
 - Operates on unnormalized latent representations combined with Softmax posteriors.
-- Dual decision rule: Reject sample if $d_M(z) > \tau_M$ or $H(p) > \tau_H$.
+- Dual decision rule: Reject sample to memory if $d_M(z) > \tau_M$ or $H(p) > \tau_H$.
+
+#### CIFAR-100 Regime: Dual Uncertainty Arbiter (100 Classes)
+```python
+# scripts/cifar100/seed_memory.py
+THRESHOLD_MAHALANOBIS = 8.69
+THRESHOLD_ENTROPY = 2.09
+PROFILES_PATH = os.path.join(OUTPUT_DIR, "cifar100", "arbiter_profiles.npz")
+```
+- Fits Ledoit-Wolf regularized covariance matrices $\Sigma_c^{-1}$ across 100 fine-grained semantic classes ($c \in \{0, \dots, 99\}$).
+- Dual decision rule: Reject sample to memory if $d_M(z) > \tau_M$ or $H(p) > \tau_H$.
 
 ### 4.3. Parametric Backbone Training Configurations
 
 ```python
-# MNIST Configuration:
+# MNIST Configuration (4-Layer Custom CNN):
 CNN_BATCH_SIZE = 128
 CNN_EPOCHS = 10
 CNN_LEARNING_RATE = 0.05
 # Optimizer: Custom SGD with assign_sub
 
-# CIFAR-10 Configuration:
+# CIFAR-10 Configuration (ResNet-9 Backbone):
 CIFAR_BATCH_SIZE = 128
 CIFAR_EPOCHS = 25
 CIFAR_LEARNING_RATE = 0.001
 CIFAR_WEIGHT_DECAY = 1e-4
 # Optimizer: Pure TensorFlow Adam with decoupled weight decay
+
+# CIFAR-100 Configuration (ResNet-18 V2 Backbone):
+CIFAR100_BATCH_SIZE = 128
+CIFAR100_EPOCHS = 150
+CIFAR100_LEARNING_RATE = 0.001
+CIFAR100_WEIGHT_DECAY = 1e-4
+CIFAR100_CUTMIX_PROB = 0.5
+CIFAR100_LABEL_SMOOTHING = 0.1
+# Optimizer: Pure TensorFlow AdamW with Cosine Annealing and Warmup
 ```
 
 ---
@@ -128,13 +148,13 @@ $$M_{\text{RAM}} = N_{\max} \times \left( D \times \text{sizeof}(\text{float32})
 
 For default values ($N_{\max} = 5,000$, $D = 128$):
 - States: $5,000 \times 128 \times 4\text{ bytes} = 2,560,000\text{ bytes} \approx 2.44\text{ MB}$
-- Actions: $5,000 \times 4\text{ bytes} = 20,000\text{ bytes} \approx 19.53\text{ KB}$
+- Actions: $5,000 \times 4\text{ bytes} = 20,000\text{ bytes} \approx 19.53\text{ KB}$ (stores integer labels in $\{0,\dots,9\}$ or $\{0,\dots,99\}$)
 - Rewards: $5,000 \times 4\text{ bytes} = 20,000\text{ bytes} \approx 19.53\text{ KB}$
 - Insertion Ticks: $5,000 \times 8\text{ bytes} = 40,000\text{ bytes} \approx 39.06\text{ KB}$
 - Usage Counts: $5,000 \times 4\text{ bytes} = 20,000\text{ bytes} \approx 19.53\text{ KB}$
 - **Total Static Buffer Footprint:** $\approx \mathbf{2.54\text{ MB}}$
 
-Total system heap allocation during active prequential evaluation (including PyTorch Double DQN MLP and TensorFlow inference engines) remains strictly bounded under **10 MB RAM** ($9.92\text{ MB}$ on MNIST, $9.93\text{ MB}$ on CIFAR-10), satisfying LMOS operational sustainability guidelines.
+Total system heap allocation during active prequential evaluation (including PyTorch Double DQN MLP and TensorFlow inference engines) remains strictly bounded under **10 MB RAM** ($9.92\text{ MB}$ on MNIST, $9.93\text{ MB}$ on CIFAR-10, and $8.82\text{ MB}$ on CIFAR-100), satisfying LMOS operational sustainability guidelines.
 
 ---
 

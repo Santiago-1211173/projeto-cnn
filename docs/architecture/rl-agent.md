@@ -34,7 +34,8 @@ The agent observes a compact 5-dimensional state representation $s_t \in \mathbb
 ```python
 # src/models/rl_agent.py
 s_mahal = float(np.clip(mahalanobis_dist / 50.0, 0.0, 1.0))
-s_entropy = float(np.clip(local_entropy / 2.3026, 0.0, 1.0))
+# Normalized by theoretical maximum ln(K): ln(10) ~= 2.3026 (MNIST/CIFAR-10), ln(100) ~= 4.6052 (CIFAR-100)
+s_entropy = float(np.clip(local_entropy / max_entropy, 0.0, 1.0))
 s_dist = float(np.clip(min_knn_dist / 10.0, 0.0, 1.0))
 s_err = float(np.clip(prediction_error, 0.0, 1.0))
 s_ram = float(np.clip(ram_occupancy, 0.0, 1.0))
@@ -42,8 +43,8 @@ s_ram = float(np.clip(ram_occupancy, 0.0, 1.0))
 
 | Dimension | Feature Name | Range | Normalization Factor | Description and Sensory Origin |
 |:---|:---|:---|:---|:---|
-| **0** | **Mahalanobis Distance** ($d_M$) | $[0.0, 1.0]$ | $\min(d_M / 50.0, 1.0)$ | Out-of-Distribution distance from Mahalanobis++ detector. Captures global domain shift. |
-| **1** | **Local Entropy** ($H$) | $[0.0, 1.0]$ | $\min(H / \ln(10), 1.0)$ | Shannon entropy of CNN output distribution: $-\sum_i p_i \ln(p_i)$. Captures parametric uncertainty ($\ln(10) \approx 2.3026$). |
+| **0** | **Mahalanobis Distance** ($d_M$) | $[0.0, 1.0]$ | $\min(d_M / 50.0, 1.0)$ | Out-of-Distribution distance from Mahalanobis detector. Captures global domain shift. |
+| **1** | **Local Entropy** ($H$) | $[0.0, 1.0]$ | $\min(H / \ln(K), 1.0)$ | Shannon entropy of CNN output distribution: $-\sum_i p_i \ln(p_i)$. Captures parametric uncertainty, normalized by $\ln(10) \approx 2.3026$ on 10-class benchmarks (MNIST, CIFAR-10) and by $\ln(100) \approx 4.6052$ on CIFAR-100. |
 | **2** | **Minimum $k$-NN Distance** ($d_{\min}$) | $[0.0, 1.0]$ | $\min(d_{\min} / 10.0, 1.0)$ | Euclidean distance to closest existing prototype in episodic memory. Measures local novelty. |
 | **3** | **Prediction Error** ($e_t$) | $\{0.0, 1.0\}$ | Binary or probability delta | Discrepancy between CNN prediction and ground truth ($1.0$ if incorrect, $0.0$ if correct). |
 | **4** | **RAM Occupancy** ($\Omega$) | $[0.0, 1.0]$ | $\text{size} / \text{capacity}$ | Buffer filling ratio. Reaches $1.0$ when memory saturation triggers eviction. |
@@ -67,10 +68,10 @@ flowchart TD
 
 | Action | Action ID | Operation Name | Memory Method Executed | Behavioral Rationale |
 |:---|:---:|:---|:---|:---|
-| **Ignore** | `0` | Reject Candidate | *None* (`evicted_idx = -1`) | Rejects redundant or noisy candidates that provide no information gain, protecting memory purity. |
+| **Ignore** | `0` | Reject Candidate | *None* (`evicted_idx = -1`) | Rejects redundant or noisy candidates that provide no information gain, protecting memory purity. On CIFAR-100, Action 0 filters corrupted vectors under noise onset ($\sigma=0.2$), achieving $3.40\%$ accuracy vs. $1.50\%$ for FIFO. |
 | **FIFO** | `1` | First-In-First-Out | `evict_oldest()` | Discards the oldest prototype based on logical tick counter, handling transient drift phases. |
 | **LFU** | `2` | Least-Frequently-Used | `evict_least_frequently_used()` | Discards prototypes rarely queried by $k$-NN, preserving heavily accessed decision boundaries. |
-| **Redundant** | `3` | Minimum Distance Pruning | `evict_most_redundant()` | Discards the closest prototype belonging to the *same class*, expanding spatial diversity without losing class coverage. |
+| **Redundant** | `3` | Minimum Distance Pruning | `evict_most_redundant()` | Discards the closest prototype belonging to the *same class*, expanding spatial diversity without losing class coverage. On CIFAR-100, Action 3 eliminates catastrophic class starvation ($D_{KL} = 2.25 \times 10^{-8}\text{ nats}$ vs. $2.6551\text{ nats}$ for FIFO). |
 
 ---
 
@@ -138,8 +139,13 @@ The exponent $\beta$ is annealed linearly from $\beta_0 = 0.4$ to $1.0$ over tra
 
 ## 7. Persistence and Runtime Benchmarks
 
-### Checkpoint Format (`outputs/checkpoints/rl_agent_phase3.pt`)
+### Checkpoint Format and Storage Targets
 Saved via `torch.save`:
+- **MNIST Policy Checkpoint:** [`outputs/mnist/checkpoints/rl_agent_phase3.pt`](file:///c:/Users/sanfr/Desktop/projetos-gecad/projeto-cnn/outputs/mnist/checkpoints/rl_agent_phase3.pt)
+- **CIFAR-10 Policy Checkpoint:** [`outputs/cifar10/checkpoints/rl_agent_phase3.pt`](file:///c:/Users/sanfr/Desktop/projetos-gecad/projeto-cnn/outputs/cifar10/checkpoints/rl_agent_phase3.pt)
+- **CIFAR-100 Policy Checkpoint:** [`outputs/cifar100/checkpoints/rl_agent_phase3.pt`](file:///c:/Users/sanfr/Desktop/projetos-gecad/projeto-cnn/outputs/cifar100/checkpoints/rl_agent_phase3.pt)
+
+Serialized state attributes:
 - `policy_net_state_dict`: Weights and biases of the policy network
 - `target_net_state_dict`: Weights and biases of the target network
 - `optimizer_state_dict`: Internal state of the Adam optimizer ($\eta = 10^{-3}$)

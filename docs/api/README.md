@@ -24,6 +24,7 @@ Every module specification documents:
 | [`config.md`](file:///c:/Users/sanfr/Desktop/projetos-gecad/projeto-cnn/docs/api/config.md) | `src/config.py` | Centralized Constants & Paths | Global system configuration, architectural dimensions, and hyperparameter registry |
 | [`custom-cnn.md`](file:///c:/Users/sanfr/Desktop/projetos-gecad/projeto-cnn/docs/api/custom-cnn.md) | `src/models/custom_cnn.py` | `RawModel` | From-scratch MNIST CNN feature extractor yielding 128D latent representations and Softmax posteriors |
 | [`cifar10.md`](file:///c:/Users/sanfr/Desktop/projetos-gecad/projeto-cnn/docs/api/cifar10.md) | `src/cifar10/*.py` | `RawModelCIFAR10`, `DualUncertaintyArbiter`, `ResidualBlock`, `Adam` | ResNet-9 backbone (91.18% acc), Dual Uncertainty Arbiter, layer primitives, and from-scratch Adam optimizer |
+| [`cifar100.md`](file:///c:/Users/sanfr/Desktop/projetos-gecad/projeto-cnn/docs/api/cifar100.md) | `src/cifar100/*.py`, `src/data/cifar100_loader.py` | `RawModelCIFAR100V2`, `RawModelCIFAR100`, `load_cifar100_backbone`, `DualUncertaintyArbiter`, `Adam`, `SGDMomentum`, `load_cifar100_raw` | ResNet-18 V2 backbone (74.27% acc, 11.25M params), legacy ResNet-14, 100-class Dual Uncertainty Arbiter, decoupled optimizers, and data loader |
 | [`knn-bandit-agent.md`](file:///c:/Users/sanfr/Desktop/projetos-gecad/projeto-cnn/docs/api/knn-bandit-agent.md) | `src/models/knn_bandit_agent.py` | `KNNBanditAgent128D`, `KNNBanditAgent` | Capacity-bounded episodic memory buffer with vectorized k-NN and active eviction policies |
 | [`rl-agent.md`](file:///c:/Users/sanfr/Desktop/projetos-gecad/projeto-cnn/docs/api/rl-agent.md) | `src/models/rl_agent.py` | `SumTree`, `PrioritizedReplayBuffer`, `QNetwork`, `RLAgent` | Double DQN active memory manager with Prioritized Experience Replay (PER) |
 | [`reward-manager.md`](file:///c:/Users/sanfr/Desktop/projetos-gecad/projeto-cnn/docs/api/reward-manager.md) | `src/models/reward_manager.py` | `RewardManager` | Curriculum Learning reward orchestrator blending geometric proxy with validation accuracy |
@@ -45,6 +46,7 @@ To prevent `OutOfMemoryError` (OOM) and dynamic heap fragmentation on embedded L
 |:---|:---|:---|:---|
 | Latent Feature Extraction (MNIST) | `RawModel` | $\mathcal{O}(B \cdot H \cdot W \cdot C)$ | Vectorized custom TensorFlow convolution layers |
 | Latent Feature Extraction (CIFAR-10) | `RawModelCIFAR10` | $\mathcal{O}(B \cdot \sum_l H_l W_l C_l^2)$ | Residual blocks + Global Average Pooling |
+| Latent Feature Extraction (CIFAR-100) | `RawModelCIFAR100V2` | $\mathcal{O}(B \cdot \sum_l H_l W_l C_l^2)$ | 4-stage residual network (8 blocks, learned strided downsampling) + GAP + 128D BN bottleneck |
 | OOD Distance Computation | `MahalanobisPlusPlus` / `DualUncertaintyArbiter` | $\mathcal{O}(N \cdot C \cdot D^2)$ | Batch quadratic form evaluation with regularized precision |
 | Predictive Entropy Computation | `DualUncertaintyArbiter` | $\mathcal{O}(N \cdot C)$ | Vectorized Shannon entropy evaluation |
 | Nearest Neighbor Retrieval | `KNNBanditAgent128D` | $\mathcal{O}(M \cdot D + k \log k)$ | Vectorized Euclidean distance + `np.argpartition` |
@@ -63,10 +65,11 @@ For structured inspection of component APIs, follow this logical progression:
 1. [`config.md`](file:///c:/Users/sanfr/Desktop/projetos-gecad/projeto-cnn/docs/api/config.md) -- Review all global constants, dataset paths, and memory limits.
 2. [`custom-cnn.md`](file:///c:/Users/sanfr/Desktop/projetos-gecad/projeto-cnn/docs/api/custom-cnn.md) -- Inspect the MNIST 4-layer feature extraction front-end.
 3. [`cifar10.md`](file:///c:/Users/sanfr/Desktop/projetos-gecad/projeto-cnn/docs/api/cifar10.md) -- Inspect the CIFAR-10 ResNet-9 backbone and Dual Uncertainty Arbiter.
-4. [`knn-bandit-agent.md`](file:///c:/Users/sanfr/Desktop/projetos-gecad/projeto-cnn/docs/api/knn-bandit-agent.md) -- Review the episodic memory data structure.
-5. [`rl-agent.md`](file:///c:/Users/sanfr/Desktop/projetos-gecad/projeto-cnn/docs/api/rl-agent.md) -- Review the active Double DQN decision engine.
-6. [`reward-manager.md`](file:///c:/Users/sanfr/Desktop/projetos-gecad/projeto-cnn/docs/api/reward-manager.md) -- Examine the curriculum reward calculation.
-7. [`train-rl-online-simulation.md`](file:///c:/Users/sanfr/Desktop/projetos-gecad/projeto-cnn/docs/api/train-rl-online-simulation.md) -- Explore the prequential streaming simulation engine.
+4. [`cifar100.md`](file:///c:/Users/sanfr/Desktop/projetos-gecad/projeto-cnn/docs/api/cifar100.md) -- Inspect the CIFAR-100 ResNet-18 V2 backbone and 100-class Dual Uncertainty Arbiter.
+5. [`knn-bandit-agent.md`](file:///c:/Users/sanfr/Desktop/projetos-gecad/projeto-cnn/docs/api/knn-bandit-agent.md) -- Review the episodic memory data structure.
+6. [`rl-agent.md`](file:///c:/Users/sanfr/Desktop/projetos-gecad/projeto-cnn/docs/api/rl-agent.md) -- Review the active Double DQN decision engine.
+7. [`reward-manager.md`](file:///c:/Users/sanfr/Desktop/projetos-gecad/projeto-cnn/docs/api/reward-manager.md) -- Examine the curriculum reward calculation.
+8. [`train-rl-online-simulation.md`](file:///c:/Users/sanfr/Desktop/projetos-gecad/projeto-cnn/docs/api/train-rl-online-simulation.md) -- Explore the prequential streaming simulation engine.
 
 ---
 
