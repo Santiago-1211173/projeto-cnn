@@ -42,7 +42,7 @@ $$\mathbf{x}_{\text{corrupt}} = \text{clip}\left(\mathbf{x} + \mathcal{N}(0, \si
 
 ### `run_simulation(n_episodes: int = 1, noise_injection_rate: float = SIMULATION_NOISE_RATE, capacity: int = MEMORY_CAPACITY, n_steps: Optional[int] = None, output_csv_path: Optional[str] = SIMULATION_CSV_PATH) -> Dict[str, List[float]]`
 
-Functional entry point satisfying the programmatic contract defined in the EAAI action plan.
+Functional entry point satisfying the programmatic contract defined in the project action plan.
 
 | Parameter | Type | Default | Description |
 |:----------|:-----|:--------|:------------|

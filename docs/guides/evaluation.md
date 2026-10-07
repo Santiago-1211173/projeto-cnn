@@ -1,4 +1,4 @@
-# Running the EAAI Baseline Evaluation
+# Running the Baseline Evaluation Benchmark
 
 > Part of the [Active Episodic Memory Management via Reinforcement Learning for Robust CNN Inference on Out-of-Distribution Data](file:///c:/Users/sanfr/Desktop/projetos-gecad/projeto-cnn/README.md) documentation.  
 > Parent: [Usage Guides](file:///c:/Users/sanfr/Desktop/projetos-gecad/projeto-cnn/docs/guides/README.md) | Up: [Documentation Index](file:///c:/Users/sanfr/Desktop/projetos-gecad/projeto-cnn/docs/README.md)
@@ -7,7 +7,7 @@
 
 ## 1. Context and Objective
 
-This guide documents the experimental evaluation methodology developed for our submission to Elsevier *Engineering Applications of Artificial Intelligence* (EAAI), titled *"Active Episodic Memory Management via Reinforcement Learning for Robust CNN Inference on Out-of-Distribution Data"*.
+This guide documents the experimental evaluation methodology developed for our submission to *IEEE Transactions on Neural Networks and Learning Systems* (IEEE TNNLS), titled *"Active Episodic Memory Management via Reinforcement Learning for Robust CNN Inference on Out-of-Distribution Data"*.
 
 The benchmark systematically compares the proposed RL-driven active episodic memory curation architecture against four alternative system baselines under progressive non-stationary sensor noise and concept drift across three complexity regimes: **MNIST** (stylized digits), **CIFAR-10** (natural RGB images), and **CIFAR-100** (fine-grained 100-class natural RGB images). The evaluation follows a rigorous prequential (test-then-train) protocol to measure both predictive robustness and operational sustainability on resource-constrained Edge AI devices.
 
@@ -72,7 +72,7 @@ Following Haug et al. (2022) and Wu et al. (2026), evaluation executes in test-t
 3. 1,000 test samples are evaluated sequentially at each noise level (5,000 samples per baseline).
 4. Each incoming test sample is first predicted and scored (test) before its representation is eligible for buffer insertion and eviction (train).
 
-### 3.2. Seven Formal EAAI Engineering Metrics
+### 3.2. Seven Formal Engineering Metrics
 1. **Overall Accuracy ($A_{\text{sys}}$):** Overall accuracy percentage across all 5 noise regimes.
 2. **Mean Accuracy under Noise ($A_{\text{noise}}$):** Mean accuracy across perturbed tiers ($\sigma > 0.0$).
 3. **Severe Noise Accuracy ($A_{\sigma=0.6}, A_{\sigma=0.8}$):** Accuracy under severe and destructive corruption.

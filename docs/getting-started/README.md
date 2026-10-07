@@ -7,7 +7,7 @@
 
 ## 1. Overview
 
-This directory provides the onboarding, installation, verification, and configuration resources necessary to reproduce the experimental findings reported in our paper, *"Active Episodic Memory Management via Reinforcement Learning for Robust CNN Inference on Out-of-Distribution Data"* (submitted to Elsevier *Engineering Applications of Artificial Intelligence* - EAAI).
+This directory provides the onboarding, installation, verification, and configuration resources necessary to reproduce the experimental findings reported in our paper, *"Active Episodic Memory Management via Reinforcement Learning for Robust CNN Inference on Out-of-Distribution Data"* (prepared for *IEEE Transactions on Neural Networks and Learning Systems* - IEEE TNNLS).
 
 The codebase couples a custom, from-scratch TensorFlow Convolutional Neural Network (CNN) with a non-parametric NumPy episodic memory bank ($k$-NN) and a PyTorch Double Deep Q-Network (Double DQN) with Prioritized Experience Replay (PER). Together, these components implement an active memory curation architecture engineered specifically for resource-constrained Edge AI environments experiencing sensor degradation, adversarial anomalies, and non-stationary concept drift.
 
@@ -26,7 +26,7 @@ To set up, configure, and execute the full experimental pipeline, follow the gui
 
 ## 3. High-Level Workflow Overview
 
-Reproducing the results presented in the EAAI manuscript involves a five-stage sequential pipeline operating across three distinct complexity regimes (**MNIST**, **CIFAR-10**, and **CIFAR-100**):
+Reproducing the results presented in the publication manuscript involves a five-stage sequential pipeline operating across three distinct complexity regimes (**MNIST**, **CIFAR-10**, and **CIFAR-100**):
 
 ```mermaid
 flowchart TD
@@ -69,7 +69,7 @@ flowchart TD
 2. **Parametric Training:** Train the baseline 128D latent CNN backbone on nominal data (MNIST 4-layer CNN at $98.7\%$, CIFAR-10 ResNet-9 at $91.18\%$, or CIFAR-100 ResNet-18 V2 at $74.27\%$ Top-1 accuracy).
 3. **Latent Space Profiling:** Compute class-conditional centroids and regularized precision matrices via Ledoit-Wolf shrinkage to calibrate the uncertainty detector ($\tau = 12.5$ for MNIST; $\tau_M = 16.04, \tau_H = 0.74\text{ nats}$ for CIFAR-10; $\tau_M = 8.69, \tau_H = 2.09\text{ nats}$ for CIFAR-100).
 4. **Episodic Memory Seeding:** Populate the bounded NumPy memory bank ($C = 5,000$ slots in 128D) with initial clean reference prototypes.
-5. **Streaming RL Simulation & Evaluation:** Execute 50,000 steps of online prequential simulation under non-stationary Gaussian noise to train the Double DQN policy agent, followed by the rigorous 5-baseline EAAI comparative evaluation (B0 through B4).
+5. **Streaming RL Simulation & Evaluation:** Execute 50,000 steps of online prequential simulation under non-stationary Gaussian noise to train the Double DQN policy agent, followed by the rigorous 5-baseline comparative evaluation (B0 through B4).
 
 ---
 

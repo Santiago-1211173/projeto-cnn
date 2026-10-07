@@ -10,7 +10,7 @@
 The semiparametric vision pipeline operates across three distinct operational regimes during its lifecycle:
 1. **Training Mode (Offline Parametric Phase):** Offline learning of convolutional feature representations from clean data, followed by latent space distribution profiling with Mahalanobis++.
 2. **Online Simulation Mode (Continual RL Training Phase):** Streaming prequential execution where the RL agent actively curates the episodic memory under non-stationary concept drift and Gaussian noise injection.
-3. **Evaluation Mode (EAAI 5-Baseline Benchmark Phase):** Comparative stress testing of the complete system against four competitive baselines across progressive perturbation intensities.
+3. **Evaluation Mode (5-Baseline Benchmark Phase):** Comparative stress testing of the complete system against four competitive baselines across progressive perturbation intensities.
 
 ---
 
@@ -146,7 +146,7 @@ where $\sigma \in [0.0, 0.8]$ controls noise intensity, and clipping enforces va
 
 The following table summarizes execution characteristics across all three operational modes:
 
-| Metric / Dimension | Training Mode (CNN) | Online Simulation (RL) | Evaluation Mode (EAAI) |
+| Metric / Dimension | Training Mode (CNN) | Online Simulation (RL) | Evaluation Mode (Benchmark) |
 |:---|:---|:---|:---|
 | **Data Scope** | 60,000 clean samples | 50,000 streaming steps | 5,000 test samples (5 noise levels) |
 | **Execution Latency** | $\approx 45$ s (10 epochs on GPU) | $\approx 180$ s (50k steps) | $\approx 25$ s (across all 5 baselines) |

@@ -1,216 +1,221 @@
-# Análise Comparativa de Revistas para Publicação da Arquitetura Semiparamétrica
+# Enquadramento Editorial e Estratégia de Publicação: IEEE TNNLS
 
-> Análise do fit do projeto **Active Episodic Memory Management via RL** face a 4 revistas científicas.
-
----
-
-## 1. Síntese do Teu Sistema (Leitura Integral do Repositório)
-
-Após análise exaustiva de toda a pasta `docs/`, `src/`, `scripts/`, `README.md` e dos resultados experimentais, o teu projeto pode ser sintetizado como:
-
-### Contribuição Científica Central
-
-Uma **arquitetura semiparamétrica** que combina:
-- **Backbone paramétrico** (CNN custom para MNIST / ResNet-9 para CIFAR-10) → produz um **vetor latente invariante de 128D**
-- **Árbitro OOD** (Mahalanobis++ ou Dual Uncertainty) → decide se a amostra é In-Distribution ou Out-of-Distribution
-- **Memória Episódica k-NN** (buffer pré-alocado de 5,000 vetores, $O(1)$ RAM) → resgate de amostras OOD
-- **Agente RL (Double DQN + PER)** → gestão ativa da memória com 4 ações discretas (Ignore, FIFO, LFU, Redundancy Pruning)
-- **Reward Manager com Curriculum Learning** → transição de proxy geométrico para validação por sliding buffer
-
-### Resultados-Chave Experimentais
-
-| Métrica | MNIST (B4 vs B2) | CIFAR-10 (B4 vs B2) |
-|:---|:---:|:---:|
-| **Accuracy geral** | 61.66% vs 57.18% (**+4.48%**) | 27.50% vs 27.14% (**+0.36%**) |
-| **Accuracy @ σ=0.8** | 27.30% vs 17.60% (**+9.70%**) | 11.90% vs 11.20% (**+0.70%**) |
-| **Eviction KL Div.** | 0.003 vs 0.500 (**177× lower**) | 0.0007 vs 0.885 (**>1200× lower**) |
-| **Peak RAM** | 9.92 MB (bounded $O(1)$) | 9.93 MB (bounded $O(1)$) |
-| **Latência** | 6.67 ms (150 fps) | 6.94 ms (144 fps) |
-
-### Natureza do Trabalho
-
-> [!IMPORTANT]
-> O teu trabalho é **fundamentalmente conceptual/metodológico**: propõe uma nova arquitetura (episodic memory + RL governance) e valida-a em **benchmarks académicos** (MNIST, CIFAR-10), demonstrando propriedades matemáticas (invariância cross-dataset, $D_{KL} \to 0$, bounded RAM). **Não tem aplicação real tangível demonstrada** num cenário físico ou industrial.
+> **Alinhamento Estratégico com a Orientação Científica:** Submissão do artigo principal para a revista **IEEE Transactions on Neural Networks and Learning Systems (IEEE TNNLS)**.  
+> **Editora:** IEEE Computational Intelligence Society (IEEE CIS) | **Fator de Impacto:** 9.7 | **Quartil:** Q1 (Artificial Intelligence, Computer Science, Electrical Engineering).  
+> **Decisão Oficial:** Transição e substituição da via EAAI (*Engineering Applications of Artificial Intelligence*, Elsevier) pela IEEE TNNLS como veículo principal de publicação da arquitetura semiparamétrica.
 
 ---
 
-## 2. Perfil das 4 Revistas em Análise
+## 1. Decisão Editorial e Justificação Científica
 
-### 2.1. EAAI — Engineering Applications of Artificial Intelligence (Elsevier)
+Em alinhamento direto com a orientação científica do projeto, estabeleceu-se a decisão definitiva de redigir e submeter o artigo principal à **IEEE Transactions on Neural Networks and Learning Systems (IEEE TNNLS)** em substituição da revista *Engineering Applications of Artificial Intelligence* (EAAI, Elsevier).
 
-| Atributo | Detalhe |
-|:---|:---|
-| **Publisher** | Elsevier (IFAC) |
-| **IF 2025** | **9.0** |
-| **Quartil** | Q1 (AI, Control & Systems Engineering) |
-| **Foco** | **Aplicações práticas** de IA em todas as áreas da engenharia |
-| **Requisito-chave** | Validação em problemas reais, datasets públicos, aplicações tangíveis |
-| **Aceita papers puramente conceptuais?** | ❌ **NÃO** — exige demonstração de aplicação real |
+### 1.1. Racional da Substituição: Limitações do Perfil da EAAI
 
-> [!WARNING]
-> **A EAAI exige explicitamente que os submissions demonstrem aplicação de IA a problemas de engenharia reais.** Papers com MNIST/CIFAR-10 como único benchmark serão provavelmente rejeitados por falta de contribuição aplicada. É por isso que corretamente identificaste a necessidade da Opção A (Indústria 4.0) ou Opção B (Smart Farming) para a EAAI.
+A revista EAAI (*Engineering Applications of Artificial Intelligence*) tem como requisito editorial obrigatório a demonstração de aplicações práticas tangíveis em problemas de engenharia do mundo físico — tais como automação de manufatura em ambiente fabril, controlo de processos químicos, sistemas ciberfísicos industriais (CPS) ou agricultura de precisão com sensores de campo.
 
----
+No contexto do presente projeto:
+1. A validação empírica foi conduzida com rigor metodológico exemplar em conjuntos de dados canónicos de referência (MNIST, CIFAR-10 e CIFAR-100 sob injeção sistemática de ruído não-estacionário e *concept drift*).
+2. Embora estes benchmarks sejam o padrão-ouro para demonstrar propriedades algorítmicas de redes neuronais, não constituem um caso de estudo de engenharia aplicada física.
+3. A submissão à EAAI com validação estritamente baseada em MNIST/CIFAR acarretaria um risco elevado de rejeição preliminar (*desk reject*) por insuficiência de contribuição aplicada de engenharia, a menos que fosse desenvolvida uma infraestrutura física adicional (por exemplo, bancadas com braços robóticos ou sensores industriais em chão de fábrica).
 
-### 2.2. IEEE TNNLS — IEEE Transactions on Neural Networks and Learning Systems
+### 1.2. O Fit Perfeito da IEEE TNNLS
 
-| Atributo | Detalhe |
-|:---|:---|
-| **Publisher** | IEEE Computational Intelligence Society |
-| **IF 2025** | **9.7** |
-| **Quartil** | Q1 (AI, Computer Science) |
-| **Foco** | **Teoria, design e aplicações** de redes neuronais e sistemas de aprendizagem |
-| **Requisito-chave** | Contribuição técnica significativa em neural networks, machine learning, learning systems |
-| **Aceita papers com benchmarks standard?** | ✅ **SIM** — aceita validação em datasets académicos (MNIST, CIFAR-10, etc.) |
+A **IEEE Transactions on Neural Networks and Learning Systems (IEEE TNNLS)**, publicada pela *IEEE Computational Intelligence Society*, é o periódico internacional de maior prestígio dedicado especificamente aos avanços teóricos, arquiteturais e algorítmicos em redes neuronais e sistemas de aprendizagem.
 
-**Tópicos alinhados com o teu projeto:**
-- ✅ Neural network architectures (CNN feature extractors)
-- ✅ Learning systems (RL-based memory management)
-- ✅ Adaptive control via RL (Double DQN + PER)
-- ✅ Memory and neural computing
-- ✅ Few-shot/continual learning aspects
+Os fatores que consolidam a TNNLS como a escolha ótima são:
+- **Natureza da Contribuição:** O trabalho propõe uma arquitetura semiparamétrica inovadora que resolve a governança ativa de memória episódica ($k$-NN) via Aprendizagem por Reforço Profunda (Double DQN com Prioritized Experience Replay), ancorada num gargalo latente invariante de 128 dimensões ($z \in \mathbb{R}^{128}$). Esta inovação insere-se diretamente no escopo de *Learning Systems* e *Neural Network Architectures*.
+- **Aceitação de Benchmarks Canónicos:** A TNNLS acolhe e valoriza artigos cuja contribuição seja conceptual, algorítmica e metodológica, validados em suites canónicas de referência (MNIST, CIFAR-10, CIFAR-100), desde que acompanhados de formulação matemática sólida e rigor estatístico estrito.
+- **Rigor Matemático e Teórico:** A análise de conservação de distribuição de classes via divergência de Kullback-Leibler ($D_{KL} \to 0$), a prova de eliminação de *class starvation*, a formulação formal de Processo de Decisão de Markov (MDP) e as garantias de complexidade espacial $O(1)$ e temporal $O(k)$ alinham-se precisamente com os padrões de excelência da TNNLS.
+- **Elevado Fator de Impacto e Reconhecimento:** Com um Fator de Impacto de 9.7 (Q1), a TNNLS oferece um prestígio científico e visibilidade na comunidade de Inteligência Artificial superior ao da generalidade dos periódicos aplicados.
 
 ---
 
-### 2.3. IEEE TII — IEEE Transactions on Industrial Informatics
+## 2. Síntese da Arquitetura e Contribuição Científica para a TNNLS
 
-| Atributo | Detalhe |
-|:---|:---|
-| **Publisher** | IEEE Industrial Electronics Society |
-| **IF 2025** | **9.8** |
-| **Quartil** | Q1 (Industrial Engineering, Computer Science) |
-| **Foco** | **Informática industrial**: automação, controlo, CPS, IoT, manufatura |
-| **Requisito-chave** | Contribuição clara para **sistemas industriais**, deployment realístico, contexto de aplicação industrial |
-| **Aceita papers puramente conceptuais?** | ❌ **NÃO** — exige deployment ou validação realística industrial |
+A investigação desenvolvida estrutura-se em quatro pilares metodológicos e experimentais que compõem o núcleo do manuscrito para a IEEE TNNLS:
 
-> [!CAUTION]
-> **A TII é ainda mais exigente que a EAAI quanto a aplicação industrial.** Submissions devem fornecer "clear industrial-informatics system contribution" e incluir "deployment or realistic validation context". O teu trabalho atual com MNIST/CIFAR-10 seria **desk-rejected** sem uma componente industrial forte.
+### 2.1. Quatro Pilares Metodológicos
+
+1. **Arquitetura Semiparamétrica com Gargalo Latente Invariante:**
+   - Proposição de um contrato latente unificado $z \in \mathbb{R}^{128}$ que permite acoplar extratores paramétricos heterogéneos (CNN custom de 225k parâmetros para MNIST, ResNet-9 de 6.57M parâmetros para CIFAR-10, e ResNet-18 V2 de 11.25M parâmetros para CIFAR-100) a um motor de memória não-paramétrico invariante.
+2. **Quantificação de Incerteza e Roteamento OOD:**
+   - Mecanismo de arbitração para deteção de amostras fora de distribuição (OOD) baseado em distância de Mahalanobis e entropia preditiva de Shannon (Dual Uncertainty Arbiter), ativando seletivamente o resgate de memória apenas quando a confiança paramétrica é violada.
+3. **Governança Ativa de Memória via Deep Reinforcement Learning:**
+   - Agente Double DQN com Prioritized Experience Replay (SumTree) que opera sobre um espaço compacto de estados com 4 ações discretas (Ignore, FIFO, LFU e Redundancy Pruning), transformando a retenção de memória de uma heurística passiva num processo dinâmico de tomada de decisão.
+   - Gestor de recompensas com *Curriculum Learning*, realizando a transição contínua de um proxy geométrico ($R_{\text{geom}}$) para validação empírica de acurácia em janela deslizante ($R_{\text{acc}}$).
+4. **Preservação de Distribuição e Eliminação de Degradação Passiva:**
+   - Confirmação formal do *Distribution Matching Theorem* de Isele & Cosgun (AAAI 2018), eliminando a inanição de classes (*class starvation*) e reduzindo a divergência de Kullback-Leibler da política de evição até $> 10^8\times$ face a políticas clássicas (FIFO/LFU).
+
+### 2.2. Resultados-Chave Consolidados nos Três Regimes
+
+| Métrica de Avaliação | MNIST (Stylized) | CIFAR-10 (Natural) | CIFAR-100 (Fine-Grained) |
+|:---|:---:|:---:|:---:|
+| **Dimensão do Espaço de Classes** | 10 classes | 10 classes | 100 classes |
+| **Complexidade Paramétrica do Backbone** | 225,034 params | 6,573,130 params | 11,250,532 params |
+| **Acurácia Nominal Limpa ($\sigma = 0.0$)** | 99.12% | 91.18% | 74.27% |
+| **Acurácia sob Ruído Severo (B4 vs B2)** | 27.30% vs 17.60% (+9.70%) | 11.90% vs 11.20% (+0.70%) | 3.40% vs 1.50% ($2.27\times$) |
+| **Acurácia Global do Fluxo (B4 vs B0)** | 61.66% vs 58.10% (+3.56%) | 27.50% vs 27.14% (+0.36%) | 15.68% vs 15.64% (+0.04%) |
+| **Redução de Divergência KL ($D_{KL}$)** | 0.0028 vs 0.5003 ($177\times$) | 0.0007 vs 0.8850 ($>1,200\times$) | $2.25 \times 10^{-8}$ vs 2.6551 ($>10^8\times$) |
+| **Significância Estatística (McNemar)** | $p < 0.001$ | $p < 0.001$ | $p < 0.001$ |
+| **Consumo de Memória RAM (Pico)** | 9.92 MB ($O(1)$) | 9.93 MB ($O(1)$) | 8.82 MB ($O(1)$) |
+| **Latência Média de Inferência** | 6.67 ms (150 fps) | 6.94 ms (144 fps) | 10.85 ms (92 fps) |
 
 ---
 
-### 2.4. Applied Intelligence (Springer)
+## 3. Registo Comparativo das Revistas Analisadas
 
-| Atributo | Detalhe |
-|:---|:---|
-| **Publisher** | Springer |
-| **IF 2025** | **3.5** |
-| **Quartil** | Q2 (AI) |
-| **Foco** | Integração e **aplicação** de IA/redes neuronais a problemas complexos do mundo real |
-| **Requisito-chave** | Bridge entre teoria e prática, aplicações em manufatura, defesa, gestão |
-| **Aceita papers com benchmarks standard?** | ⚠️ **Parcialmente** — aceita, mas com menor impacto; prefere aplicações práticas |
-
----
-
-## 3. Matriz de Compatibilidade: Projeto × Revista
+A tabela e o diagrama seguintes registam o estudo comparativo realizado previamente e documentam formalmente a seleção final da IEEE TNNLS face às alternativas analisadas:
 
 ```mermaid
 graph TD
-    subgraph Projeto["Teu Projeto Atual"]
-        A["Arquitetura Semiparamétrica<br/>CNN + Episodic Memory + RL"]
-        B["Validação: MNIST + CIFAR-10"]
-        C["Contribuição: Conceptual/Metodológica"]
+    subgraph Projeto["Investigação da Arquitetura Semiparamétrica"]
+        A["Arquitetura Semiparamétrica Invariante (128D)<br>Backbone CNN + Memória Episódica + Governança RL"]
+        B["Validação Tri-Regime: MNIST + CIFAR-10 + CIFAR-100"]
+        C["Contribuição Metodológica: Learning Systems, KL Div., McNemar"]
     end
     
-    subgraph Revistas["Fit por Revista"]
-        TNNLS["🏆 IEEE TNNLS<br/>IF 9.7 | MELHOR FIT"]
-        EAAI["⚠️ EAAI<br/>IF 9.0 | Requer Aplicação Real"]
-        TII["❌ IEEE TII<br/>IF 9.8 | Requer Industrial Deployment"]
-        APIN["⚠️ Applied Intelligence<br/>IF 3.5 | Aceita mas IF baixo"]
+    subgraph Decisao["Avaliação Editorial"]
+        TNNLS["IEEE TNNLS (IEEE CIS)<br>IF: 9.7 | Q1<br>ALVO DEFINITIVO SELECIONADO"]
+        EAAI["EAAI (Elsevier)<br>IF: 9.0 | Q1<br>Descartada: Exige Caso Físico de Engenharia"]
+        TII["IEEE TII (IEEE IES)<br>IF: 9.8 | Q1<br>Descartada: Exige Integração Industrial/SCADA"]
+        APIN["Applied Intelligence (Springer)<br>IF: 3.5 | Q2<br>Descartada: Impacto Substancialmente Menor"]
     end
     
     A --> TNNLS
     B --> TNNLS
     C --> TNNLS
     
-    A --> EAAI
-    A --> TII
-    A --> APIN
+    A -.->|Descartada| EAAI
+    A -.->|Descartada| TII
+    A -.->|Descartada| APIN
 ```
 
-| Critério | IEEE TNNLS | EAAI | IEEE TII | Applied Intelligence |
+### 3.1. Matriz de Avaliação Comparativa
+
+| Critério Editorial | IEEE TNNLS | EAAI (Elsevier) | IEEE TII | Applied Intelligence |
 |:---|:---:|:---:|:---:|:---:|
-| **IF** | 9.7 | 9.0 | 9.8 | 3.5 |
-| **Aceita benchmarks académicos** | ✅ | ❌ | ❌ | ⚠️ |
-| **Requer aplicação real** | ❌ | ✅ | ✅✅ | ⚠️ |
-| **Alinhamento com RL + Memory** | ✅✅ | ✅ | ⚠️ | ✅ |
-| **Alinhamento com Neural Networks** | ✅✅ | ✅ | ⚠️ | ✅ |
-| **Alinhamento com OOD Detection** | ✅✅ | ✅ | ⚠️ | ✅ |
-| **Alinhamento com Edge AI** | ✅ | ✅✅ | ✅✅ | ⚠️ |
-| **Competitividade (dificuldade de aceitação)** | 🔴 Muito Alta | 🟠 Alta | 🔴 Muito Alta | 🟢 Moderada |
-| **FIT GLOBAL para o teu projeto atual** | ⭐⭐⭐⭐⭐ | ⭐⭐ | ⭐ | ⭐⭐⭐ |
+| **Editora** | IEEE CIS | Elsevier (IFAC) | IEEE IES | Springer |
+| **Fator de Impacto (JCR)** | **9.7** | 9.0 | 9.8 | 3.5 |
+| **Quartil** | **Q1** | Q1 | Q1 | Q2 |
+| **Aceitação de Benchmarks Canónicos** | Excelente | Muito Baixa | Nula | Boa |
+| **Exigência de Demonstração Física** | Não | Sim | Sim | Parcial |
+| **Alinhamento: Redes Neuronais** | Total | Parcial | Baixo | Bom |
+| **Alinhamento: Reinforcement Learning** | Total | Bom | Parcial | Bom |
+| **Alinhamento: Continual/Lifelong Learning** | Total | Bom | Baixo | Bom |
+| **Rigor Matemático e Teórico Exigido** | Muito Elevado | Moderado a Alto | Alto | Moderado |
+| **Adequação Final ao Projeto** | **Escolha Ótima (100%)** | Desalinhada | Inviável | Sub-ótima |
 
 ---
 
-## 4. Recomendação Final
+## 4. Requisitos e Diretrizes Oficiais de Submissão da IEEE TNNLS
 
-### 🏆 1.ª Escolha: IEEE TNNLS (IEEE Transactions on Neural Networks and Learning Systems)
+Para assegurar uma submissão de sucesso à IEEE TNNLS, o manuscrito deve cumprir integralmente as normas formais da *IEEE Computational Intelligence Society*:
 
-> [!TIP]
-> **A IEEE TNNLS é, de longe, a revista mais indicada para publicar o conceito da tua arquitetura de gestão de memória episódica com RL, usando os resultados com MNIST e CIFAR-10.**
+### 4.1. Formatação e Especificações do Manuscrito
 
-**Porquê:**
-1. **Aceita contribuições metodológicas/conceptuais** validadas em benchmarks standard — não exige aplicação real
-2. **IF 9.7** — prestígio altíssimo, comparável à EAAI e TII
-3. **Scope 100% alinhado** — neural networks, learning systems, RL, adaptive memory são tópicos core
-4. **Os teus resultados cross-dataset** (demonstrar invariância da arquitetura entre MNIST e CIFAR-10) são exatamente o tipo de contribuição que a TNNLS valoriza
-5. **Forte base teórica** — a tua análise com KL divergence, McNemar tests, e hardware bounding é o rigor esperado
+- **Formato e Template:** Documento preparado em LaTeX utilizando a classe oficial `IEEEtran.cls` em formato de duas colunas (*two-column format*, fonte de 10 pt, espaçamento simples).
+- **Tipologia do Artigo:** *Regular Paper*.
+- **Extensão do Documento:** Entre 10 e 12 páginas compiladas no formato IEEE de duas colunas. Manuscritos que excedam 10 páginas estão sujeitos a encargos de páginas adicionais (*overlength page charges*), sendo 14 a 15 páginas o limite estrito admitido na maioria das transações IEEE.
+- **Resumo (Abstract):** Texto conciso e não estruturado em parágrafos múltiplos, com limite estrito de 250 palavras. Deve apresentar de forma direta: o problema do esquecimento catastrófico e poluição de memória sob *concept drift*, a proposta semiparamétrica ativa, as garantias teóricas obtidas e os resultados quantitativos comprovados nos três regimes.
+- **Termos de Indexação (Index Terms):** De 4 a 6 palavras-chave padronizadas da taxonomia da IEEE. Sugestões alinhadas:
+  - *Continual learning*
+  - *Episodic memory*
+  - *Deep reinforcement learning*
+  - *Out-of-distribution detection*
+  - *Semiparametric learning systems*
+  - *Convolutional neural networks*
+- **Ilustrações e Gráficos:** As figuras devem ser preparadas em formato vetorial de alta definição (PDF ou EPS), com texto legível na escala final da coluna (88 mm de largura) e resolução de pelo menos 300 DPI. Gráficos a cores devem manter contraste legível caso convertidos para escala de cinzentos.
+- **Estilo de Citação:** Formatação numérica entre parênteses retos (ex.: `[1]`, `[2]`), ordenada sequencialmente por ordem de aparição no texto, com metadados bibliográficos completos (incluindo DOI ativo para todos os registos).
 
-**Como enquadrar o paper para a TNNLS:**
-- **Título sugerido:** *"Active Episodic Memory Management via Reinforcement Learning for Robust Semiparametric Vision Under Non-Stationary Concept Drift"*
-- **Framing:** Contribuição em **learning systems** — um sistema de aprendizagem que combina componentes paramétricos e não-paramétricos sob governança RL
-- **Emphasis:** O contrato invariante 128D, a prevenção de class starvation ($D_{KL} \to 0$), o bounded $O(1)$ hardware footprint, e a cross-dataset generalization
+### 4.2. Estrutura Canónica do Artigo para a IEEE TNNLS
+
+O artigo deve ser estruturado de acordo com as seguintes seções formais:
+
+#### Title
+*Active Episodic Memory Management via Reinforcement Learning for Robust Semiparametric Vision Under Non-Stationary Concept Drift*
+
+#### Abstract & Index Terms
+Contextualização sucinta do problema, metodologia do agente Double DQN com memória episódica $k$-NN sobre gargalo invariante de 128D, confirmação do *Distribution Matching Theorem* e resultados empíricos nos três regimes de complexidade.
+
+#### Section I: Introduction
+- O dilema estabilidade-plasticidade em visão computacional e as limitações de modelos puramente paramétricos face a distribuições não-estacionárias.
+- A vulnerabilidade de buffers de memória não-geridos (degradação passiva sob ruído severo e inanição de classes).
+- Apresentação da tese central: a governança ativa da memória episódica por um agente de reforço com bound estrito de recursos restaura a robustez sob ruído e previne o colapso de distribuição.
+- Lista explícita das três a quatro contribuições científicas concretas do trabalho.
+
+#### Section II: Related Work
+- Arquiteturas semiparamétricas e sistemas híbridos em visão computacional.
+- Memória episódica e estratégias de repetição em aprendizagem contínua (*continual learning*).
+- Deteção fora de distribuição e quantificação de incerteza preditiva (Mahalanobis, entropia).
+- Aprendizagem por reforço aplicada ao controlo de sistemas adaptativos e gestão de recursos.
+
+#### Section III: Semiparametric Vision Architecture
+- Modelo formal do sistema e definição do gargalo latente invariante $z \in \mathbb{R}^{128}$.
+- Formalização dos extratores paramétricos (CNN custom, ResNet-9, ResNet-18 V2).
+- Formalização do Árbitro OOD (Mahalanobis++ e Dual Uncertainty Arbiter com limiares calibrados $\tau_M$ e $\tau_H$).
+- Formulação matemática do banco de memória episódica $k$-NN com capacidade finita $C = 5{,}000$ e cálculo de vizinhança métrica.
+
+#### Section IV: Active Memory Governance via Deep Reinforcement Learning
+- Formalização do Processo de Decisão de Markov (MDP) $\langle \mathcal{S}, \mathcal{A}, \mathcal{P}, \mathcal{R}, \gamma \rangle$.
+- Vetor de estado compacto com métricas de contexto geométrico e de ocupação de buffer.
+- Espaço discreto de ações:
+  - Ação 0: *Ignore* (bloqueio de admissão de amostras ruidosas / anti-poluição).
+  - Ação 1: *FIFO* (evição por antiguidade temporal).
+  - Ação 2: *LFU* (evição por menor frequência de ativação).
+  - Ação 3: *Redundancy Pruning* (poda seletiva de exemplares na classe modal mais saturada).
+- Arquitetura do agente Double DQN e buffer com Prioritized Experience Replay (SumTree).
+- Função de recompensa composta com *Curriculum Learning* integrando recompensa geométrica e acurácia empírica com decaimento exponencial de $\alpha$.
+
+#### Section V: Theoretical Guarantees and Complexity Analysis
+- Teorema de Preservação de Distribuição e Prova de Eliminação de Inanição de Classes ($D_{KL} \to 0$).
+- Análise de complexidade espacial: garantia analítica de bound $O(1)$ na memória física RAM ($< 10$ MB).
+- Análise de complexidade temporal: limite de latência de inferência $O(k)$ e viabilidade em tempo real ($> 90$ fps).
+
+#### Section VI: Experimental Setup and Protocol
+- Descrição da suite tri-regime de benchmarks: MNIST (10 classes estilizadas), CIFAR-10 (10 classes naturais), CIFAR-100 (100 classes naturais com granularidade fina).
+- Protocolo de avaliação prequencial (*test-then-train*) sob injeção progressiva de perturbação gaussiana ($\sigma \in \{0.0, 0.2, 0.4, 0.6, 0.8\}$).
+- Especificação rigorosa dos 5 baselines do sistema:
+  - B0: Pure CNN (sem memória).
+  - B1: Infinite Memory (buffer não-delimitado, sem evição).
+  - B2: FIFO Bounded Memory (buffer fixo com evição estática temporal).
+  - B3: LFU Bounded Memory (buffer fixo com evição por frequência).
+  - B4: Proposed Active RL Memory (governança dinâmica adaptativa).
+
+#### Section VII: Empirical Results and Comparative Evaluation
+- Análise comparativa aprofundada dos resultados em tabelas consolidadas.
+- Testes estatísticos de hipóteses de McNemar com valores de $p$ e tabelas de contingência 2x2.
+- Análise da dinâmica da divergência de Kullback-Leibler e preservação da representação das classes.
+- Análise de latência computacional, taxa de fotogramas por segundo e pegada de memória.
+
+#### Section VIII: Ablation Studies and Sensitivity Analysis
+- Impacto da capacidade do buffer de memória ($C \in \{1000, 2500, 5000\}$).
+- Sensibilidade aos hiperparâmetros de recompensa e calibração dos limiares de incerteza ($\tau_M, \tau_H$).
+- Custo computacional e análise de sobrecarga (*overhead*) da inferência do agente Double DQN.
+
+#### Section IX: Discussion and Limitations
+- Análise crítica dos trade-offs de desempenho vs complexidade de treino.
+- Limitações da abordagem face a conjuntos de dados com cardinalidade extrema (ex.: ImageNet-1k).
+- Potencial de extensão a representações multimodais e modelos de base (*foundation models*).
+
+#### Section X: Conclusion
+- Síntese das conclusões científicas e impacto do paradigma semiparamétrico governado por reforço na teoria de sistemas de aprendizagem.
+
+#### References
+- Citações completas em formato IEEE numérico, cobrindo as referências seminais de *continual learning*, memórias episódicas, *deep Q-learning* e deteção fora de distribuição.
 
 ---
 
-### 🥈 2.ª Escolha: Applied Intelligence (Springer)
+## 5. Plano de Ação e Próximos Passos para a Submissão
 
-**Prós:**
-- Aceita validações com datasets standard
-- Taxa de aceitação mais realista
-- Scope inclui neural networks, pattern recognition, anomaly detection
-
-**Contras:**
-- IF significativamente mais baixo (3.5 vs 9.7)
-- Menor prestígio académico
-
-> Recomendo como **plan B** caso a TNNLS rejeite.
-
----
-
-### ⚠️ Para a EAAI: Mantém o plano da Opção A ou B
-
-A EAAI continua a ser excelente — mas **requer a aplicação real** que planeaste com a Opção A (Controlo de Qualidade CPS) ou Opção B (Smart Farming). Nesse caso, podes publicar **dois papers**:
-
-1. **Paper 1 (TNNLS):** Conceito da arquitetura + MNIST + CIFAR-10 (metodológico)
-2. **Paper 2 (EAAI):** Aplicação real da arquitetura num cenário industrial/agrícola (aplicado)
-
----
-
-### ❌ IEEE TII: Não recomendado para o estado atual
-
-A TII exige deployment industrial demonstrado. Mesmo com as opções A/B implementadas, a TII prefere sistemas com integração industrial profunda (protocolos OPC-UA, SCADA, integração com PLCs, etc.). Se não tens essa vertente, evita.
-
----
-
-## 5. Estratégia de Publicação Proposta
-
-```mermaid
-timeline
-    title Roadmap de Publicação
-    section Paper Conceptual
-        Submissão IEEE TNNLS : Conceito + MNIST + CIFAR-10
-        : Arquitetura semiparamétrica
-        : Validação cross-dataset
-        : Análise matemática (KL, McNemar)
-    section Paper Aplicado
-        Submissão EAAI : Opção A ou B implementada
-        : Setup físico (Raspberry Pi / Jetson)
-        : Simulação OOD real
-        : Métricas de campo
-    section Fallback
-        Applied Intelligence : Se TNNLS rejeitar
-        : Resubmeter versão adaptada
-```
-
-> [!NOTE]
-> Esta estratégia permite **maximizar o output académico**: um paper metodológico (TNNLS) e um paper aplicado (EAAI), ambos baseados na mesma arquitetura core, sem sobreposição de contribuição.
+1. **Configuração do Repositório do Manuscrito:**
+   - Instalação e teste do template oficial `IEEEtran.cls`.
+   - Estruturação dos ficheiros modulares em LaTeX: `main.tex`, `sec1_intro.tex`, `sec2_related.tex`, `sec3_architecture.tex`, `sec4_rl_governance.tex`, `sec5_theory.tex`, `sec6_setup.tex`, `sec7_results.tex`, `sec8_ablations.tex`, `sec9_discussion.tex`, `sec10_conclusion.tex`.
+2. **Exportação de Ilustrações Vetoriais:**
+   - Vetorização dos diagramas de arquitetura e do fluxo de decisão em formato PDF/EPS.
+   - Geração de figuras vetoriais de alta resolução a partir dos scripts de avaliação (`outputs/*/eaai_evaluation_dashboard.png` convertidos ou renderizados diretamente para PDF a 300 DPI com fontes incorporadas).
+3. **Consolidação do Ficheiro BibTeX:**
+   - Compilação das referências da pasta `docs/Literatura/` num ficheiro `references.bib` único, auditado contra as bases oficiais IEEE Xplore, CrossRef e DBLP.
+4. **Revisão e Submissão:**
+   - Validação integral com o orientador científico.
+   - Submissão formal através da plataforma *IEEE ScholarOne Manuscripts* da IEEE TNNLS.

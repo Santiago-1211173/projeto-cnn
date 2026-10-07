@@ -7,12 +7,12 @@
 
 ## 1. Overview and Executive Summary
 
-This section presents the empirical validation and comparative benchmark of the proposed RL-driven active episodic memory architecture against four established system baselines. Conducted as the experimental core for submission to *Engineering Applications of Artificial Intelligence* (EAAI, Elsevier), this benchmark assesses system robustness, latency, memory bounds, catastrophic forgetting, and operational sustainability under severe non-stationary concept drift and out-of-distribution (OOD) sensory degradation across three distinct complexity regimes:
+This section presents the empirical validation and comparative benchmark of the proposed RL-driven active episodic memory architecture against four established system baselines. Conducted as the experimental core for submission to *IEEE Transactions on Neural Networks and Learning Systems* (IEEE TNNLS, IEEE Computational Intelligence Society), this benchmark assesses system robustness, latency, memory bounds, catastrophic forgetting, and operational sustainability under severe non-stationary concept drift and out-of-distribution (OOD) sensory degradation across three distinct complexity regimes:
 1. **Low-Dimensional Stylized Regime (MNIST):** 28x28x1 grayscale handwritten digits, using a custom 4-layer CNN (225k parameters).
 2. **High-Dimensional Natural Regime (CIFAR-10):** 32x32x3 natural color images, using an upgraded ResNet-9 backbone (6.57M parameters).
 3. **High-Entropy Fine-Grained Natural Regime (CIFAR-100):** 32x32x3 natural color images across 100 fine categories, using an upgraded ResNet-18 V2 backbone (11.25M parameters, 74.27% nominal accuracy).
 
-### EAAI Benchmark: Key Metric Highlights
+### IEEE TNNLS Benchmark: Key Metric Highlights
 
 #### 1. MNIST Benchmark Summary
 | Metric | B0 (Pure CNN) | B2 (FIFO) | B3 (LFU) | B4 (Proposed RL) |
@@ -90,7 +90,7 @@ This documentation section is organized into four core analytical reports:
 | [Baseline Comparison Analysis (CIFAR-100)](file:///c:/Users/sanfr/Desktop/projetos-gecad/projeto-cnn/docs/results/baseline-comparison-cifar100.md) | Quantitative comparison (CIFAR-100) | Complete 5-baseline metrics table on CIFAR-100, fine-grained multi-class evaluation, complete class-starvation elimination ($D_{KL} \to 0$). |
 | [Cross-Dataset Scientific Synthesis](file:///c:/Users/sanfr/Desktop/projetos-gecad/projeto-cnn/docs/results/cross-dataset-analysis.md) | Flagship synthesis | Systematic confrontation across MNIST, CIFAR-10, and CIFAR-100 complexity regimes, side-by-side matrices, and validation of core theses. |
 | [Engineering Metrics Reference](file:///c:/Users/sanfr/Desktop/projetos-gecad/projeto-cnn/docs/results/metrics-reference.md) | Metric definitions | Mathematical formulations, physical units, algorithmic implementation mappings, and literature citations for all 7 metrics. |
-| [Comparative Literature Validation](file:///c:/Users/sanfr/Desktop/projetos-gecad/projeto-cnn/docs/results/literature-validation.md) | Literature confrontation | Systematic mapping of empirical findings against seminal publications, root cause analysis, statistical rigor validation, and EAAI submission guidelines. |
+| [Comparative Literature Validation](file:///c:/Users/sanfr/Desktop/projetos-gecad/projeto-cnn/docs/results/literature-validation.md) | Literature confrontation | Systematic mapping of empirical findings against seminal publications, root cause analysis, statistical rigor validation, and IEEE TNNLS submission guidelines. |
 
 ### Artifact Cross-References
 - **MNIST Artifacts:**

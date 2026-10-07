@@ -276,7 +276,7 @@ The findings of this cross-dataset synthesis align directly with the foundationa
 ## 7. Conclusions and Recommendations for Journal Submission
 
 1. **Primary Finding:** The active semiparametric vision architecture is dimensionally and complexity invariant. Across stylized digits (MNIST), natural objects (CIFAR-10), and fine-grained 100-class taxonomies (CIFAR-100), the RL curation agent maintains its core advantages in eliminating class starvation ($D_{KL} \to 0$), mitigating cache contamination, and enforcing strict $O(1)$ hardware bounds (<10 MB RAM, real-time edge latency <11 ms / >90 fps).
-2. **Methodological Contribution for EAAI:** The invariant $128\text{D}$ latent bottleneck serves as a generalizable architectural blueprint, enabling researchers to pair arbitrary parametric neural backbones with an active, capacity-bounded episodic memory controller without modifying the memory infrastructure or reinforcement learning action semantics.
+2. **Methodological Contribution for IEEE TNNLS:** The invariant $128\text{D}$ latent bottleneck serves as a generalizable architectural blueprint, enabling researchers to pair arbitrary parametric neural backbones with an active, capacity-bounded episodic memory controller without modifying the memory infrastructure or reinforcement learning action semantics.
 3. **Reproducibility Guarantee:** All artifacts, scripts, logs, dashboards, and evaluation metrics across all three datasets are maintained in dedicated, isolated directories (`outputs/mnist/`, `outputs/cifar10/`, and `outputs/cifar100/`), ensuring 100% reproducible benchmarks.
 
 ---

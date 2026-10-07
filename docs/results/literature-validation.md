@@ -7,7 +7,7 @@
 
 ## 1. Introduction and Scope
 
-This document provides a systematic comparative analysis between the empirical results obtained by the proposed RL-driven active episodic memory system and the theoretical foundations, hypotheses, and benchmarks established in the published scientific literature. The analysis is conducted in preparation for submission to *Engineering Applications of Artificial Intelligence* (EAAI, Elsevier) and serves to validate that the experimental findings are scientifically grounded, statistically rigorous, and aligned with the current state of the art.
+This document provides a systematic comparative analysis between the empirical results obtained by the proposed RL-driven active episodic memory system and the theoretical foundations, hypotheses, and benchmarks established in the published scientific literature. The analysis is conducted in preparation for submission to *IEEE Transactions on Neural Networks and Learning Systems* (IEEE TNNLS, IEEE Computational Intelligence Society) and serves to validate that the experimental findings are scientifically grounded, statistically rigorous, and aligned with the current state of the art.
 
 The evaluation spans two distinct complexity tiers within the repository's tri-regime benchmark continuum:
 1. **Low-Dimensional Stylized Regime (MNIST):** Single-channel grayscale digits ($28 \times 28 \times 1$, 10 classes) evaluated with a custom 4-layer CNN backbone.
@@ -232,7 +232,7 @@ These empirical bounds confirm that B4 achieves true Pareto optimality across ac
 
 ## 6. Statistical Rigor Validation
 
-To establish empirical validity adhering to Elsevier *Engineering Applications of Artificial Intelligence* publication standards, the benchmark findings were subjected to rigorous statistical hypothesis testing:
+To establish empirical validity adhering to *IEEE Transactions on Neural Networks and Learning Systems* (IEEE TNNLS) publication standards, the benchmark findings were subjected to rigorous statistical hypothesis testing:
 
 ### 6.1. Binomial Standard Error and 95% Confidence Intervals (95% CI)
 
@@ -286,14 +286,14 @@ The reduction of eviction Kullback-Leibler divergence from $2.6551\text{ nats}$ 
 
 ---
 
-## 7. Submission Guidelines and Recommendations (EAAI)
+## 7. Submission Guidelines and Recommendations (IEEE TNNLS)
 
 Based on the empirical evidence and literature mapping:
 
 1. **Lead with the Tri-Regime Generalization Continuum:**
    The paper gains exceptional academic authority by demonstrating that the active semiparametric paradigm is not a dataset-specific artifact. It generalizes across three distinct complexity tiers: stylized digits (MNIST, 10 classes), natural objects (CIFAR-10, 10 classes), and fine-grained categories (CIFAR-100, 100 classes).
 2. **Highlight the Discovery of Passive Memory Degradation:**
-   A central contribution for EAAI is proving that adding unmanaged episodic memory (FIFO/LFU) actively **hurts performance under severe noise** on both MNIST ($17.60\%$ vs $20.30\%$) and CIFAR-100 ($1.50\%$ vs $3.00\%$). The critical innovation is the **active reinforcement learning arbitration**.
+   A central contribution for IEEE TNNLS is proving that adding unmanaged episodic memory (FIFO/LFU) actively **hurts performance under severe noise** on both MNIST ($17.60\%$ vs $20.30\%$) and CIFAR-100 ($1.50\%$ vs $3.00\%$). The critical innovation is the **active reinforcement learning arbitration**.
 3. **Formulate the Isele & Cosgun Confirmation as a Major Theoretical Finding:**
    The near-zero KL divergence ($D_{KL} = 2.25 \times 10^{-8}\text{ nats}$ vs $2.6551\text{ nats}$) directly confirms the *Distribution Matching Theorem* (AAAI 2018) in high-cardinality environments (100 classes with only 50 slots per class).
 4. **Articulate the Jain & Lindsey Semiparametric Theorem:**

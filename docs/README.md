@@ -12,7 +12,7 @@ This directory contains the complete technical documentation for the active semi
 2. **High-Dimensional Natural Regime:** CIFAR-10 natural RGB images (10 classes, ResNet-9 backbone with 6.57M parameters, 10-class Dual Uncertainty Arbiter fusing Mahalanobis distance with Shannon entropy).
 3. **High-Entropy Fine-Grained Natural Regime:** CIFAR-100 fine-grained natural RGB images (100 classes, ResNet-18 V2 backbone with 11,250,532 parameters, 74.27% Top-1 accuracy, 100-class Dual Uncertainty Arbiter calibrated at $\tau_M = 8.69, \tau_H = 2.09\text{ nats}$).
 
-All three vision backbones preserve an **invariant 128-dimensional latent bottleneck** ($z \in \mathbb{R}^{128}$), enabling identical non-parametric episodic memory banks ($C = 5,000$ slots in contiguous memory) and Reinforcement Learning decision agents (Double DQN with Prioritized Experience Replay). The documentation includes complete API contracts, procedural workflows, and journal publication benchmarks prepared for *Engineering Applications of Artificial Intelligence* (EAAI, Elsevier).
+All three vision backbones preserve an **invariant 128-dimensional latent bottleneck** ($z \in \mathbb{R}^{128}$), enabling identical non-parametric episodic memory banks ($C = 5,000$ slots in contiguous memory) and Reinforcement Learning decision agents (Double DQN with Prioritized Experience Replay). The documentation includes complete API contracts, procedural workflows, and journal publication benchmarks prepared for *IEEE Transactions on Neural Networks and Learning Systems* (IEEE TNNLS, IEEE Computational Intelligence Society).
 
 All technical documentation adheres to academic English standards, utilizes clean standard Markdown formatting, and strictly excludes decorative emojis.
 

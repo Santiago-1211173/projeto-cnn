@@ -20,14 +20,14 @@ The guides are organized into three primary operational domains:
 | Document | Title | Purpose | Key Artifacts Produced |
 |:---------|:------|:--------|:-----------------------|
 | [training-pipeline.md](training-pipeline.md) | [Training Pipeline](training-pipeline.md) | Complete sequential workflow for training the parametric CNN, computing Mahalanobis++ OOD profiles, seeding the episodic memory bank, and training the Double DQN active memory agent via streaming online simulation. | `modelo_dissecado-*`, `mahalanobis_pp_profiles.npz`, `knn_memory_bank_128d.npz`, `rl_agent_weights-*`, `train_rl_simulation_log.csv` |
-| [evaluation.md](evaluation.md) | [Running the EAAI Evaluation](evaluation.md) | Execution protocol for the 5-baseline comparative benchmark (B0 to B4) across progressive Gaussian noise levels, tracking 7 engineering and scientific metrics under prequential test-then-train evaluation. | `eaai_metrics.csv`, `eaai_metrics.json`, `eaai_evaluation_dashboard.png` |
+| [evaluation.md](evaluation.md) | [Running the Baseline Evaluation Benchmark](evaluation.md) | Execution protocol for the 5-baseline comparative benchmark (B0 to B4) across progressive Gaussian noise levels, tracking 7 engineering and scientific metrics under prequential test-then-train evaluation. | `eaai_metrics.csv`, `eaai_metrics.json`, `eaai_evaluation_dashboard.png` |
 | [visualization.md](visualization.md) | [Explainable AI and Visualization Tools](visualization.md) | Suite of diagnostic visualization tools including t-SNE latent collapse mapping, gradient-based saliency heatmaps, decision confidence profiling, and 128D episodic memory rescue dashboards. | `colapso_latente_tsne.png`, `mapa_saliencia.png`, `perfil_confianca_cnn_vs_knn.png`, `fluxo_correcoes_cnn_knn.png`, `episodic_memory_rescue_full.png` |
 
 ---
 
 ## 3. Recommended Workflow Sequence
 
-For researchers and engineers seeking to reproduce the experimental results presented in the EAAI publication, the recommended execution sequence is as follows:
+For researchers and engineers seeking to reproduce the experimental results presented in the publication manuscript, the recommended execution sequence is as follows:
 
 ```mermaid
 flowchart TD

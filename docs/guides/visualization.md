@@ -103,7 +103,7 @@ Output: `outputs/episodic_memory_rescue_full.png`.
 
 ---
 
-## 6. Publication Evaluation Dashboards (EAAI Standard)
+## 6. Publication Evaluation Dashboards (IEEE TNNLS / Publication Standard)
 
 Both baseline evaluation pipelines (`evaluate_hybrid_global.py` for MNIST and `scripts/cifar10/evaluate_baselines.py` for CIFAR-10) automatically render 4-panel publication-grade dashboards displaying comprehensive comparative telemetry:
 
@@ -138,7 +138,7 @@ Each dashboard adheres to a consistent 4-panel layout:
 ---
 
 **Navigation:**
-- Previous: [Running the EAAI Evaluation](file:///c:/Users/sanfr/Desktop/projetos-gecad/projeto-cnn/docs/guides/evaluation.md)
+- Previous: [Running the Baseline Evaluation Benchmark](file:///c:/Users/sanfr/Desktop/projetos-gecad/projeto-cnn/docs/guides/evaluation.md)
 - Up: [Usage Guides](file:///c:/Users/sanfr/Desktop/projetos-gecad/projeto-cnn/docs/guides/README.md)
 - Next: [API Reference Index](file:///c:/Users/sanfr/Desktop/projetos-gecad/projeto-cnn/docs/api/README.md)
 

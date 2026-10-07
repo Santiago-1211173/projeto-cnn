@@ -9,7 +9,7 @@
 
 In safety-critical and resource-constrained Edge AI environments, evaluating an artificial intelligence architecture solely on conventional stationary top-1 accuracy is inadequate. Operational systems deployed on embedded processors, microcontrollers, and autonomous robotic platforms must operate sustainably under non-stationary concept drift, severe sensory perturbation, and strict memory budgets.
 
-To establish rigorous scientific validation for publication in *Engineering Applications of Artificial Intelligence* (EAAI, Elsevier), this project formalizes **seven complementary engineering and continual learning metrics**. These metrics quantify classification robustness, computational latency, hardware memory bounds, resilience against catastrophic forgetting, and distribution stability.
+To establish rigorous scientific validation for publication in *IEEE Transactions on Neural Networks and Learning Systems* (IEEE TNNLS), this project formalizes **seven complementary engineering and continual learning metrics**. These metrics quantify classification robustness, computational latency, hardware memory bounds, resilience against catastrophic forgetting, and distribution stability.
 
 ---
 

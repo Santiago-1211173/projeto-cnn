@@ -191,13 +191,13 @@ projeto-cnn/
 │   │   ├── profile_latent.py                   # Calibrate Dual Uncertainty Arbiter profiles
 │   │   ├── seed_memory.py                      # Seed 5,000 clean exemplars (k=10)
 │   │   ├── train_simulation.py                 # 50,000-step prequential RL streaming simulation
-│   │   └── evaluate_baselines.py               # EAAI 5-baseline evaluation runner (B0 to B4)
+│   │   └── evaluate_baselines.py               # 5-baseline evaluation runner (B0 to B4)
 │   └── cifar100/                               # [DEDICATED] CIFAR-100 specialized pipeline
 │       ├── download_cifar100.py                # Automated CIFAR-100 dataset downloader
 │       ├── train_cnn.py                        # Train ResNet-18 V2 backbone (150 epochs, 74.27% acc)
 │       ├── seed_memory.py                      # Seed 5,000 exemplars & calibrate 100-class arbiter
 │       ├── train_simulation.py                 # 50,000-step prequential RL streaming simulation
-│       └── evaluate_baselines.py               # EAAI 5-baseline evaluation runner (B0 to B4)
+│       └── evaluate_baselines.py               # 5-baseline evaluation runner (B0 to B4)
 ├── outputs/
 │   ├── mnist/                                  # [FROZEN] Preserved MNIST metrics, checkpoints, dashboard
 │   ├── cifar10/                                # Dedicated CIFAR-10 checkpoints, metrics, dashboard
@@ -315,10 +315,10 @@ If you utilize this codebase or semiparametric architecture in your research, pl
   title     = {Active Episodic Memory Management via Reinforcement Learning
                for Robust CNN Inference on Out-of-Distribution Data},
   author    = {[Author Name]},
-  journal   = {Engineering Applications of Artificial Intelligence},
+  journal   = {IEEE Transactions on Neural Networks and Learning Systems},
   year      = {2026},
-  publisher = {Elsevier},
-  note      = {Under Review}
+  publisher = {IEEE},
+  note      = {In Preparation}
 }
 ```
 

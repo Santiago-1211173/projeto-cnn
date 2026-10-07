@@ -128,7 +128,7 @@ python scripts/cifar10/train_simulation.py --steps 50000 --noise-rate 0.1 --nois
 - **Policy Behavior:** Learns to filter noise via Action 0 (Ignore) and prune class redundancy via Action 3.
 
 ### Step 3.5: 5-Baseline Comparative Benchmark
-Runs the comprehensive EAAI benchmark across all five baselines (B0 to B4) over 5 progressive noise levels ($\sigma \in \{0.0, 0.2, 0.4, 0.6, 0.8\}$):
+Runs the comprehensive publication benchmark across all five baselines (B0 to B4) over 5 progressive noise levels ($\sigma \in \{0.0, 0.2, 0.4, 0.6, 0.8\}$):
 ```bash
 python scripts/cifar10/evaluate_baselines.py --samples-per-level 1000 --noise-levels 0.0 0.2 0.4 0.6 0.8
 ```
@@ -206,7 +206,7 @@ python scripts/cifar100/evaluate_baselines.py --samples-per-level 1000 --capacit
 **Navigation:**
 - Previous: [Configuration Reference](file:///c:/Users/sanfr/Desktop/projetos-gecad/projeto-cnn/docs/getting-started/configuration.md)
 - Up: [Usage Guides](file:///c:/Users/sanfr/Desktop/projetos-gecad/projeto-cnn/docs/guides/README.md)
-- Next: [Running the EAAI Evaluation](file:///c:/Users/sanfr/Desktop/projetos-gecad/projeto-cnn/docs/guides/evaluation.md)
+- Next: [Running the Baseline Evaluation Benchmark](file:///c:/Users/sanfr/Desktop/projetos-gecad/projeto-cnn/docs/guides/evaluation.md)
 
 ---
 
